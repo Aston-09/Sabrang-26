@@ -48,11 +48,15 @@ export default function Dashboard() {
     };
 
     if (!authLoading && user) {
+      if (userData?.role === 'admin' || userData?.role === 'scanner') {
+        router.push('/admin');
+        return;
+      }
       fetchRegistrations();
     } else if (!authLoading && !user) {
       setLoading(false);
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, userData, router]);
 
   const handleUnregister = async (regId: string) => {
     if (confirm('Are you sure you want to unregister?')) {
@@ -69,12 +73,16 @@ export default function Dashboard() {
   if (authLoading || loading) return <div className="text-center mt-20">Loading dashboard...</div>;
   if (!user) return <div className="text-center mt-20">Please login to view your dashboard.</div>;
 
+  // Extract first name from user data (priority: Firestore name > Firebase displayName > email)
+  const fullName = userData?.name || user.displayName || user.email || 'User';
+  const firstName = fullName.split(' ')[0].split('@')[0];
+
   return (
     <div className="max-w-5xl mx-auto">
       <header className="mb-10 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">User Dashboard</h1>
-          <p className="text-slate-500">Welcome back, {userData?.name || user.email}</p>
+          <p className="text-slate-500">Welcome back, {firstName}</p>
         </div>
       </header>
 

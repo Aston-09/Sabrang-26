@@ -165,7 +165,7 @@ export default function AdminCoupons() {
                 <td className="px-6 py-4 font-bold">{coupon.discountPercentage}% OFF</td>
                 <td className="px-6 py-4">{formatDate(coupon.expiryDate)}</td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${coupon.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${coupon.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {coupon.active ? 'Active' : 'Expired'}
                   </span>
                 </td>

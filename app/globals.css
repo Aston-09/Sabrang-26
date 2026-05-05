@@ -1,17 +1,112 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0f172a; /* slate-900 */
+@theme {
+  /* Material Design 3 Inspired Palette */
+  --color-primary: #004ac6;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #2563eb;
+  --color-on-primary-container: #eeefff;
+  
+  --color-secondary: #545f73;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d5e0f8;
+  --color-on-secondary-container: #586377;
+  
+  --color-surface: #faf8ff;
+  --color-on-surface: #191b23;
+  --color-surface-variant: #e1e2ed;
+  --color-on-surface-variant: #434655;
+  
+  --color-surface-container-low: #f3f3fe;
+  --color-surface-container: #ededf9;
+  --color-surface-container-high: #e7e7f3;
+  --color-surface-container-highest: #e1e2ed;
+  --color-surface-container-lowest: #ffffff;
+  
+  --color-outline: #737686;
+  --color-outline-variant: #c3c6d7;
+  --color-background: #faf8ff;
+  --color-on-background: #191b23;
+  
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-tertiary: #943700;
+  --color-tertiary-fixed: #ffdbcd;
+
+  --font-h1: "Manrope", sans-serif;
+  --font-h2: "Manrope", sans-serif;
+  --font-h3: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@layer base {
+  body {
+    @apply bg-background text-on-background font-body;
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .card-shadow {
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-[1.02] active:scale-95;
+  }
+
+  .bg-sabrang {
+    @apply bg-slate-900;
+  }
+
+  .text-sabrang {
+    @apply text-slate-900 font-black;
+  }
+}
+
+/* Antigravity Rule: No capsule / pill-shaped UI elements */
+.rounded-full {
+  border-radius: 2px !important; 
+}
+
+/* Material Inspired Subtle Radii */
+.rounded-xl {
+  border-radius: 6px !important;
+}
+
+.rounded-2xl, .rounded-3xl {
+  border-radius: 8px !important;
+}
+
+/* Force standard cursor behavior for Admin/Scanner */
+body:not(.custom-cursor-active), 
+body:not(.custom-cursor-active) a, 
+body:not(.custom-cursor-active) button, 
+body:not(.custom-cursor-active) select, 
+body:not(.custom-cursor-active) input {
+  cursor: auto !important;
+}
+
+body:not(.custom-cursor-active) a:hover, 
+body:not(.custom-cursor-active) button:hover {
+  cursor: pointer !important;
+}
+
+body.custom-cursor-active {
+  cursor: none !important;
+}
+
+body.custom-cursor-active a, 
+body.custom-cursor-active button, 
+body.custom-cursor-active input, 
+body.custom-cursor-active select, 
+body.custom-cursor-active textarea,
+body.custom-cursor-active .cursor-pointer {
+  cursor: none !important;
 }

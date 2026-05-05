@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import ThreeBackground from '@/components/ThreeBackground';
 
 export default function Home() {
   const { user } = useAuth();
@@ -11,13 +12,10 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
         {/* Background Decorative Elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-400 rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }}></div>
-        </div>
+        <ThreeBackground />
 
-        <div className="max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <div className="inline-flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold mb-6">
+        <div className="max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
+          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-md text-indigo-700 px-4 py-2 rounded-full text-sm font-bold mb-6 border border-white/50 shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
@@ -26,7 +24,7 @@ export default function Home() {
           </div>
           
           <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter mb-6 uppercase">
-            SABRANG <span className="text-indigo-600">2025</span>
+            <span className="text-sabrang">SABRANG</span> <span className="text-indigo-600">2025</span>
           </h1>
           
           <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">

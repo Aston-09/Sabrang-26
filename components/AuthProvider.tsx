@@ -31,11 +31,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       if (user) {
         // Fetch additional user data from Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data() as User;
-          setUserData(data);
-          setRole(data.role);
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data() as User;
+            setUserData(data);
+            setRole(data.role);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       } else {
         setUserData(null);

@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.*
@@ -10,38 +8,101 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# Testing
 /coverage
 
-# next.js
+# Next.js
 /.next/
 /out/
+/build
+next-env.d.ts
 
-# production
+# Production
 /build
 
-# misc
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
 .DS_Store
+Thumbs.db
 *.pem
 
-# debug
+# Debug Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# env files
-.env*
-.env.local
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.log.*
+firestore-debug.log
+firestore-debug.log.*
+ui-debug.log
+ui-debug.log.*
 
-# firebase service account
+# Firebase Service Account Keys
 *-firebase-adminsdk-*.json
 sabrang-*-*.json
+accounts.txt
 
-# account setup logs
-accounts_log.txt
-accounts_output.txt
+# Runtime Data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# next.js
-/.next/
-/out/
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/

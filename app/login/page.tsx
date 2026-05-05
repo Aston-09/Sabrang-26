@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase/client';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import GoogleSignIn from '@/components/GoogleSignIn';
+import { validateEmail } from '@/utils';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -20,8 +22,28 @@ export default function Login() {
     setError('');
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard');
+      // Validate and sanitize email
+      const emailValidation = validateEmail(email);
+      if (!emailValidation.isValid) {
+        setError(emailValidation.error || 'Invalid email');
+        setLoading(false);
+        return;
+      }
+
+      const sanitizedEmail = emailValidation.email || email.trim().toLowerCase();
+
+      const userCredential = await signInWithEmailAndPassword(auth, sanitizedEmail, password);
+      const user = userCredential.user;
+
+      // Fetch user role to redirect appropriately
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userData = userDoc.data();
+      
+      if (userData?.role === 'admin' || userData?.role === 'scanner') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'An error occurred during login.');
     } finally {
@@ -42,6 +64,7 @@ export default function Login() {
             className="w-full p-2 border rounded-md"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            suppressHydrationWarning
           />
         </div>
         <div>
@@ -52,6 +75,7 @@ export default function Login() {
             className="w-full p-2 border rounded-md"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            suppressHydrationWarning
           />
         </div>
         <button

@@ -32,7 +32,7 @@ export interface Event {
   dateTime: Timestamp | Date;
   venue: string;
   rules: string;
-  maxParticipants: number;
+  maxParticipants?: number;
   coordinators: Coordinator[];
   prizePool?: string;
   createdAt: Timestamp | Date;

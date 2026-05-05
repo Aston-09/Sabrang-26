@@ -1,0 +1,8 @@
+| Email                        | Password     | Role    |
+| ---------------------------- | ------------ | ------- |
+| adminsabrang@jklu.edu.in     | 181723891188 | admin   |
+| scanner1@jklu.edu.in         | 3908691587   | scanner |
+| scanner2@jklu.edu.in         | 0650225683   | scanner |
+| scanner3@jklu.edu.in         | 7125328509   | scanner |
+| scanner4@jklu.edu.in         | 9788171168   | scanner |
+| scanner5@jklu.edu.in         | 3611157540   | scanner |

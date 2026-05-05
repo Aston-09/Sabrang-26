@@ -20,3 +20,51 @@ export const generateReferralCode = () => {
   }
   return code;
 };
+
+// Sanitize user input to prevent XSS attacks
+export const sanitizeInput = (input: string): string => {
+  return input
+    .trim()
+    .replace(/[<>"'&]/g, '') // Remove potentially dangerous characters
+    .slice(0, 100); // Limit length
+};
+
+// Validate name input
+export const validateName = (name: string): { isValid: boolean; error?: string } => {
+  const sanitized = sanitizeInput(name);
+  
+  if (!sanitized) {
+    return { isValid: false, error: 'Name is required' };
+  }
+  
+  if (sanitized.length < 2) {
+    return { isValid: false, error: 'Name must be at least 2 characters' };
+  }
+  
+  if (sanitized.length > 50) {
+    return { isValid: false, error: 'Name must be less than 50 characters' };
+  }
+  
+  // Check for valid characters (letters, spaces, hyphens, apostrophes)
+  if (!/^[a-zA-Z\s\-']+$/.test(sanitized)) {
+    return { isValid: false, error: 'Name can only contain letters, spaces, hyphens, and apostrophes' };
+  }
+  
+  return { isValid: true };
+};
+
+// Sanitize and validate email
+export const validateEmail = (email: string): { isValid: boolean; error?: string; email?: string } => {
+  const sanitized = email.trim().toLowerCase();
+  
+  if (!sanitized) {
+    return { isValid: false, error: 'Email is required' };
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(sanitized)) {
+    return { isValid: false, error: 'Please enter a valid email address' };
+  }
+  
+  return { isValid: true, email: sanitized };
+};

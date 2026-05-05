@@ -1,0 +1,20 @@
+import AdminSidebar from '@/components/AdminSidebar';
+import AdminTopBar from '@/components/AdminTopBar';
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex bg-background min-h-screen">
+      <AdminSidebar />
+      <div className="flex-grow ml-64 flex flex-col">
+        <AdminTopBar />
+        <main className="p-10">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

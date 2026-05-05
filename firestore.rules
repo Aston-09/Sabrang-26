@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isScanner() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'scanner'];
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isScanner());
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      allow read: if true; // Publicly readable
+      allow write: if isAdmin();
+    }
+
+    // Registrations collection
+    match /registrations/{regId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin() || isScanner());
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      // Scanners can update check-in status (e.g. attended: true)
+      allow update: if isScanner();
+    }
+
+    // Coupons collection
+    match /coupons/{couponId} {
+      allow read: if true; 
+      allow write: if isAdmin();
+    }
+  }
+}

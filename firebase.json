@@ -1,0 +1,26 @@
+{
+  "hosting": {
+    "public": ".next/standalone",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "nextjs"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": {
+    "source": ".",
+    "predeploy": [
+      "npm install",
+      "npm run build"
+    ]
+  }
+}
