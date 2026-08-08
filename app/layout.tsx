@@ -1,5 +1,7 @@
 import { AuthProvider } from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
+import InitialLoader from '@/components/InitialLoader';
+import TubesCursor from '@/components/TubesCursor';
 import CursorFollower from '@/components/CursorFollower';
 import './globals.css';
 import { Inter } from 'next/font/google';
@@ -20,8 +22,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
+          <TubesCursor />
+          <CursorFollower />
+          <InitialLoader />
           <div className="min-h-screen flex flex-col bg-slate-50">
-            <CursorFollower />
             <Navbar />
             <main className="flex-grow container mx-auto px-4 py-8">
               {children}

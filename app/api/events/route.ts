@@ -4,7 +4,7 @@ import { adminDb, adminAuth } from '@/lib/firebase/admin';
 export async function GET() {
   try {
     const eventsSnapshot = await adminDb.collection('events').orderBy('dateTime', 'asc').get();
-    const events = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const events = eventsSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(events);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

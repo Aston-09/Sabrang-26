@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -15,6 +16,7 @@ interface DashboardRegistration extends Registration {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const { user, userData, loading: authLoading } = useAuth();
   const [registrations, setRegistrations] = useState<DashboardRegistration[]>([]);
   const [loading, setLoading] = useState(true);

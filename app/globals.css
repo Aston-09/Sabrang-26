@@ -84,29 +84,11 @@
   border-radius: 8px !important;
 }
 
-/* Force standard cursor behavior for Admin/Scanner */
-body:not(.custom-cursor-active), 
-body:not(.custom-cursor-active) a, 
-body:not(.custom-cursor-active) button, 
-body:not(.custom-cursor-active) select, 
-body:not(.custom-cursor-active) input {
-  cursor: auto !important;
-}
-
-body:not(.custom-cursor-active) a:hover, 
-body:not(.custom-cursor-active) button:hover {
-  cursor: pointer !important;
-}
-
-body.custom-cursor-active {
+/* Hide default browser system cursor globally */
+html, body, body *, a, button, input, select, textarea, [role="button"] {
   cursor: none !important;
 }
 
-body.custom-cursor-active a, 
-body.custom-cursor-active button, 
-body.custom-cursor-active input, 
-body.custom-cursor-active select, 
-body.custom-cursor-active textarea,
-body.custom-cursor-active .cursor-pointer {
-  cursor: none !important;
+.custom-cursor-circle {
+  border-radius: 9999px !important;
 }
