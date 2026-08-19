@@ -7,6 +7,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Clock, MapPin, ArrowRight, Menu } from "lucide-react";
+import { ShaderBackground } from "@/components/ui/neuro-noise";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES & CONSTANTS
@@ -176,7 +177,7 @@ function EventCard3D({ evt, index }: { evt: ScheduleEvent, index: number }) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="relative bg-[#08090d]/80 border border-white/[0.08] rounded-[4px] p-5 backdrop-blur-md cursor-pointer transition-colors duration-500 group-hover:bg-[#0c0d14] group-hover:border-white/[0.15]"
+        className="relative bg-[#08090d] border border-white/[0.08] rounded-[4px] p-7 cursor-pointer transition-colors duration-500 group-hover:bg-[#0c0d14] group-hover:border-white/[0.15]"
         whileHover={{ translateZ: 12 }}
       >
         {/* Dynamic Glare Effect */}
@@ -263,7 +264,7 @@ function DayColumn({
       }}
     >
       {/* Premium Glass Background Slab */}
-      <div className="absolute inset-0 bg-[#050508]/40 backdrop-blur-sm border border-white/[0.03] rounded-lg -z-10" />
+      <div className="absolute inset-0 bg-[#050508] border border-white/[0.03] rounded-lg -z-10" />
 
       {/* Day Header */}
       <div className="px-6 py-6 border-b border-white/[0.05] relative overflow-hidden rounded-t-lg">
@@ -292,11 +293,11 @@ function DayColumn({
               transition={{ duration: 4, ease: "linear", repeat: Infinity, delay: colIndex * 1.5 }}
             />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-12">
               {filteredEvents.map((evt, idx) => (
                 <div key={idx} className="relative pl-10 group">
                   {/* Timeline Node */}
-                  <div className="absolute left-[8px] top-[24px] w-2 h-2 rounded-full bg-[#050508] border border-white/30 z-10 transition-all duration-300 group-hover:scale-150 group-hover:border-violet-500 group-hover:bg-violet-500/20 shadow-[0_0_0_rgba(139,92,246,0)] group-hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
+                  <div className="absolute left-[8px] top-[32px] w-2 h-2 rounded-full bg-[#050508] border border-white/30 z-10 transition-all duration-300 group-hover:scale-150 group-hover:border-violet-500 group-hover:bg-violet-500/20 shadow-[0_0_0_rgba(139,92,246,0)] group-hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
                   
                   {/* The Card */}
                   <EventCard3D evt={evt} index={idx} />
@@ -334,35 +335,14 @@ export default function FuturisticSchedule({ schedule }: { schedule: ScheduleDat
 
   return (
     <div 
-      className="relative min-h-screen bg-[#020202] text-white font-sans overflow-hidden selection:bg-violet-500/30"
+      className="relative min-h-screen text-white font-sans overflow-hidden selection:bg-violet-500/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
     >
-      <WebGLBackground />
+      <div className="fixed inset-0 z-0 bg-[#020202]">
+        <ShaderBackground className="absolute inset-0" />
+      </div>
 
-      {/* ── CUSTOM HEADER ── */}
-      <header className="relative z-50 w-full px-6 py-5 flex items-center justify-between border-b border-white/[0.05] bg-[#020202]/80 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[2px] bg-white flex items-center justify-center font-bold tracking-tighter text-sm text-black">
-            S26
-          </div>
-          <span className="text-xs font-bold tracking-[0.2em] text-white/90">SABRANG</span>
-        </div>
-        <nav className="hidden md:flex items-center gap-10 text-[10px] font-bold tracking-[0.2em] text-white/40">
-          <Link href="/" className="hover:text-white transition-colors">HOME</Link>
-          <Link href="/themes" className="hover:text-white transition-colors">THEMES</Link>
-          <Link href="/prizes" className="hover:text-white transition-colors">PRIZES</Link>
-          <Link href="/partners" className="hover:text-white transition-colors">PARTNERS</Link>
-          <Link href="/events" className="hover:text-white transition-colors">EVENTS</Link>
-          <Link href="/credits" className="hover:text-white transition-colors">TEAM</Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:inline-block text-[9px] font-mono text-white/20 tracking-widest border border-white/5 px-2 py-1">JKLU</span>
-          <button className="flex items-center gap-2 text-xs font-bold tracking-widest hover:text-violet-400 transition-colors">
-            <Menu size={16} />
-          </button>
-        </div>
-      </header>
 
       {/* ── MAIN CONTENT ── */}
       <main className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-32" style={{ perspective: 2000 }}>
