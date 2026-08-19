@@ -5,75 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
 
-/* ──────────────────────────────────────────────
-   TECH TEAM DATA
-   ────────────────────────────────────────────── */
-const devTeam = [
-  {
-    name: "Devam Gupta",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060383/sabrang-2026/tech-team-credit/Devam-gupta.png",
-    linkedin: "https://www.linkedin.com/in/devam-gupta/",
-    github: "https://github.com/Devam759",
-    email: "devamgupta@jklu.edu.in",
-    instagram: "https://www.instagram.com/who.is.devam/",
-  },
-  {
-    name: "Aditya Singh Nayal",
-    avatar: "/team-carousel/Tech team credit/Aditya.png",
-    linkedin: "https://www.linkedin.com/in/aditya-singh-nayal-5678b3378",
-    github: "https://github.com/Aston-09",
-    email: "adityasinghnayal@jklu.edu.in",
-    instagram: "https://www.instagram.com/aston_axn",
-  },
-  {
-    name: "Kartik Saini",
-    avatar: "/team-carousel/Tech team credit/Kartik Saini.png",
-    linkedin: "https://linkedin.com/in/kartik-14saini",
-    github: "https://github.com/PrimeKartik",
-    email: "kartiksaini@jklu.edu.in",
-    instagram: "https://www.instagram.com/kartik_14saini?igsh=dTV2MTc5M2p1bnZq",
-  },
-  {
-    name: "Pratham Lalwani",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060387/sabrang-2026/tech-team-credit/Pratham.png",
-    linkedin: "https://www.linkedin.com/in/pratham2k07",
-    github: "https://github.com/Pratham2k07",
-    email: "prathamlalwani@jklu.edu.in",
-    instagram: "https://www.instagram.com/pratham_lalwani05",
-  },
-  {
-    name: "Lakshya Gupta",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060385/sabrang-2026/tech-team-credit/Lakshya.png",
-    linkedin: "https://www.linkedin.com/in/lakshya-gupta-b87616370/",
-    github: "https://github.com/Metamorpho-1",
-    email: "lakshyagupta@jklu.edu.in",
-    instagram: "https://instagram.com/lakshyagupta",
-  },
-  {
-    name: "Saurav Tank",
-    avatar: "/team-carousel/Tech team credit/Saurav.png",
-    linkedin: "https://www.linkedin.com/in/saurav-tank/",
-    github: "https://github.com/sauravtank1507",
-    email: "sauravtank@jklu.edu.in",
-    instagram: "https://instagram.com/sauravtank",
-  },
-  {
-    name: "Arihant Jain",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060382/sabrang-2026/tech-team-credit/Arihant-Jain.png",
-    linkedin: "https://www.linkedin.com/in/arihant-jain-0a2503383",
-    github: "https://github.com/arrieejain3149",
-    email: "arihantjain2025@jklu.edu.in",
-    instagram: "https://www.instagram.com/arriee.jain/",
-  },
-  {
-    name: "Shubh Dixit",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060392/sabrang-2026/tech-team-credit/Shubh-dixt.png",
-    linkedin: "https://www.linkedin.com/in/shubhdixit0912",
-    github: "https://github.com/Shubhdix9",
-    email: "Shubhdixit@jklu.edu.in",
-    instagram: "https://www.instagram.com/shubh_dixit__",
-  },
-];
+import { DEV_TEAM as devTeam } from "@/lib/constants";
 
 const N = devTeam.length;
 const AUTO_ADVANCE_MS = 8000;

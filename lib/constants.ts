@@ -42,12 +42,13 @@ export const ORGANIZING_HEADS: OrganizingHead[] = [
     name: "Gurseerat Kaur",
     phone: "+917678252871",
     displayPhone: "+91 76782 52871",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084247/sabrang-2026/team/gurseerat-kaur.jpg",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122736/sabrang-2026/team/gurseerat-kaur.png",
   },
   {
     name: "Pratigya Bomb",
     phone: "+916264667506",
     displayPhone: "+91 62646 67506",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122733/sabrang-2026/team/pratigya-bomb.png",
   },
 ];
 
@@ -222,4 +223,426 @@ export const GALLERY_IMAGES: GalleryItem[] = [
   { id: 49, src: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060277/sabrang-2026/gallery/49.webp", title: "Sabrang Moment" },
   { id: 39, src: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060262/sabrang-2026/gallery/39.webp", title: "Sabrang Moment" },
   { id: 23, src: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060240/sabrang-2026/gallery/23.webp", title: "Sabrang Moment" },
+];
+
+export interface TeamMemberLinks {
+  email?: string;
+  linkedin?: string;
+  instagram?: string;
+  github?: string;
+}
+
+export interface TeamMember {
+  name: string;
+  role: string;
+  links?: TeamMemberLinks;
+  image?: string;
+}
+
+export const TEAM_IMAGES: Record<string, string> = {
+  "Abhirama Shreyas": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084232/sabrang-2026/team/abhirama-shreyas.png",
+  "Aditya Nayak": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084234/sabrang-2026/team/aditya-nayak.png",
+  "Ambika Dalmia": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084235/sabrang-2026/team/ambika-dalmia.png",
+  "Ankit Joshi": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084236/sabrang-2026/team/ankit-joshi.png",
+  "Anushka Pathak": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122734/sabrang-2026/team/anushka-pathak.png",
+  "Aryan Gupta": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084238/sabrang-2026/team/aryan-gupta.png",
+  "Ashlesha Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084239/sabrang-2026/team/ashlesha-sharma.png",
+  "Ashmit Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084240/sabrang-2026/team/ashmit-sharma.png",
+  "Daksh Kumar": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084243/sabrang-2026/team/daksh-kumar.png",
+  "Devam Gupta": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084750/devam-gupta.jpg",
+  "Devansh Srivastava": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084245/sabrang-2026/team/devansh-srivastava.png",
+  "Diksha Shekhawat": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084246/sabrang-2026/team/diksha-shekhawat.png",
+  "Gurseerat Kaur": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122736/sabrang-2026/team/gurseerat-kaur.png",
+  "Kartik Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084249/sabrang-2026/team/kartik-singh.png",
+  "Kartik Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084250/sabrang-2026/team/kartik-sharma.jpg",
+  "Khushi Soni": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084251/sabrang-2026/team/khushi-soni.png",
+  "Kunal Kasliwal": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084252/sabrang-2026/team/kunal-kasliwal.png",
+  "Laksh Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084253/sabrang-2026/team/laksh-sharma.png",
+  "Manan Lala": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084254/sabrang-2026/team/manan-lala.png",
+  "Naman Shukla": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084255/sabrang-2026/team/naman-shukla.png",
+  "Pratigya Bomb": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122733/sabrang-2026/team/pratigya-bomb.png",
+  "Richa Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122739/sabrang-2026/team/richa-sharma.png",
+  "Rishika Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084258/sabrang-2026/team/rishika-singh.png",
+  "Roshan Jangir": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084259/sabrang-2026/team/roshan-jangir.png",
+  "Satvik Agrawal": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084261/sabrang-2026/team/satvik-agrawal.png",
+  "Saumya Puri": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084262/sabrang-2026/team/saumya-puri.png",
+  "Vice Chancellor": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122741/sabrang-2026/team/vice-chancellor.png",
+};
+
+export const TEAM_MEMBERS: TeamMember[] = [
+  // University Leadership & Mentors
+  { name: "Vice Chancellor", role: "Vice Chancellor" },
+  { name: "Anushka Pathak", role: "Student Affairs" },
+  { name: "Richa Sharma", role: "Student Affairs" },
+  { name: "Rattan Gangadhar", role: "Student Affairs" },
+
+  // Organizing Heads
+  { name: "Kartik Sharma", role: "Organizing Head" },
+  { name: "Gurseerat Kaur", role: "Organizing Head" },
+  {
+    name: "Pratigya Bomb",
+    role: "Organizing Head",
+    links: {
+      email: "mailto:pratigyabomb@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/pratigya-bomb-295857349?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+    },
+  },
+  { name: "Rishika Singh", role: "Organizing Head" },
+
+  // Tech & Support
+  {
+    name: "Devam Gupta",
+    role: "Tech & Support Core",
+    links: {
+      email: "mailto:devamgupta@jklu.edu.in",
+      instagram: "https://www.instagram.com/who.is.devam/?hl=en",
+      linkedin: "https://www.linkedin.com/in/devam-gupta/",
+      github: "https://github.com/Devam759",
+    },
+  },
+
+  // Core Members
+  { name: "Tanik Gupta", role: "Discipline Core" },
+  {
+    name: "Saumya Puri",
+    role: "Discipline Core",
+    links: {
+      email: "mailto:saumyapuri14@gmail.com",
+      linkedin: "https://www.linkedin.com/in/saumyapuri14",
+    },
+  },
+  { name: "Aayush", role: "Design Core" },
+  {
+    name: "Abhirama Shreyas",
+    role: "Decor Core",
+    links: {
+      email: "mailto:abhiramakarthikeyasreyastuttagunta@jklu.edu.in",
+      instagram: "https://www.instagram.com/abhiram__sreyas?igsh=MWl5M2Rtdm1nM2xneg%3D%3D&utm_source=qr",
+      linkedin: "https://www.linkedin.com/in/abhiram-sreyas-a1747238a?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+    },
+  },
+  { name: "Mahi Tripathi", role: "Decor Core" },
+  { name: "Vaibhav Sharma", role: "Media & Report Core" },
+  {
+    name: "Kartik Singh",
+    role: "Photography Core",
+    links: {
+      email: "mailto:kartiksingh@jklu.edu.in",
+      instagram: "https://www.instagram.com/kray.tive?igsh=MWU4cHcxcnlsdnBmYw%3D%3D&utm_source=qr",
+      linkedin: "https://www.linkedin.com/in/k4rtiksingh?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+    },
+  },
+  {
+    name: "Roshan Jangir",
+    role: "Photography Core",
+    links: {
+      email: "mailto:roshanjangir@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/roshan-jangir-a614a430a?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+  },
+  { name: "Aadhya Mittal", role: "Events Core" },
+  {
+    name: "Devansh Srivastava",
+    role: "Events Core",
+    links: {
+      email: "mailto:devansh@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/devansh-srivastava-vk18",
+    },
+  },
+  { name: "Jheel Jain", role: "Events Core" },
+  {
+    name: "Satvik Agrawal",
+    role: "Internal Arrangements Core",
+    links: {
+      email: "mailto:satvikagrawal@jklu.edu.in",
+      instagram: "https://www.instagram.com/satvik__oo7_/",
+      linkedin: "https://www.linkedin.com/in/satvik-agrawal1104/",
+      github: "https://github.com/Satvik1131",
+    },
+  },
+  {
+    name: "Ashmit Sharma",
+    role: "Internal Arrangements Core",
+    links: {
+      email: "mailto:asmitsharma@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/ashmit-sharma-63414b3b4?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+  },
+  {
+    name: "Kunal Kasliwal",
+    role: "Transport Core",
+    links: {
+      email: "mailto:kunalkasliwal@jklu.edu.in",
+      instagram: "https://www.instagram.com/kunalkasliwal14",
+      linkedin: "https://www.linkedin.com/in/kunalkasliwal?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+  },
+  {
+    name: "Manan Lala",
+    role: "Transport Core",
+    links: {
+      email: "mailto:mananlala@jklu.edu.in",
+      instagram: "https://www.instagram.com/mananlala16?igsh=azZ3aGlvcnc0aGlh",
+      linkedin: "https://www.linkedin.com/in/manan-lala-a3a094320?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+  },
+  {
+    name: "Aditya Nayak",
+    role: "Social Media Core",
+    links: {
+      email: "mailto:adityanayak@jklu.edu.in",
+      instagram: "https://www.instagram.com/_nayak_1913/",
+      linkedin: "https://www.linkedin.com/in/adityanayak13",
+      github: "https://github.com/AdityaNayak13",
+    },
+  },
+  {
+    name: "Aryan Gupta",
+    role: "Social Media Core",
+    links: {
+      email: "mailto:aryangupta2024@jklu.edu.in",
+      instagram: "https://www.instagram.com/itz_aryan_30",
+      linkedin: "https://www.linkedin.com/in/aryan-gupta-30dec2006",
+    },
+  },
+  {
+    name: "Ashlesha Sharma",
+    role: "Prize & Certificates Core",
+    links: {
+      email: "mailto:ashleshasharma@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/ashlesha-sharma?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+  },
+  {
+    name: "Ambika Dalmia",
+    role: "Hospitality Core",
+    links: {
+      email: "mailto:ambikadalmia@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/ambika-dalmia-310762247?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+    },
+  },
+  {
+    name: "Khushi Soni",
+    role: "Hospitality Core",
+    links: {
+      email: "mailto:khushisoni@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/khushi-soni--ks0906",
+    },
+  },
+  {
+    name: "Naman Shukla",
+    role: "Stage & Venue Core",
+    links: {
+      email: "mailto:namanshukla@jklu.edu.in",
+      instagram: "https://www.instagram.com/heyyynaman?igsh=MWJtOTdoeW5kM3J4eg%3D%3D&utm_source=qr",
+      linkedin: "https://www.linkedin.com/in/naman-shukla-87ba40325?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
+    },
+  },
+  {
+    name: "Diksha Shekhawat",
+    role: "Stage & Venue Core",
+    links: {
+      email: "mailto:dikshashekhawat@jklu.edu.in",
+      linkedin: "https://www.linkedin.com/in/diksha-shekhawat-082643322/",
+    },
+  },
+  { name: "Jayash Gahlot", role: "Registrations Core" },
+  {
+    name: "Ankit Joshi",
+    role: "Registrations Core",
+    links: {
+      email: "mailto:ankitjoshi@jklu.edu.in",
+      instagram: "https://www.instagram.com/pandat.02/",
+      github: "https://github.com/ankit1439",
+    },
+  },
+  { name: "Gaurang Tak", role: "Sponsorship & Promotions Core" },
+  {
+    name: "Daksh Kumar",
+    role: "Anchoring Core",
+    links: {
+      email: "mailto:dakshkumar@jklu.edu.in",
+      instagram: "https://www.instagram.com/dakshkkumar",
+      linkedin: "https://www.linkedin.com/in/dakshkkumar",
+      github: "https://github.com/dakshkkumar",
+    },
+  },
+  {
+    name: "Laksh Sharma",
+    role: "Anchoring Core",
+    links: {
+      email: "mailto:lakshsharma@jklu.edu.in",
+      instagram: "https://www.instagram.com/lksh.jpeg?igsh=MXB3MXh6MWg1bHB0aw==",
+      linkedin: "https://www.linkedin.com/in/laksh-sharma25?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+  },
+];
+
+export interface DevTeamMember {
+  name: string;
+  avatar: string;
+  linkedin: string;
+  github: string;
+  email: string;
+  instagram: string;
+}
+
+export const DEV_TEAM: DevTeamMember[] = [
+  {
+    name: "Devam Gupta",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060383/sabrang-2026/tech-team-credit/Devam-gupta.png",
+    linkedin: "https://www.linkedin.com/in/devam-gupta/",
+    github: "https://github.com/Devam759",
+    email: "devamgupta@jklu.edu.in",
+    instagram: "https://www.instagram.com/who.is.devam/",
+  },
+  {
+    name: "Aditya Singh Nayal",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787083775/sabrang-2026/tech-team-credit/Aditya.jpg",
+    linkedin: "https://www.linkedin.com/in/aditya-singh-nayal-5678b3378",
+    github: "https://github.com/Aston-09",
+    email: "adityasinghnayal@jklu.edu.in",
+    instagram: "https://www.instagram.com/aston_axn",
+  },
+  {
+    name: "Kartik Saini",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060384/sabrang-2026/tech-team-credit/Kartik-Saini.png",
+    linkedin: "https://linkedin.com/in/kartik-14saini",
+    github: "https://github.com/PrimeKartik",
+    email: "kartiksaini@jklu.edu.in",
+    instagram: "https://www.instagram.com/kartik_14saini?igsh=dTV2MTc5M2p1bnZq",
+  },
+  {
+    name: "Pratham Lalwani",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060387/sabrang-2026/tech-team-credit/Pratham.png",
+    linkedin: "https://www.linkedin.com/in/pratham2k07",
+    github: "https://github.com/Pratham2k07",
+    email: "prathamlalwani@jklu.edu.in",
+    instagram: "https://www.instagram.com/pratham_lalwani05",
+  },
+  {
+    name: "Lakshya Gupta",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060385/sabrang-2026/tech-team-credit/Lakshya.png",
+    linkedin: "https://www.linkedin.com/in/lakshya-gupta-b87616370/",
+    github: "https://github.com/Metamorpho-1",
+    email: "lakshyagupta@jklu.edu.in",
+    instagram: "https://instagram.com/lakshyagupta",
+  },
+  {
+    name: "Saurav Tank",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787083776/sabrang-2026/tech-team-credit/Saurav.png",
+    linkedin: "https://www.linkedin.com/in/saurav-tank/",
+    github: "https://github.com/sauravtank1507",
+    email: "sauravtank@jklu.edu.in",
+    instagram: "https://instagram.com/sauravtank",
+  },
+  {
+    name: "Arihant Jain",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060382/sabrang-2026/tech-team-credit/Arihant-Jain.png",
+    linkedin: "https://www.linkedin.com/in/arihant-jain-0a2503383",
+    github: "https://github.com/arrieejain3149",
+    email: "arihantjain2025@jklu.edu.in",
+    instagram: "https://www.instagram.com/arriee.jain/",
+  },
+  {
+    name: "Shubh Dixit",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060392/sabrang-2026/tech-team-credit/Shubh-dixt.png",
+    linkedin: "https://www.linkedin.com/in/shubhdixit0912",
+    github: "https://github.com/Shubhdix9",
+    email: "Shubhdixit@jklu.edu.in",
+    instagram: "https://www.instagram.com/shubh_dixit__",
+  },
+];
+
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+export const FAQS: FAQItem[] = [
+  {
+    question: "What is Sabrang?",
+    answer:
+      "Sabrang is the annual cultural festival of JK Lakshmipat University, Jaipur. It features exciting events including dance battles, fashion runways, music band jams, literary slams, e-sports, and celebrity pro-shows over three days.",
+  },
+  {
+    question: "When and where is Sabrang 2026?",
+    answer:
+      "Sabrang 2026 will be held at JK Lakshmipat University, Mahapura, Ajmer Road, Jaipur, Rajasthan 302026.",
+  },
+  {
+    question: "Who can participate?",
+    answer:
+      "All college students from recognized universities across India can participate in Sabrang. Some events may have specific eligibility criteria, so please check individual event details.",
+  },
+  {
+    question: "How do I register for events?",
+    answer:
+      "Create an account on our website, browse the events page, and click \"Register Now\" for any event you're interested in. You'll receive a unique QR code for entry.",
+  },
+  {
+    question: "Is there an entry fee?",
+    answer:
+      "Entry to the festival is free for JKLU students. External participants may need to pay a nominal registration fee for certain events. Check individual event pages for details.",
+  },
+  {
+    question: "What is the total prize pool?",
+    answer:
+      "The total prize pool exceeds ₹2.5 Lakhs, distributed across all cultural and flagship events.",
+  },
+  {
+    question: "Can I participate in multiple events?",
+    answer:
+      "Yes! You can register for as many events as you want, provided there are no scheduling conflicts.",
+  },
+  {
+    question: "Will there be accommodation available?",
+    answer:
+      "Yes, limited accommodation is available on campus on a first-come, first-served basis. Please contact us in advance to arrange accommodation.",
+  },
+  {
+    question: "Is food available on campus?",
+    answer:
+      "Absolutely! We'll have a food festival with multiple vendors offering a variety of cuisines. Food courts will be operational throughout the festival.",
+  },
+  {
+    question: "How do I get my QR code?",
+    answer:
+      "After successful registration for any event, your unique QR code will be available in your dashboard. You can also find the QR string below the code for manual entry.",
+  },
+  {
+    question: "Can I get a refund if I cancel my registration?",
+    answer:
+      "Refund policies vary by event. Please check the specific event's terms and conditions or contact our support team.",
+  },
+  {
+    question: "Is there parking available?",
+    answer:
+      "Yes, parking is available on campus for both two-wheelers and four-wheelers. Follow the signage on the day of the event.",
+  },
+  {
+    question: "Are outside food/drinks allowed?",
+    answer:
+      "Outside food and drinks are not permitted inside the venue. However, we have plenty of food options available at affordable prices.",
+  },
+  {
+    question: "How can I volunteer for Sabrang?",
+    answer:
+      "We're always looking for enthusiastic volunteers! Fill out the contact form on our website or email us at sabrang@jklu.edu.in with your details.",
+  },
+  {
+    question: "Can I sponsor Sabrang?",
+    answer:
+      "Yes! We offer various sponsorship packages. Contact our sponsorship team or reach out via our contact page for more details.",
+  },
+  {
+    question: "Will there be live streaming of events?",
+    answer:
+      "Select events will be live-streamed on our social media channels. Follow us on Instagram and YouTube for updates.",
+  },
+  {
+    question: "What should I bring to the festival?",
+    answer:
+      "Bring your college ID, registration QR code, comfortable clothes, and lots of energy! Some events may require specific equipment - check event rules.",
+  },
 ];

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import WebGLCarousel from "@/components/webgl-carousel/WebGLCarousel";
+import { TEAM_MEMBERS, TEAM_IMAGES } from "@/lib/constants";
 
 export default function TeamClient() {
   useEffect(() => {
@@ -40,243 +41,6 @@ export default function TeamClient() {
     };
   }, []);
 
-  const rawMembers = [
-    // University Leadership & Mentors
-    { name: "Anushka Pathak", role: "Faculty Coordinator" },
-    { name: "Richa Sharma", role: "Faculty Coordinator" },
-    { name: "Vice Chancellor", role: "Vice Chancellor" },
-
-    // Organizing Heads
-    { name: "Kartik Sharma", role: "Organizing Head" },
-    { name: "Gurseerat Kaur", role: "Organizing Head" },
-    { 
-      name: "Pratigya Bomb", 
-      role: "Organizing Head",
-      links: {
-        email: "mailto:pratigyabomb@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/pratigya-bomb-295857349?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-      }
-    },
-    { name: "Rishika Singh", role: "Organizing Head" },
-
-    // Tech & Support
-    { 
-      name: "Devam Gupta", 
-      role: "Tech & Support Core",
-      links: {
-        email: "mailto:devamgupta@jklu.edu.in",
-        instagram: "https://www.instagram.com/who.is.devam/?hl=en",
-        linkedin: "https://www.linkedin.com/in/devam-gupta/",
-        github: "https://github.com/Devam759"
-      }
-    },
-
-    // Core Members
-    { name: "Tanik Gupta", role: "Discipline Core" },
-    { 
-      name: "Saumya Puri", 
-      role: "Discipline Core",
-      links: {
-        email: "mailto:saumyapuri14@gmail.com",
-        linkedin: "https://www.linkedin.com/in/saumyapuri14"
-      }
-    },
-    { name: "Aayush", role: "Design Core" },
-    { 
-      name: "Abhirama Shreyas", 
-      role: "Decor Core",
-      links: {
-        email: "mailto:abhiramakarthikeyasreyastuttagunta@jklu.edu.in",
-        instagram: "https://www.instagram.com/abhiram__sreyas?igsh=MWl5M2Rtdm1nM2xneg%3D%3D&utm_source=qr",
-        linkedin: "https://www.linkedin.com/in/abhiram-sreyas-a1747238a?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-      }
-    },
-    { name: "Mahi Tripathi", role: "Decor Core" },
-    { name: "Vaibhav Sharma", role: "Media & Report Core" },
-    { 
-      name: "Kartik Singh", 
-      role: "Photography Core",
-      links: {
-        email: "mailto:kartiksingh@jklu.edu.in",
-        instagram: "https://www.instagram.com/kray.tive?igsh=MWU4cHcxcnlsdnBmYw%3D%3D&utm_source=qr",
-        linkedin: "https://www.linkedin.com/in/k4rtiksingh?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-      }
-    },
-    { 
-      name: "Roshan Jangir", 
-      role: "Photography Core",
-      links: {
-        email: "mailto:roshanjangir@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/roshan-jangir-a614a430a?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-      }
-    },
-    { name: "Aadhya Mittal", role: "Events Core" },
-    { 
-      name: "Devansh Srivastava", 
-      role: "Events Core",
-      links: {
-        email: "mailto:devansh@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/devansh-srivastava-vk18"
-      }
-    },
-    { name: "Jheel Jain", role: "Events Core" },
-    { 
-      name: "Satvik Agrawal", 
-      role: "Internal Arrangements Core",
-      links: {
-        email: "mailto:satvikagrawal@jklu.edu.in",
-        instagram: "https://www.instagram.com/satvik__oo7_/",
-        linkedin: "https://www.linkedin.com/in/satvik-agrawal1104/",
-        github: "https://github.com/Satvik1131"
-      }
-    },
-    { 
-      name: "Ashmit Sharma", 
-      role: "Internal Arrangements Core",
-      links: {
-        email: "mailto:asmitsharma@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/ashmit-sharma-63414b3b4?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-      }
-    },
-    { 
-      name: "Kunal Kasliwal", 
-      role: "Transport Core",
-      links: {
-        email: "mailto:kunalkasliwal@jklu.edu.in",
-        instagram: "https://www.instagram.com/kunalkasliwal14",
-        linkedin: "https://www.linkedin.com/in/kunalkasliwal?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-      }
-    },
-    { 
-      name: "Manan Lala", 
-      role: "Transport Core",
-      links: {
-        email: "mailto:mananlala@jklu.edu.in",
-        instagram: "https://www.instagram.com/mananlala16?igsh=azZ3aGlvcnc0aGlh",
-        linkedin: "https://www.linkedin.com/in/manan-lala-a3a094320?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-      }
-    },
-    { 
-      name: "Aditya Nayak", 
-      role: "Social Media Core",
-      links: {
-        email: "mailto:adityanayak@jklu.edu.in",
-        instagram: "https://www.instagram.com/_nayak_1913/",
-        linkedin: "https://www.linkedin.com/in/adityanayak13",
-        github: "https://github.com/AdityaNayak13"
-      }
-    },
-    { 
-      name: "Aryan Gupta", 
-      role: "Social Media Core",
-      links: {
-        email: "mailto:aryangupta2024@jklu.edu.in",
-        instagram: "https://www.instagram.com/itz_aryan_30",
-        linkedin: "https://www.linkedin.com/in/aryan-gupta-30dec2006"
-      }
-    },
-    { 
-      name: "Ashlesha Sharma", 
-      role: "Prize & Certificates Core",
-      links: {
-        email: "mailto:ashleshasharma@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/ashlesha-sharma?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-      }
-    },
-    { 
-      name: "Ambika Dalmia", 
-      role: "Hospitality Core",
-      links: {
-        email: "mailto:ambikadalmia@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/ambika-dalmia-310762247?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-      }
-    },
-    { 
-      name: "Khushi Soni", 
-      role: "Hospitality Core",
-      links: {
-        email: "mailto:khushisoni@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/khushi-soni--ks0906"
-      }
-    },
-    { 
-      name: "Naman Shukla", 
-      role: "Stage & Venue Core",
-      links: {
-        email: "mailto:namanshukla@jklu.edu.in",
-        instagram: "https://www.instagram.com/heyyynaman?igsh=MWJtOTdoeW5kM3J4eg%3D%3D&utm_source=qr",
-        linkedin: "https://www.linkedin.com/in/naman-shukla-87ba40325?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-      }
-    },
-    { 
-      name: "Diksha Shekhawat", 
-      role: "Stage & Venue Core",
-      links: {
-        email: "mailto:dikshashekhawat@jklu.edu.in",
-        linkedin: "https://www.linkedin.com/in/diksha-shekhawat-082643322/"
-      }
-    },
-    { name: "Jayash Gahlot", role: "Registrations Core" },
-    { 
-      name: "Ankit Joshi", 
-      role: "Registrations Core",
-      links: {
-        email: "mailto:ankitjoshi@jklu.edu.in",
-        instagram: "https://www.instagram.com/pandat.02/",
-        github: "https://github.com/ankit1439"
-      }
-    },
-    { name: "Gaurang Tak", role: "Sponsorship & Promotions Core" },
-    { 
-      name: "Daksh Kumar", 
-      role: "Anchoring Core",
-      links: {
-        email: "mailto:dakshkumar@jklu.edu.in",
-        instagram: "https://www.instagram.com/dakshkkumar",
-        linkedin: "https://www.linkedin.com/in/dakshkkumar",
-        github: "https://github.com/dakshkkumar"
-      }
-    },
-    { 
-      name: "Laksh Sharma", 
-      role: "Anchoring Core",
-      links: {
-        email: "mailto:lakshsharma@jklu.edu.in",
-        instagram: "https://www.instagram.com/lksh.jpeg?igsh=MXB3MXh6MWg1bHB0aw==",
-        linkedin: "https://www.linkedin.com/in/laksh-sharma25?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-      }
-    },
-  ];
-
-const TEAM_IMAGES: Record<string, string> = {
-  "Abhirama Shreyas": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084232/sabrang-2026/team/abhirama-shreyas.png",
-  "Aditya Nayak": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084234/sabrang-2026/team/aditya-nayak.png",
-  "Ambika Dalmia": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084235/sabrang-2026/team/ambika-dalmia.png",
-  "Ankit Joshi": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084236/sabrang-2026/team/ankit-joshi.png",
-  "Anushka Pathak": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084237/sabrang-2026/team/anushka-pathak.png",
-  "Aryan Gupta": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084238/sabrang-2026/team/aryan-gupta.png",
-  "Ashlesha Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084239/sabrang-2026/team/ashlesha-sharma.png",
-  "Ashmit Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084240/sabrang-2026/team/ashmit-sharma.png",
-  "Daksh Kumar": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084243/sabrang-2026/team/daksh-kumar.png",
-  "Devam Gupta": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084750/devam-gupta.jpg",
-  "Devansh Srivastava": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084245/sabrang-2026/team/devansh-srivastava.png",
-  "Diksha Shekhawat": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084246/sabrang-2026/team/diksha-shekhawat.png",
-  "Gurseerat Kaur": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084247/sabrang-2026/team/gurseerat-kaur.jpg",
-  "Kartik Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084249/sabrang-2026/team/kartik-singh.png",
-  "Kartik Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084250/sabrang-2026/team/kartik-sharma.jpg",
-  "Khushi Soni": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084251/sabrang-2026/team/khushi-soni.png",
-  "Kunal Kasliwal": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084252/sabrang-2026/team/kunal-kasliwal.png",
-  "Laksh Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084253/sabrang-2026/team/laksh-sharma.png",
-  "Manan Lala": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084254/sabrang-2026/team/manan-lala.png",
-  "Naman Shukla": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084255/sabrang-2026/team/naman-shukla.png",
-  "Richa Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084257/sabrang-2026/team/richa-sharma.png",
-  "Rishika Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084258/sabrang-2026/team/rishika-singh.png",
-  "Roshan Jangir": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084259/sabrang-2026/team/roshan-jangir.png",
-  "Satvik Agrawal": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084261/sabrang-2026/team/satvik-agrawal.png",
-  "Saumya Puri": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084262/sabrang-2026/team/saumya-puri.png",
-  "Vice Chancellor": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084263/sabrang-2026/team/vice-chancellor.png",
-};
-
   function getMemberImage(name: string): string {
     return (
       TEAM_IMAGES[name] ||
@@ -284,11 +48,11 @@ const TEAM_IMAGES: Record<string, string> = {
     );
   }
 
-  const carouselMembers = rawMembers.map((member) => ({
+  const carouselMembers = TEAM_MEMBERS.map((member) => ({
     image: getMemberImage(member.name),
     name: member.name,
     role: member.role,
-    links: (member as any).links,
+    links: member.links,
   }));
 
   return (
