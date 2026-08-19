@@ -335,7 +335,7 @@ export default function FuturisticSchedule({ schedule }: { schedule: ScheduleDat
 
   return (
     <div 
-      className="relative min-h-screen text-white font-sans overflow-hidden selection:bg-violet-500/30"
+      className="relative min-h-screen text-white font-sans overflow-x-hidden selection:bg-violet-500/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
     >
@@ -354,7 +354,6 @@ export default function FuturisticSchedule({ schedule }: { schedule: ScheduleDat
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
           >
-            <div className="text-[10px] font-mono tracking-widest text-violet-400 mb-4">SABRANG 26 / EVENT SYSTEM</div>
             <h1 className="text-4xl md:text-6xl lg:text-[80px] font-black tracking-tighter text-white mb-8" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               SCHEDULE
             </h1>
@@ -401,14 +400,6 @@ export default function FuturisticSchedule({ schedule }: { schedule: ScheduleDat
 
       </main>
 
-      {/* Decorative Overlays */}
-      <div className="fixed bottom-6 left-6 text-[9px] font-mono text-white/20 tracking-widest pointer-events-none z-50">
-        26.9124° N / 75.7873° E
-      </div>
-      <div className="fixed bottom-6 right-6 text-[9px] font-mono text-white/20 tracking-widest pointer-events-none z-50 flex items-center gap-2">
-        <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
-        SYSTEM ACTIVE
-      </div>
 
       <style>{`
         @keyframes streak {

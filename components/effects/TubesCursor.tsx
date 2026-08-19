@@ -184,8 +184,12 @@ export default function TubesCursor() {
           bubbles: true,
           cancelable: true,
         };
-        canvas.dispatchEvent(new PointerEvent("pointermove", eventInit));
-        canvas.dispatchEvent(new MouseEvent("mousemove", eventInit));
+        try {
+          canvas.dispatchEvent(new PointerEvent("pointermove", eventInit));
+          canvas.dispatchEvent(new MouseEvent("mousemove", eventInit));
+        } catch (e) {
+          // Ignore event dispatch errors
+        }
       }
     };
 
