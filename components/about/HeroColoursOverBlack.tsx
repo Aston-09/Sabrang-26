@@ -40,60 +40,100 @@ float fbm2(vec2 p) {
   return 0.65 * noise(p) + 0.35 * noise(p * 2.02 + 100.0);
 }
 
+// Violet, Purple, Blue, Indigo, Cyan & Fuchsia Spectrum Sequence
+vec3 getSabrangColor(float phase) {
+  float p = fract(phase);
+  
+  // 7 Spectrum stops focused on Violet, Purple, Indigo, Sapphire Blue & Cyber Cyan:
+  // 0: Deep Royal Violet      (#7C3AED)
+  // 1: Electric Orchid Purple (#9D4EDD)
+  // 2: Neon Fuchsia Violet    (#D946EF)
+  // 3: Deep Midnight Indigo   (#4338CA)
+  // 4: Electric Sapphire Blue (#2563EB)
+  // 5: Vivid Cyber Cyan       (#06B6D4)
+  // 6: Luminous Ice Blue      (#38BDF8)
+  vec3 c0 = vec3(0.486, 0.227, 0.929); // #7C3AED (Royal Violet)
+  vec3 c1 = vec3(0.616, 0.306, 0.867); // #9D4EDD (Electric Orchid Purple)
+  vec3 c2 = vec3(0.851, 0.275, 0.937); // #D946EF (Neon Fuchsia Violet)
+  vec3 c3 = vec3(0.263, 0.220, 0.792); // #4338CA (Deep Midnight Indigo)
+  vec3 c4 = vec3(0.145, 0.388, 0.922); // #2563EB (Electric Sapphire Blue)
+  vec3 c5 = vec3(0.024, 0.714, 0.831); // #06B6D4 (Vivid Cyber Cyan)
+  vec3 c6 = vec3(0.220, 0.741, 0.973); // #38BDF8 (Luminous Ice Blue)
+
+  float idx = p * 7.0;
+  float fIdx = floor(idx);
+  float blend = smoothstep(0.0, 1.0, fract(idx));
+
+  if (fIdx < 1.0) return mix(c0, c1, blend);
+  if (fIdx < 2.0) return mix(c1, c2, blend);
+  if (fIdx < 3.0) return mix(c2, c3, blend);
+  if (fIdx < 4.0) return mix(c3, c4, blend);
+  if (fIdx < 5.0) return mix(c4, c5, blend);
+  if (fIdx < 6.0) return mix(c5, c6, blend);
+  return mix(c6, c0, blend);
+}
+
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / min(uResolution.x, uResolution.y);
 
   // Smooth mouse interaction
-  vec2 mouseOffset = (uMouse - 0.5) * 0.20;
+  vec2 mouseOffset = (uMouse - 0.5) * 0.22;
   uv += mouseOffset * (1.0 - clamp(length(uv), 0.0, 1.0));
 
-  // Streamlined 2-step domain warping (high visual fidelity, 60% lower ALU load)
-  float t = uTime * 0.04;
+  // Fluid domain warping
+  float t = uTime * 0.05;
   vec2 q = vec2(
-    fbm2(uv * 1.3 + vec2(0.0, t)),
-    fbm2(uv * 1.3 + vec2(5.2, t * 0.8))
+    fbm2(uv * 1.15 + vec2(0.0, t)),
+    fbm2(uv * 1.15 + vec2(5.2, t * 0.8))
   );
 
   vec2 r = vec2(
-    fbm2(uv * 1.5 + 2.6 * q + vec2(1.7, t * 1.2 + 9.2)),
-    fbm2(uv * 1.5 + 2.6 * q + vec2(8.3, t + 2.8))
+    fbm2(uv * 1.35 + 2.4 * q + vec2(1.7, t * 1.1 + 9.2)),
+    fbm2(uv * 1.35 + 2.4 * q + vec2(8.3, t * 0.9 + 2.8))
   );
 
-  float f = fbm2(uv * 1.3 + 2.4 * r);
+  float f = fbm2(uv * 1.2 + 2.2 * r);
 
-  // Palette definitions
-  vec3 cDarkNavy     = mix(vec3(0.010, 0.040, 0.120), vec3(0.060, 0.012, 0.140), uIsPurple);
-  vec3 cMidnightBlue = mix(vec3(0.030, 0.120, 0.350), vec3(0.240, 0.050, 0.480), uIsPurple);
-  vec3 cDeepSapphire = mix(vec3(0.060, 0.320, 0.780), vec3(0.620, 0.160, 0.920), uIsPurple);
-  vec3 cElectricBlue = mix(vec3(0.020, 0.580, 1.000), vec3(0.850, 0.320, 1.000), uIsPurple);
-  vec3 cCyanGlow     = mix(vec3(0.000, 0.820, 0.980), vec3(1.000, 0.280, 0.850), uIsPurple);
-  vec3 cCosmicViolet = mix(vec3(0.080, 0.025, 0.220), vec3(0.150, 0.420, 0.950), uIsPurple);
+  // ── Smooth Temporal Color Progression (One by One across Sabrang Spectrum) ──
+  // Cycles through: Violet ➔ Blue ➔ Cyan ➔ Green ➔ Yellow ➔ Orange ➔ Crimson
+  float timeCycle = uTime * 0.07;
 
-  // Blend color layers
-  float t1 = clamp(q.x * 1.6 + 0.1, 0.0, 1.0);
-  float t2 = clamp(r.x * 1.5 + 0.1, 0.0, 1.0);
-  float t3 = clamp(q.y * 1.4, 0.0, 1.0);
+  // Primary dominant color across current phase
+  vec3 colorDominant = getSabrangColor(timeCycle);
+  // Next arriving color transitioning in through fluid streams
+  vec3 colorNext     = getSabrangColor(timeCycle + 0.14);
+  // Deep harmonizing undertone
+  vec3 colorUnder    = getSabrangColor(timeCycle - 0.10);
+  // Vibrant crest highlights & luminous sparks
+  vec3 colorSparks   = getSabrangColor(timeCycle + 0.28);
 
-  vec3 col = mix(cDarkNavy, cMidnightBlue, t1);
-  col = mix(col, cCosmicViolet, t3 * 0.35);
-  col = mix(col, cDeepSapphire, t2 * 0.95);
+  // Rich base ambient glow (ensures background is luminous and not very dark)
+  vec3 ambientBase = colorDominant * 0.22 + colorUnder * 0.12;
 
-  // Crest highlights along fluid currents
-  float crest = smoothstep(0.38, 0.65, sin(f * 4.2 + uTime * 0.18));
-  col = mix(col, cElectricBlue, crest * 0.85);
+  // Interweave fluid currents: Dominant morphs into Next along turbulence streams
+  float flowMix = clamp(q.x * 1.3 + r.y * 0.8 + 0.35, 0.0, 1.0);
+  vec3 fluidBody = mix(colorDominant, colorNext, flowMix);
 
-  // Luminous rim
-  float rim = smoothstep(0.52, 0.70, sin(f * 6.5 + uTime * 0.24));
-  col = mix(col, cCyanGlow, rim * 0.45);
+  // Secondary dynamic wave ribbons
+  float wave = smoothstep(0.25, 0.75, sin(f * 4.2 + q.y * 2.0 + t * 0.8) * 0.5 + 0.5);
+  vec3 col = mix(ambientBase, fluidBody, wave * 0.85 + 0.15);
 
-  // Density & center falloff
-  float cloudDensity = smoothstep(0.16, 0.70, f);
-  cloudDensity = cloudDensity * 1.35;
-  vec3 finalColor = mix(vec3(0.0), col, clamp(cloudDensity, 0.0, 1.0));
+  // Radiant ripple crests & luminous surface sparks
+  float crest = smoothstep(0.35, 0.72, sin(f * 5.8 + uTime * 0.20 + r.x * 2.6));
+  col = mix(col, colorSparks, crest * 0.55);
 
-  float dist = length(uv * vec2(0.80, 1.30));
-  float centerFade = smoothstep(0.15, 0.85, dist);
-  finalColor *= mix(0.60, 1.0, centerFade);
+  // Subtle center radial brilliance so center is luminous
+  float centerDist = length(uv * vec2(0.9, 1.1));
+  float centerGlow = smoothstep(1.2, 0.0, centerDist);
+  col += colorDominant * (centerGlow * 0.18);
+
+  // Fluid density mask with generous brightness floor (never pitch-black)
+  float cloudDensity = smoothstep(0.06, 0.65, f);
+  vec3 finalColor = mix(ambientBase * 0.7, col, clamp(cloudDensity * 1.25 + 0.20, 0.0, 1.0));
+
+  // Soft atmospheric edge vignette
+  float vignette = smoothstep(1.35, 0.25, centerDist);
+  finalColor *= mix(0.72, 1.0, vignette);
 
   gl_FragColor = vec4(finalColor, 1.0);
 }

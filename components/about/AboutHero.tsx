@@ -227,7 +227,7 @@ export default function AboutHero() {
                       display: "inline-block",
                       color: "#ffffff",
                       textShadow:
-                        "0 0 28px rgba(255, 255, 255, 0.85), 0 0 50px rgba(56, 189, 248, 0.55), 0 4px 20px rgba(0,0,0,0.9)",
+                        "0 0 28px rgba(255, 255, 255, 0.9), 0 0 45px rgba(168, 85, 247, 0.6), 0 0 70px rgba(56, 189, 248, 0.4), 0 4px 20px rgba(0,0,0,0.9)",
                       transformStyle: "preserve-3d",
                       backfaceVisibility: "hidden",
                       willChange: "transform, opacity",
