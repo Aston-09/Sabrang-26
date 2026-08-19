@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "JKLU Annual Fest",
     "College Fest Jaipur 2026",
     "Cultural Fest Jaipur",
-    "Cultural Fest JKLU",
+    "Technical Fest JKLU",
     "Sabrang Event Registration",
     "Panache Runway JKLU",
     "Step-Up Dance Battle",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SABRANG 2026 | Sabrang JKLU | JK Lakshmipat University Fest",
     description:
-      "SABRANG 2026 - JK Lakshmipat University's premier annual cultural fest. Experience Sabrang JKLU with star-studded nights and thrilling competitions.",
+      "SABRANG 2026 - JK Lakshmipat University's premier annual fest. Experience Sabrang JKLU with star-studded nights and thrilling competitions.",
     url: "https://sabrang.jklu.edu.in",
     siteName: "Sabrang 2026 - JKLU",
     type: "website",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SABRANG 2026 | Sabrang JKLU | JK Lakshmipat University Fest",
     description:
-      "SABRANG 2026 - JK Lakshmipat University's premier annual cultural fest.",
+      "SABRANG 2026 - JK Lakshmipat University's premier annual fest.",
     images: ["https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060370/sabrang-2026/sabrang-logo/sabrang-logo.png"],
   },
 };
@@ -55,7 +55,7 @@ const festivalEventSchema = {
   name: "Sabrang 2026",
   alternateName: ["Sabrang JKLU 2026", "Sabrang JKLU", "JKLU Fest 2026"],
   description:
-    "JK Lakshmipat University's premier annual cultural festival featuring pro-shows, flagship competitions, dance battles, and live concerts.",
+    "JK Lakshmipat University's premier annual cultural and technical festival featuring pro-shows, flagship competitions, dance battles, and live concerts.",
   url: "https://sabrang.jklu.edu.in",
   startDate: "2026-10-23T09:00:00+05:30",
   endDate: "2026-10-25T22:00:00+05:30",
@@ -85,7 +85,7 @@ const festivalEventSchema = {
     "@type": "Audience",
     audienceType: "College Students",
   },
-  image: ["https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060370/sabrang-2026/sabrang-logo/sabrang-logo.png"],
+  image: ["https://sabrang.jklu.edu.in/sabrang-logo/sabrang-logo.png"],
   offers: {
     "@type": "Offer",
     url: "https://sabrang.jklu.edu.in/register",
@@ -110,9 +110,9 @@ const breadcrumbSchema = {
 };
 
 const summitImages = [
-  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060358/sabrang-2026/menu-scroll-covers/panache-runway.png",
-  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060359/sabrang-2026/menu-scroll-covers/sabrang-live.png",
-  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060360/sabrang-2026/menu-scroll-covers/step-up.jpg"
+  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060183/sabrang-2026/about/panache-runway.png",
+  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060184/sabrang-2026/about/sabrang-live.png",
+  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060185/sabrang-2026/about/step-up.jpg"
 ];
 
 const summitNames = [
@@ -123,7 +123,7 @@ const summitNames = [
 
 const summitBriefs = [
   "The ultimate fashion showdown. Assert dominance on the runway with style that speaks volumes.",
-  "Pure sonic warfare under the open sky. The battle of the bands: raw, unfiltered, electric.",
+  "Pure sonic warfare under the open sky. The battle of the bands — raw, unfiltered, electric.",
   "Premier solo dance showdown. Technical mastery, freestyle finesse, and electric expression."
 ];
 
