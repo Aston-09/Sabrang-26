@@ -197,12 +197,12 @@ export function CoreSpectrumsSection() {
 const OP_SPECS = [
   {
     num: "01",
-    stat: "50–60+",
+    stat: "50-60+",
     keyword: "COLLEGES NATIONALLY",
     accent: "#22d3ee",
     role: "National Turnout",
-    details: "Over 2,000+ registered delegates and university teams from 50–60+ colleges across India descending on Jaipur for 3 days of multi-disciplinary rivalry.",
-    tags: ["50–60+ COLLEGES", "2,000+ DELEGATES", "3 DAYS DURATION"],
+    details: "Over 2,000+ registered delegates and university teams from 50-60+ colleges across India descending on Jaipur for 3 days of multi-disciplinary rivalry.",
+    tags: ["50-60+ COLLEGES", "2,000+ DELEGATES", "3 DAYS DURATION"],
   },
   {
     num: "02",

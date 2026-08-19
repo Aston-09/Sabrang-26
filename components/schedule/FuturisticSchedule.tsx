@@ -365,7 +365,7 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
               SCHEDULE
             </h1>
             <p className="text-violet-400/80 font-mono text-xs sm:text-sm tracking-[0.3em] uppercase">
-              23 – 25 OCTOBER 2026
+              23 - 25 OCTOBER 2026
             </p>
           </motion.div>
         </div>

@@ -3,7 +3,7 @@ import FAQClient from "./FAQClient";
 import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "FAQ – Sabrang 2026",
+  title: "FAQ | Sabrang 2026",
   description:
     "Frequently asked questions regarding registrations, pass pickup, event slots, accommodation, and venue guidelines for Sabrang 2026 at JKLU Jaipur.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://sabrang.jklu.edu.in/faq" },
   openGraph: {
-    title: "FAQ – Sabrang 2026",
+    title: "FAQ | Sabrang 2026",
     description:
       "Find answers to common questions about Sabrang 2026 registrations, passes, schedules, accommodation, and venue guidelines.",
     url: "https://sabrang.jklu.edu.in/faq",
@@ -42,7 +42,7 @@ const faqSchema = {
       name: "When is Sabrang 2026?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Sabrang 2026 is scheduled for October 23–25, 2026, at the JK Lakshmipat University campus, Ajmer Road, Jaipur.",
+        text: "Sabrang 2026 is scheduled for October 23 - 25, 2026, at the JK Lakshmipat University campus, Ajmer Road, Jaipur.",
       },
     },
     {
@@ -58,7 +58,7 @@ const faqSchema = {
       name: "Where is the venue for Sabrang 2026?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Sabrang 2026 takes place on the campus of JK Lakshmipat University, near Mahindra SEZ, P.O. Mahapura, Ajmer Road, Jaipur, Rajasthan – 302026.",
+        text: "Sabrang 2026 takes place on the campus of JK Lakshmipat University, near Mahindra SEZ, P.O. Mahapura, Ajmer Road, Jaipur, Rajasthan 302026.",
       },
     },
     {

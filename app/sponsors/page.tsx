@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     canonical: "https://sabrang.jklu.edu.in/sponsors",
   },
   openGraph: {
-    title: "Sponsors & Partners – Sabrang 2026 | JKLU",
+    title: "Sponsors & Partners | Sabrang 2026 | JKLU",
     description:
       "Meet the corporate sponsors and partners powering Sabrang 2026 at JK Lakshmipat University.",
     url: "https://sabrang.jklu.edu.in/sponsors",

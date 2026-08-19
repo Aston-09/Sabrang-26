@@ -3,7 +3,7 @@ import ContactClient from "./ContactClient";
 import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Contact Us – Sabrang 2026 | JKLU",
+  title: "Contact Us | Sabrang 2026 | JKLU",
   description:
     "Get in touch with the Sabrang 2026 organizing team. Reach out to our organizing heads or send an email to sabrang@jklu.edu.in for event queries, sponsorship, or media.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     canonical: "https://sabrang.jklu.edu.in/contact",
   },
   openGraph: {
-    title: "Contact Us – Sabrang 2026 | JKLU",
+    title: "Contact Us | Sabrang 2026 | JKLU",
     description:
       "Connect with the Sabrang 2026 organizing heads and festival committee at JKLU.",
     url: "https://sabrang.jklu.edu.in/contact",

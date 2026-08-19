@@ -404,7 +404,7 @@ export default function CinematicPreview({ slides }: { slides: PreviewSlide[] })
       onKeyDown={(e) => e.key === "Enter" && setExpanded((v) => !v)}
       role="button"
       tabIndex={0}
-      aria-label={`${s.title.replace(/\n/g, " ")} — ${expanded ? "close" : "expand"}`}
+      aria-label={`${s.title.replace(/\n/g, " ")}: ${expanded ? "close" : "expand"}`}
       className="relative w-full aspect-[4/3] sm:aspect-video overflow-hidden rounded-2xl sm:rounded-3xl bg-[#04070b] cursor-pointer select-none isolate"
       style={{ boxShadow: "0 40px 120px -30px rgba(0,0,0,0.95)" }}
     >

@@ -3,7 +3,7 @@ import RegisterClient from "./RegisterClient";
 import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Register & Passes – Sabrang 2026",
+  title: "Register & Passes | Sabrang 2026",
   description:
     "Register online for Sabrang 2026 events, pro-show entry passes, fashion shows, dance battles, and band jam competitions at JKLU.",
   keywords: [
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://sabrang.jklu.edu.in/register" },
   openGraph: {
-    title: "Register & Passes – Sabrang 2026",
+    title: "Register & Passes | Sabrang 2026",
     description:
       "Create your account and register for Sabrang 2026 flagship competitions and pro-shows.",
     url: "https://sabrang.jklu.edu.in/register",

@@ -123,7 +123,7 @@ const summitNames = [
 
 const summitBriefs = [
   "The ultimate fashion showdown. Assert dominance on the runway with style that speaks volumes.",
-  "Pure sonic warfare under the open sky. The battle of the bands — raw, unfiltered, electric.",
+  "Pure sonic warfare under the open sky. The battle of the bands: raw, unfiltered, electric.",
   "Premier solo dance showdown. Technical mastery, freestyle finesse, and electric expression."
 ];
 

@@ -3,7 +3,7 @@ import TeamClient from "./TeamClient";
 import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Student Organizing Team – Sabrang 2026",
+  title: "Student Organizing Team | Sabrang 2026",
   description:
     "Meet the student-led Organizing Heads and Core Committees of JK Lakshmipat University behind Sabrang 2026.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://sabrang.jklu.edu.in/team" },
   openGraph: {
-    title: "Student Organizing Team – Sabrang 2026",
+    title: "Student Organizing Team | Sabrang 2026",
     description:
       "Meet the Organizing Heads and Core Committees behind Sabrang 2026 at JKLU.",
     url: "https://sabrang.jklu.edu.in/team",

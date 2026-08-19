@@ -573,7 +573,7 @@ export default function HomeClient() {
           <div className="mt-12 sm:mt-20 flex items-center justify-center gap-3 sm:gap-5">
             <div className="w-8 sm:w-16 h-px bg-white/15" />
             <span className="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] text-white/25 uppercase font-light">
-              October 23–25, 2026
+              October 23 - 25, 2026
             </span>
             <div className="w-8 sm:w-16 h-px bg-white/15" />
           </div>

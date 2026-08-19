@@ -3,7 +3,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import FuturisticSchedule, { ScheduleData } from "@/components/schedule/FuturisticSchedule";
 
 export const metadata: Metadata = {
-  title: "Event Schedule – Sabrang 2026",
+  title: "Event Schedule | Sabrang 2026",
   description:
     "Complete 3-day timeline and event schedule for Sabrang 2026 at JK Lakshmipat University. Track workshops, prelims, finals, and pro-shows from October 23 to 25, 2026.",
   keywords: [
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://sabrang.jklu.edu.in/schedule" },
   openGraph: {
-    title: "Event Schedule – Sabrang 2026",
+    title: "Event Schedule | Sabrang 2026",
     description: "Complete 3-day event timeline for Sabrang 2026 at JKLU (Oct 23-25, 2026).",
     url: "https://sabrang.jklu.edu.in/schedule",
     siteName: "Sabrang 2026 - JKLU",

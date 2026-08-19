@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     canonical: "https://sabrang.jklu.edu.in/gallery",
   },
   openGraph: {
-    title: "Gallery – Sabrang 2026 | JKLU Cultural Fest",
+    title: "Gallery | Sabrang 2026 | JKLU Cultural Fest",
     description:
       "Explore photos and memorable highlights from Sabrang 2026 flagship events and cultural performances.",
     url: "https://sabrang.jklu.edu.in/gallery",
