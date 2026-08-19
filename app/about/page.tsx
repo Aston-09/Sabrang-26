@@ -164,7 +164,7 @@ export default function AboutPage() {
             <div className="text-center space-y-3 max-w-2xl mx-auto">
               <h2
                 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight"
-                style={{ fontFamily: '"Syne", "Outfit", "Inter", sans-serif' }}
+                style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
               >
                 Signature Showdowns
               </h2>

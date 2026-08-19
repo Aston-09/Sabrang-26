@@ -29,6 +29,7 @@ interface CarouselItemProps {
   item: CarouselItemData;
   isMobile?: boolean;
   onHoverChange?: (isHovered: boolean) => void;
+  hasDraggedRef?: React.RefObject<boolean>;
 }
 
 const CarouselItem = ({
@@ -40,6 +41,7 @@ const CarouselItem = ({
   item,
   isMobile = false,
   onHoverChange,
+  hasDraggedRef,
 }: CarouselItemProps) => {
   const $root = useRef<THREE.Group>(null);
   const [hover, setHover] = useState(false);
@@ -98,6 +100,7 @@ const CarouselItem = ({
     <group
       ref={$root}
       onClick={() => {
+        if (hasDraggedRef?.current) return;
         setActivePlane(index);
       }}
       onPointerEnter={(e) => {

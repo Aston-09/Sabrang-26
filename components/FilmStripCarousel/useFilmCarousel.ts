@@ -209,6 +209,20 @@ export function useFilmCarousel(
     [sim]
   );
 
+  // Hard-reset the simulation to frame 0. Called synchronously when the menu
+  // reopens so the strip always starts at the first project, never at whatever
+  // position the user left it at last time.
+  const reset = useCallback(() => {
+    sim.position = 0;
+    sim.target = 0;
+    sim.velocity = 0;
+    sim.mode = 'snap';
+    sim.pointerId = -1;
+    sim.dragged = false;
+    activeRef.current = 0;
+    setActiveIndex(0);
+  }, [sim]);
+
   // Advance exactly one frame. Chaining off `target` rather than `position`
   // while snapping is what makes repeated calls additive instead of racing the
   // spring — two fast wheel notches land two frames along, never one or three.
@@ -227,6 +241,7 @@ export function useFilmCarousel(
     step,
     activeIndex,
     activeRef,
+    reset,
     goToNearest,
     glideBy,
     next: useCallback(() => shift(1), [shift]),

@@ -120,9 +120,6 @@ export default function FilmStrip({
   );
   useEffect(
     () => () => {
-      assets.filmTex.map.dispose();
-      assets.filmTex.bump.dispose();
-      assets.shadowTex.dispose();
       assets.shadowGeo.dispose();
       assets.imageGeo.dispose();
       assets.borderGeo.dispose();

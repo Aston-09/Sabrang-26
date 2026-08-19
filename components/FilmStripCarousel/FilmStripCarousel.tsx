@@ -5,7 +5,7 @@
 //   loading               — swaps the pagination row for an inline loading state
 //   onProjectSelect       — fired when the cinematic expansion completes
 //   onActiveProjectChange — fired when the centred project changes
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import FilmStrip, { type ExpandState } from './FilmStrip';
 import Environment from './Environment';
@@ -54,6 +54,7 @@ function usePrefersReducedMotion(): boolean {
 export interface FilmStripCarouselProps {
   projects: Project[];
   loading?: boolean;
+  active?: boolean;
   onProjectSelect?: (project: Project) => void;
   onActiveProjectChange?: (index: number, project: Project) => void;
 }
@@ -61,6 +62,7 @@ export interface FilmStripCarouselProps {
 export default function FilmStripCarousel({
   projects,
   loading = false,
+  active = true,
   onProjectSelect,
   onActiveProjectChange,
 }: FilmStripCarouselProps) {
@@ -74,6 +76,7 @@ export default function FilmStripCarousel({
     step,
     activeIndex,
     activeRef,
+    reset,
     goToNearest,
     glideBy,
     next,
@@ -85,6 +88,19 @@ export default function FilmStripCarousel({
   const introRef = useRef(0);
   const frameClickFlag = useRef(false);
   const pendingRef = useRef<number | null>(null);
+
+  // Reset intro AND carousel position synchronously (before paint) every time
+  // the menu opens. useLayoutEffect fires before the browser commits the frame,
+  // so the Canvas never renders a "already settled" state on re-open.
+  useLayoutEffect(() => {
+    if (active) {
+      reset();
+      introRef.current = 0;
+      expandRef.current.index = null;
+      expandRef.current.p = 0;
+    }
+  }, [active, reset]);
+
 
   const cancelExpand = useCallback(() => {
     expandRef.current.index = null;
@@ -167,7 +183,7 @@ export default function FilmStripCarousel({
 
   useEffect(() => {
     const el = wrapRef.current;
-    if (!el) return;
+    if (!el || !active) return;
     const stepper = createWheelStepper(window.innerHeight);
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -176,7 +192,7 @@ export default function FilmStripCarousel({
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [glideBy, cancelExpand]);
+  }, [active, glideBy, cancelExpand]);
 
   const prevAndCancel = useCallback(() => { cancelExpand(); prev(); }, [cancelExpand, prev]);
   const nextAndCancel = useCallback(() => { cancelExpand(); next(); }, [cancelExpand, next]);
@@ -185,7 +201,7 @@ export default function FilmStripCarousel({
     [cancelExpand, goToCinematic]
   );
 
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(true);
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -195,14 +211,17 @@ export default function FilmStripCarousel({
       <div
         ref={wrapRef}
         className="fsc-canvas relative"
-        {...handlers}
-        onPointerMove={onWrapPointerMove}
-        onClick={onWrapClick}
+        style={{ pointerEvents: active ? 'auto' : 'none' }}
+        {...(active ? handlers : {})}
+        onPointerMove={active ? onWrapPointerMove : undefined}
+        onClick={active ? onWrapClick : undefined}
       >
         {mounted && (
           <Canvas
+            frameloop={active ? "always" : "never"}
+            style={{ pointerEvents: active ? 'auto' : 'none' }}
             dpr={[1, 1.25]}
-            gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}
+            gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
             camera={{ position: [0, 0, bp.cameraZ], fov: bp.fov }}
             onCreated={({ gl }) => {
               gl.domElement?.addEventListener('webglcontextlost', (e) => e.preventDefault());

@@ -141,17 +141,18 @@ export default function HomeClient({
           ref={previewRef}
           className="absolute right-1/2 translate-x-1/2 lg:right-[6%] lg:translate-x-0 top-[10%] lg:top-1/2 lg:-translate-y-1/2 w-[85vw] lg:w-[28vw] lg:max-w-[520px] lg:min-w-[420px] h-[30vh] lg:h-auto lg:aspect-[4/5] rounded-[24px] lg:rounded-[48px] overflow-hidden border border-white/10 z-20 shadow-[0_40px_100px_rgba(var(--color-black-rgb),0.7)] transition-all duration-1000 ease-out opacity-0 translate-y-12 scale-95 pointer-events-none"
         >
-           <Image 
-             src={summitImages[currentSummit] || summitImages[0]}
-             alt={summitNames[currentSummit]}
-             fill
-             className="object-cover animate-fade-in transition-opacity duration-500"
-             sizes="(max-width: 1024px) 85vw, 30vw"
-             priority={currentSummit === 0}
-             style={{ 
-               filter: 'contrast(1.1) brightness(0.8)',
-             }}
-           />
+            <Image 
+              src={summitImages[currentSummit] || summitImages[0]}
+              alt={summitNames[currentSummit]}
+              fill
+              className="object-cover animate-fade-in transition-opacity duration-500"
+              sizes="(max-width: 1024px) 85vw, 30vw"
+              priority={true}
+              loading="eager"
+              style={{ 
+                filter: 'contrast(1.1) brightness(0.8)',
+              }}
+            />
            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
            
            {/* Details Layer */}

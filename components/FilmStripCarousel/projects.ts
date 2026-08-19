@@ -1,5 +1,6 @@
 import type { Project } from './types';
-import { useTexture } from '@react-three/drei';
+import { preloadAllTextures } from './FilmFrame';
+import { createFilmTextures, createShadowTexture } from './FilmMaterial';
 
 // The site's nav links expressed as film-strip projects.
 export const NAV_PROJECTS: Project[] = [
@@ -61,7 +62,7 @@ export const NAV_PROJECTS: Project[] = [
   },
   { 
     id: 'team', 
-    title: 'Our Team', 
+    title: 'Team', 
     category: 'The Crew', 
     description: 'The people behind the festival.', 
     image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084250/sabrang-2026/team/kartik-sharma.jpg", 
@@ -85,13 +86,19 @@ export const NAV_PROJECTS: Project[] = [
   },
 ];
 
-// Preload all reel textures into GPU cache ahead of time
+// Preload all reel textures and warm up canvas textures during idle time
 if (typeof window !== 'undefined') {
-  NAV_PROJECTS.forEach((p) => {
-    if (p.image) {
-      try {
-        useTexture.preload(p.image);
-      } catch {}
-    }
-  });
+  const warmup = () => {
+    try {
+      preloadAllTextures(NAV_PROJECTS.map((p) => p.image).filter(Boolean));
+      createFilmTextures();
+      createShadowTexture();
+    } catch {}
+  };
+
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(warmup, { timeout: 2000 });
+  } else {
+    setTimeout(warmup, 300);
+  }
 }

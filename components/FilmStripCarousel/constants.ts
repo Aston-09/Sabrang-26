@@ -148,10 +148,10 @@ export const STRIP_RECEDE = 1.3; // how far the rest of the strip drops back on 
 // damps 0→1; at lambda 4.5 it covers ~80% in the first 350ms and is visually
 // settled by ~0.9s — front-loaded, and quick enough that the menu never feels
 // like it is still arriving when the user wants to click.
-export const INTRO_LAMBDA = 4.5;
-export const INTRO_Z = 22; // how far back the strip starts, world units
-export const INTRO_SPIN = 2.3; // radians of unwind about the vertical axis
-export const INTRO_DISTORT = 1.5; // extra velocity-distortion during entrance
+export const INTRO_LAMBDA = 8.5;
+export const INTRO_Z = 3.5; // subtle depth arrival
+export const INTRO_SPIN = 0.35; // gentle initial diagonal unwind
+export const INTRO_DISTORT = 0.3; // subtle velocity-distortion during entrance
 
 // --- Cinematic camera ----------------------------------------------------
 // Deliberately tiny. The camera must read as "breathing with the object",

@@ -122,10 +122,20 @@ export default function AboutHero() {
 
       // 1. Tagline and manifesto fade out swiftly on scroll start (0.00 -> 0.25)
       if (tagline) {
-        tl.to(tagline, { opacity: 0, y: -20, duration: 0.25, ease: "power1.out" }, 0);
+        tl.fromTo(
+          tagline,
+          { opacity: 1, y: 0 },
+          { opacity: 0, y: -20, duration: 0.25, ease: "power1.out" },
+          0
+        );
       }
       if (manifesto) {
-        tl.to(manifesto, { opacity: 0, y: -20, duration: 0.25, ease: "power1.out" }, 0);
+        tl.fromTo(
+          manifesto,
+          { opacity: 1, y: 0 },
+          { opacity: 0, y: -20, duration: 0.25, ease: "power1.out" },
+          0
+        );
       }
 
       // 2. 3D Letters zoom through camera across the entire pin distance (0.05 -> 1.00)
@@ -205,7 +215,7 @@ export default function AboutHero() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "0.04em",
-                fontFamily: '"Syne", "Outfit", "Inter", sans-serif',
+                fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
                 fontWeight: 850,
                 fontSize: "clamp(2.6rem, 8.5vw, 7.5rem)",
                 letterSpacing: "-0.01em",
@@ -244,7 +254,6 @@ export default function AboutHero() {
           <p
             ref={taglineRef}
             style={{
-              opacity: 0,
               fontFamily: '"Inter", sans-serif',
               fontWeight: 600,
               fontSize: "clamp(0.65rem, 1.1vw, 0.85rem)",
@@ -264,7 +273,6 @@ export default function AboutHero() {
           <div
             ref={manifestoRef}
             className="max-w-2xl mt-4 pt-4 border-t border-white/10"
-            style={{ opacity: 0 }}
           >
             <p className="text-slate-300 text-sm sm:text-base md:text-lg font-light leading-relaxed">
               Sabrang is the annual cultural festival of JK Lakshmipat University, Jaipur, bringing together music, dance, fashion, art, and youth energy under one grand stage.

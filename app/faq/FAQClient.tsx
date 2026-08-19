@@ -4,8 +4,12 @@ import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import FaqParticleBackground from "@/components/ui/FaqParticleBackground";
+import FaqPatternBackground from "@/components/faq/FaqPatternBackground";
 import { FAQS as faqs } from "@/lib/constants";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 function FaqItem({ faq, index }: { faq: any; index: number }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,21 +19,21 @@ function FaqItem({ faq, index }: { faq: any; index: number }) {
       <motion.div 
         layout
         transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
-        className="group bg-neutral-900/50 backdrop-blur-xl border border-white/5 hover:border-indigo-500/30 rounded-2xl overflow-hidden shadow-xl"
+        className="group bg-black/40 backdrop-blur-xl border border-white/10 hover:border-white/30 rounded-2xl overflow-hidden shadow-xl transition-colors"
       >
       <motion.div 
         layout="position"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex justify-between items-center cursor-pointer p-5 md:p-6 hover:bg-indigo-500/10 transition-colors"
+        className="flex justify-between items-center cursor-pointer p-5 md:p-6 hover:bg-white/5 transition-colors"
       >
-        <motion.h3 layout="position" className="text-base md:text-lg font-bold text-white/90 group-hover:text-white pr-4 transition-colors">
+        <motion.h3 layout="position" className="text-base md:text-lg font-bold text-white pr-4 transition-colors">
           {faq.question}
         </motion.h3>
         <motion.span 
           layout="position"
           animate={{ rotate: isOpen ? 45 : 0 }}
           transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
-          className="text-xl md:text-2xl text-indigo-400 font-bold flex-shrink-0 bg-indigo-500/10 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center"
+          className="text-xl md:text-2xl text-white font-bold flex-shrink-0 bg-white/10 hover:bg-white/20 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-colors"
         >
           +
         </motion.span>
@@ -49,7 +53,7 @@ function FaqItem({ faq, index }: { faq: any; index: number }) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -10, opacity: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="px-5 md:px-6 pb-5 md:pb-6 text-sm md:text-base text-white/60 leading-relaxed border-t border-white/5 pt-4 bg-black/20"
+              className="px-5 md:px-6 pb-5 md:pb-6 text-sm md:text-base text-white/90 leading-relaxed border-t border-white/10 pt-4 bg-black/30"
             >
               {faq.answer}
             </motion.div>
@@ -124,8 +128,8 @@ export default function FAQClient() {
 
   return (
     <div className="relative min-h-screen py-16 px-4 sm:px-6 md:px-8 pb-24 overflow-x-hidden bg-transparent" ref={containerRef}>
-      {/* Dynamic Particle Interactive Background */}
-      <FaqParticleBackground />
+      {/* Dynamic Purple Cube Pattern Background */}
+      <FaqPatternBackground />
 
       <div className="relative z-10 max-w-4xl mx-auto space-y-12 md:space-y-16">
         {/* Hero Header */}
@@ -135,7 +139,10 @@ export default function FAQClient() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-white tracking-tight uppercase drop-shadow-lg">
+          <h1 
+            className="text-4xl sm:text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-white tracking-tight uppercase drop-shadow-lg"
+            style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
+          >
             FAQ
           </h1>
           <p className="text-sm sm:text-base md:text-xl text-white/70 max-w-2xl mx-auto font-medium px-4">

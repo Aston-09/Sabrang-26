@@ -55,7 +55,10 @@ export default function CreditsClient() {
         <span className="text-xs font-mono uppercase tracking-widest text-purple-400 font-bold">
           Sabrang 2026 Digital Platform
         </span>
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight uppercase">
+        <h1 
+          className="text-4xl md:text-6xl font-black text-white tracking-tight uppercase"
+          style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
+        >
           Tech Team Credits
         </h1>
         <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto">

@@ -243,76 +243,69 @@ export default function Carousel({ items, onActiveItemChange }: CarouselProps) {
     );
   });
 
-  /* Handle Wheel - Localized strictly to Carousel component */
-  const handleWheel = (e: any) => {
-    if (activePlane !== null) return;
-    const delta = isMobile
-      ? Math.abs(e.deltaY) > Math.abs(e.deltaX)
-        ? e.deltaY
-        : e.deltaX
-      : Math.abs(e.deltaY) > Math.abs(e.deltaX)
-        ? e.deltaY
-        : e.deltaX;
-    progress.current = progress.current + delta * speedWheel;
-  };
+  const hasDraggedRef = useRef(false);
+  const totalDragDistance = useRef(0);
 
-  /* Handle Down */
-  const handleDown = (e: any) => {
-    if (activePlane !== null) return;
-    isDown.current = true;
-    const clientX =
-      e.clientX ??
-      e.nativeEvent?.clientX ??
-      (e.touches && e.touches[0]?.clientX) ??
-      0;
-    const clientY =
-      e.clientY ??
-      e.nativeEvent?.clientY ??
-      (e.touches && e.touches[0]?.clientY) ??
-      0;
-    startPos.current = isMobile ? clientY : clientX;
-  };
-
-  /* Handle Up */
-  const handleUp = () => {
-    isDown.current = false;
-  };
-
-  /* Handle Move */
-  const handleMove = (e: any) => {
-    if (activePlane !== null || !isDown.current) return;
-    const clientX =
-      e.clientX ??
-      e.nativeEvent?.clientX ??
-      (e.touches && e.touches[0]?.clientX) ??
-      0;
-    const clientY =
-      e.clientY ??
-      e.nativeEvent?.clientY ??
-      (e.touches && e.touches[0]?.clientY) ??
-      0;
-    const currentPos = isMobile ? clientY : clientX;
-    const delta = currentPos - startPos.current;
-    if (delta !== 0) {
-      progress.current = progress.current + delta * speedDrag;
-      startPos.current = currentPos;
-    }
-  };
-
-  /* Global window pointer release listener so fast drags never stick */
+  /* Unified Pointer & Wheel Handling directly on the canvas DOM element */
   useEffect(() => {
-    const handleGlobalPointerUp = () => {
+    const dom = gl.domElement;
+    if (!dom) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (activePlane !== null) return;
+      isDown.current = true;
+      hasDraggedRef.current = false;
+      totalDragDistance.current = 0;
+      startPos.current = isMobile ? e.clientY : e.clientX;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (activePlane !== null || !isDown.current) return;
+      const currentPos = isMobile ? e.clientY : e.clientX;
+      const delta = currentPos - startPos.current;
+      totalDragDistance.current += Math.abs(delta);
+      if (totalDragDistance.current > 6) {
+        hasDraggedRef.current = true;
+      }
+      if (delta !== 0) {
+        progress.current = progress.current + delta * speedDrag;
+        startPos.current = currentPos;
+      }
+    };
+
+    const onPointerUp = () => {
       isDown.current = false;
+      setTimeout(() => {
+        hasDraggedRef.current = false;
+      }, 50);
     };
-    window.addEventListener("pointerup", handleGlobalPointerUp);
-    window.addEventListener("mouseup", handleGlobalPointerUp);
-    window.addEventListener("touchend", handleGlobalPointerUp);
+
+    const onWheel = (e: WheelEvent) => {
+      if (activePlane !== null) return;
+      const delta = isMobile
+        ? Math.abs(e.deltaY) > Math.abs(e.deltaX)
+          ? e.deltaY
+          : e.deltaX
+        : Math.abs(e.deltaY) > Math.abs(e.deltaX)
+          ? e.deltaY
+          : e.deltaX;
+      progress.current = progress.current + delta * speedWheel;
+    };
+
+    dom.addEventListener("pointerdown", onPointerDown, { passive: true });
+    dom.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    window.addEventListener("pointercancel", onPointerUp, { passive: true });
+
     return () => {
-      window.removeEventListener("pointerup", handleGlobalPointerUp);
-      window.removeEventListener("mouseup", handleGlobalPointerUp);
-      window.removeEventListener("touchend", handleGlobalPointerUp);
+      dom.removeEventListener("pointerdown", onPointerDown);
+      dom.removeEventListener("wheel", onWheel);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
     };
-  }, []);
+  }, [activePlane, gl.domElement, isMobile, speedDrag, speedWheel]);
 
   /* Click sync */
   useEffect(() => {
@@ -324,26 +317,6 @@ export default function Carousel({ items, onActiveItemChange }: CarouselProps) {
       progress.current = (activePlane / (items.length - 1)) * 100;
     }
   }, [activePlane, items.length, prevActivePlane]);
-
-  /* Render Plane Events */
-  const renderPlaneEvents = () => {
-    const vpW = viewport.width && Number.isFinite(viewport.width) && viewport.width > 0 ? viewport.width : 10;
-    const vpH = viewport.height && Number.isFinite(viewport.height) && viewport.height > 0 ? viewport.height : 10;
-    return (
-      <mesh
-        position={[0, 0, -0.01]}
-        onWheel={handleWheel}
-        onPointerDown={handleDown}
-        onPointerUp={handleUp}
-        onPointerMove={handleMove}
-        onPointerLeave={handleUp}
-        onPointerCancel={handleUp}
-      >
-        <planeGeometry args={[vpW, vpH]} />
-        <meshBasicMaterial transparent={true} opacity={0} />
-      </mesh>
-    );
-  };
 
   /* Render Slider */
   const renderSlider = () => {
@@ -366,6 +339,7 @@ export default function Carousel({ items, onActiveItemChange }: CarouselProps) {
               item={item}
               index={i}
               isMobile={isMobile}
+              hasDraggedRef={hasDraggedRef}
               onHoverChange={(hovered) => {
                 isCardHovered.current = hovered;
               }}
@@ -379,7 +353,6 @@ export default function Carousel({ items, onActiveItemChange }: CarouselProps) {
   return (
     <group>
       <Background />
-      {renderPlaneEvents()}
       {renderSlider()}
     </group>
   );

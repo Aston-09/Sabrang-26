@@ -11,11 +11,14 @@ export default function SponsorsClient() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 blur-[120px] pointer-events-none rounded-full" />
 
       <section className="relative z-10 text-center space-y-4 px-4">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight uppercase">
+        <h1 
+          className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight uppercase"
+          style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
+        >
           Past Partners
         </h1>
-        <p className="text-white/40 text-sm md:text-base max-w-md mx-auto font-light tracking-wide">
-          Proudly supported by leading national and global brands
+        <p className="text-white/60 text-sm md:text-base max-w-lg mx-auto font-light tracking-wide">
+          National and global brand collaborations
         </p>
       </section>
 

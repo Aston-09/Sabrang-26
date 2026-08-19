@@ -29,6 +29,7 @@ const HologramLogo = ({ sponsor, idx, total, scrollYProgress }: { sponsor: any, 
           src={sponsor.src}
           alt={sponsor.alt}
           fill
+          sizes="(max-width: 768px) 300px, 500px"
           className="object-contain mix-blend-screen"
           style={{
             filter: 'drop-shadow(3px 0px 0px rgba(219,39,119,0.8)) drop-shadow(-3px 0px 0px rgba(0,255,255,0.8)) drop-shadow(0 0 30px rgba(219,39,119,0.5))'

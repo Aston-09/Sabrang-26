@@ -64,6 +64,24 @@ function getPlaceholderTexture(): THREE.Texture {
   return defaultPlaceholder || new THREE.Texture();
 }
 
+export function preloadAllTextures(images: string[]): void {
+  if (typeof window === 'undefined') return;
+  const loader = getSharedLoader();
+  images.forEach((url) => {
+    if (!url || textureCache.has(url)) return;
+    loader.load(
+      url,
+      (loaded) => {
+        loaded.colorSpace = THREE.SRGBColorSpace;
+        coverFitTexture(loaded);
+        textureCache.set(url, loaded);
+      },
+      undefined,
+      () => {}
+    );
+  });
+}
+
 export default function FilmFrame({
   project,
   index,

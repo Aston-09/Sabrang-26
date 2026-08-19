@@ -316,15 +316,19 @@ function DayColumn({
    MAIN COMPONENT
 ────────────────────────────────────────────────────────────── */
 
-export default function FuturisticSchedule({ schedule }: { schedule: ScheduleData }) {
-  const [activeFilter, setActiveFilter] = useState("ALL");
-  const [hoveredCol, setHoveredCol] = useState<number | null>(null);
-  
-  // Parallax Mouse tracking for the entire container
+export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleData }) {
+  // Parallax Mouse tracking for subtle background movement
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const smoothMouseY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+
+  useEffect(() => {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const x = (e.clientX / window.innerWidth) - 0.5;
@@ -335,7 +339,7 @@ export default function FuturisticSchedule({ schedule }: { schedule: ScheduleDat
 
   return (
     <div 
-      className="relative min-h-screen text-white font-sans overflow-x-hidden selection:bg-violet-500/30"
+      className="fixed inset-0 w-screen h-screen overflow-hidden text-white font-sans selection:bg-violet-500/30 flex items-center justify-center p-4 sm:p-6"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
     >
@@ -345,58 +349,55 @@ export default function FuturisticSchedule({ schedule }: { schedule: ScheduleDat
 
 
       {/* ── MAIN CONTENT ── */}
-      <main className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-32" style={{ perspective: 2000 }}>
+      <main className="relative z-10 w-full max-w-[1200px] mx-auto flex flex-col items-center justify-center text-center">
         
         {/* Editorial Title */}
-        <div className="text-center mb-16 relative z-20">
+        <div className="text-center mb-8 relative z-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            transition={{ duration: 0.8 }}
           >
-            <h1 className="text-4xl md:text-6xl lg:text-[80px] font-black tracking-tighter text-white mb-8" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+            <h1 
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-black tracking-tight text-white mb-3 uppercase leading-none" 
+              style={{ fontFamily: 'var(--font-space-grotesk), "Syne", sans-serif' }}
+            >
               SCHEDULE
             </h1>
-            <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveFilter(cat)}
-                  className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-[0.15em] transition-all duration-300 border backdrop-blur-md ${
-                    activeFilter === cat
-                      ? "bg-violet-500/10 text-white border-violet-500/50 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
-                      : "bg-[#0a0b10]/50 text-white/40 border-white/5 hover:border-white/20 hover:text-white/80"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            <p className="text-violet-400/80 font-mono text-xs sm:text-sm tracking-[0.3em] uppercase">
+              23 – 25 OCTOBER 2026
+            </p>
           </motion.div>
         </div>
 
-        {/* 3-Column Desktop Grid / 1-Column Mobile */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 relative z-10" style={{ transformStyle: "preserve-3d" }}>
-          {schedule.map((day, idx) => {
-            const filteredEvents = day.events.filter(
-              (e) => activeFilter === "ALL" || e.category.toUpperCase() === activeFilter
-            );
+        {/* Revealing Soon Presentation Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative w-full max-w-xl bg-[#08090d]/80 border border-white/10 rounded-2xl p-10 sm:p-16 text-center backdrop-blur-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8),0_0_40px_rgba(139,92,246,0.1)]"
+        >
+          {/* Ambient Glows */}
+          <div 
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-violet-600/20 blur-3xl"
+          />
+          <div 
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-cyan-600/15 blur-3xl"
+          />
 
-            return (
-              <DayColumn
-                key={day.label}
-                day={day}
-                colIndex={idx}
-                filteredEvents={filteredEvents}
-                isHovered={hoveredCol === idx}
-                onHover={() => setHoveredCol(idx)}
-                onLeave={() => setHoveredCol(null)}
-                mouseX={smoothMouseX}
-                mouseY={smoothMouseY}
-              />
-            );
-          })}
-        </div>
+          {/* Main Statement */}
+          <h2
+            className="relative z-10 text-3xl sm:text-5xl md:text-6xl font-black uppercase text-white tracking-tight leading-none"
+            style={{
+              fontFamily: '"Syne", var(--font-space-grotesk), sans-serif',
+              textShadow: "0 0 30px rgba(255,255,255,0.7), 0 0 50px rgba(168,85,247,0.4)",
+            }}
+          >
+            REVEALING SOON
+          </h2>
+        </motion.div>
 
       </main>
 

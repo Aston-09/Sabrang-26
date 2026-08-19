@@ -519,11 +519,27 @@ export default function GalleryClient() {
 
   const targetCenterUv = useRef(new Vector2(0.5, 0.5));
 
+  // Native non-passive wheel listener attached to window ensures reliable scrolling
+  useEffect(() => {
+    if (isMobile) return;
+    const handleNativeWheel = (e: WheelEvent) => {
+      if (viewerOpenRef.current) return;
+      e.preventDefault();
+      const dy = e.deltaY;
+      const dx = e.deltaX;
+      tubeScrollTarget.current += dy * 0.005;
+      tubeSpinVelocity.current += dy * 0.007 + dx * 0.005;
+      if (dy !== 0) tubeNaturalDir.current = dy < 0 ? -1 : 1;
+    };
+    window.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleNativeWheel);
+  }, [isMobile]);
+
   const onWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
     if (viewerOpenRef.current) return;
     const dy = event.deltaY;
-    tubeScrollTarget.current += dy * 0.004;
-    tubeSpinVelocity.current += dy * 0.006;
+    tubeScrollTarget.current += dy * 0.005;
+    tubeSpinVelocity.current += dy * 0.007;
     if (dy !== 0) tubeNaturalDir.current = dy < 0 ? -1 : 1;
   }, []);
 
@@ -556,19 +572,19 @@ export default function GalleryClient() {
     if (viewerOpenRef.current) return;
 
     if (
-      Math.abs(event.clientX - dragStart.current.x) > 10 ||
-      Math.abs(event.clientY - dragStart.current.y) > 10
+      Math.abs(event.clientX - dragStart.current.x) > 6 ||
+      Math.abs(event.clientY - dragStart.current.y) > 6
     ) {
       pointerMovedRef.current = true;
     }
 
-    // Touch drag stands in for the wheel, feeding the same motion system.
+    // Touch and mouse drag feeding the motion system
     if (dragPointerId.current === event.pointerId) {
       const dy = dragLastY.current - event.clientY;
       const dx = dragStart.current.x - event.clientX;
       dragLastY.current = event.clientY;
-      tubeScrollTarget.current += dy * 0.0065;
-      tubeSpinVelocity.current += dy * 0.01 + (dx > 0 ? 0.006 : -0.006);
+      tubeScrollTarget.current += dy * 0.008;
+      tubeSpinVelocity.current += dy * 0.012 + (dx > 0 ? 0.008 : -0.008);
       if (dy !== 0) tubeNaturalDir.current = dy < 0 ? -1 : 1;
     }
 
@@ -582,13 +598,21 @@ export default function GalleryClient() {
   const onPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     pointerMovedRef.current = false;
     dragStart.current = { x: event.clientX, y: event.clientY };
-    if (event.pointerType === 'mouse' || viewerOpenRef.current) return;
+    if (viewerOpenRef.current) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
     dragPointerId.current = event.pointerId;
     dragLastY.current = event.clientY;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {}
   }, []);
 
-  const endDrag = useCallback(() => {
+  const endDrag = useCallback((event?: React.PointerEvent<HTMLDivElement>) => {
+    if (event && dragPointerId.current === event.pointerId) {
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {}
+    }
     dragPointerId.current = null;
   }, []);
 
@@ -605,7 +629,7 @@ export default function GalleryClient() {
   return (
     <div
       ref={containerRef}
-      className="relative h-screen w-screen overflow-hidden bg-black text-white select-none touch-none"
+      className="relative h-screen w-screen overflow-hidden bg-black text-white select-none touch-none cursor-grab active:cursor-grabbing"
       onWheel={onWheel}
       onPointerMove={onPointerMove}
       onPointerDown={onPointerDown}

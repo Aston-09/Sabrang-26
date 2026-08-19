@@ -39,16 +39,16 @@ export const ORGANIZING_HEADS: OrganizingHead[] = [
     image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084258/sabrang-2026/team/rishika-singh.png",
   },
   {
-    name: "Gurseerat Kaur",
-    phone: "+917678252871",
-    displayPhone: "+91 76782 52871",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122736/sabrang-2026/team/gurseerat-kaur.png",
-  },
-  {
     name: "Pratigya Bomb",
     phone: "+916264667506",
     displayPhone: "+91 62646 67506",
     image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122733/sabrang-2026/team/pratigya-bomb.png",
+  },
+  {
+    name: "Gurseerat Kaur",
+    phone: "+917678252871",
+    displayPhone: "+91 76782 52871",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122736/sabrang-2026/team/gurseerat-kaur.png",
   },
 ];
 
@@ -249,7 +249,7 @@ export const TEAM_IMAGES: Record<string, string> = {
   "Ashlesha Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084239/sabrang-2026/team/ashlesha-sharma.png",
   "Ashmit Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084240/sabrang-2026/team/ashmit-sharma.png",
   "Daksh Kumar": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084243/sabrang-2026/team/daksh-kumar.png",
-  "Devam Gupta": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084750/devam-gupta.jpg",
+  "Devam Gupta": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787165018/sabrang-2026/team/devam-gupta.png",
   "Devansh Srivastava": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084245/sabrang-2026/team/devansh-srivastava.png",
   "Diksha Shekhawat": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084246/sabrang-2026/team/diksha-shekhawat.png",
   "Gurseerat Kaur": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122736/sabrang-2026/team/gurseerat-kaur.png",
@@ -261,6 +261,7 @@ export const TEAM_IMAGES: Record<string, string> = {
   "Manan Lala": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084254/sabrang-2026/team/manan-lala.png",
   "Naman Shukla": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084255/sabrang-2026/team/naman-shukla.png",
   "Pratigya Bomb": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122733/sabrang-2026/team/pratigya-bomb.png",
+  "Rattan Gangadhar": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787164767/sabrang-2026/team/rattan-gangadhar.png",
   "Richa Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122739/sabrang-2026/team/richa-sharma.png",
   "Rishika Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084258/sabrang-2026/team/rishika-singh.png",
   "Roshan Jangir": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084259/sabrang-2026/team/roshan-jangir.png",
@@ -271,14 +272,14 @@ export const TEAM_IMAGES: Record<string, string> = {
 
 export const TEAM_MEMBERS: TeamMember[] = [
   // University Leadership & Mentors
-  { name: "Vice Chancellor", role: "Vice Chancellor" },
   { name: "Anushka Pathak", role: "Student Affairs" },
   { name: "Richa Sharma", role: "Student Affairs" },
   { name: "Rattan Gangadhar", role: "Student Affairs" },
+  { name: "Vice Chancellor", role: "Vice Chancellor" },
 
   // Organizing Heads
   { name: "Kartik Sharma", role: "Organizing Head" },
-  { name: "Gurseerat Kaur", role: "Organizing Head" },
+  { name: "Rishika Singh", role: "Organizing Head" },
   {
     name: "Pratigya Bomb",
     role: "Organizing Head",
@@ -287,7 +288,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
       linkedin: "https://www.linkedin.com/in/pratigya-bomb-295857349?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
     },
   },
-  { name: "Rishika Singh", role: "Organizing Head" },
+  { name: "Gurseerat Kaur", role: "Organizing Head" },
 
   // Tech & Support
   {

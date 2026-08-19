@@ -18,19 +18,12 @@ const FilmStripCarousel = dynamic(
   { ssr: false }
 );
 
-const SHELL = {
-  hidden: { opacity: 0, scale: 1.04 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { type: "spring" as const, stiffness: 260, damping: 28, mass: 0.8 },
-  },
-  exit: {
-    opacity: 0,
-    scale: 1.02,
-    transition: { duration: 0.18, ease: [0.4, 0, 1, 1] as const },
-  },
+const preloadFilmStrip = () => {
+  if (typeof window !== "undefined") {
+    import("@/components/FilmStripCarousel/FilmStripCarousel");
+  }
 };
+
 
 const PANEL = {
   hidden: {},
@@ -93,6 +86,16 @@ export default function Navbar() {
       if (timer) clearTimeout(timer);
     };
   }, [pathname, navLoading]);
+
+  // Kick off the dynamic chunk request immediately — the import is non-blocking
+  // and the browser will parse + cache it in the background well before the
+  // user has a chance to click MENU. 0ms means "next microtask" via setTimeout.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      preloadFilmStrip();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -165,43 +168,25 @@ export default function Navbar() {
             <Image
               src="https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060374/sabrang-2026/sabrang-logo/white_jklu_logo.png"
               alt="JKLU Logo"
-              width={46}
-              height={40}
-              className="h-8 md:h-10 w-auto object-contain drop-shadow-xl"
+              width={64}
+              height={56}
+              className="h-10 md:h-13.5 w-auto object-contain drop-shadow-xl"
             />
           </a>
 
           <button
             onClick={() => setIsOpen(!isOpen)}
+            onMouseEnter={preloadFilmStrip}
+            onPointerDown={preloadFilmStrip}
+            onTouchStart={preloadFilmStrip}
+            onFocus={preloadFilmStrip}
             aria-label="Toggle navigation menu"
             aria-expanded={isOpen}
             data-open={isOpen || undefined}
-            className="sm-toggle-btn"
-            style={{
-              position: "relative",
-              zIndex: 50,
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.6rem 0.4rem",
-              background: "transparent",
-              border: "none",
-              color: "#ffffff",
-              textShadow: "0 2px 12px rgba(0, 0, 0, 0.65)",
-              fontFamily: "'Space Mono', monospace",
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-            }}
+            className="cyber-menu-btn"
           >
-            <span>{isOpen ? "CLOSE" : "MENU"}</span>
-            {/* Drawn, not typed: these used to be ☰/✕ glyphs in 'Space Mono', a
-                font nothing here loads, so the icon rendered or vanished purely on
-                what the OS fallback happened to have. Bars morph via CSS off
-                data-open — see .sm-icon in StaggeredMenu.css. */}
-            <span className="sm-icon" aria-hidden>
+            <span className="relative z-10">{isOpen ? "CLOSE" : "MENU"}</span>
+            <span className="sm-icon relative z-10" aria-hidden>
               <span className="sm-icon-line" />
               <span className="sm-icon-line" />
               <span className="sm-icon-line" />
@@ -210,87 +195,89 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* ── Film strip: always mounted so the WebGL context is never cold-started.
+           The canvas is invisible and pointer-inactive when the menu is closed.
+           frameloop="never" means zero GPU work while hidden. ── */}
+      {role !== "admin" && (
+        <div
+          aria-hidden={!isOpen}
+          className={`fixed inset-0 z-40 bg-black transition-opacity duration-200 ease-out ${
+            isOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <FilmStripCarousel
+            projects={NAV_PROJECTS}
+            loading={navLoading}
+            active={isOpen}
+            onProjectSelect={handleProjectSelect}
+          />
+        </div>
+      )}
+
+      {/* ── User panel stagger — only needs to animate in/out ── */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !loading && (
           <motion.div
-            key="nav-shell"
-            variants={SHELL}
+            key="user-panel"
+            variants={PANEL}
             initial="hidden"
             animate="visible"
-            exit="exit"
-            className="fixed inset-0 z-40 bg-black"
+            exit="hidden"
+            className="fixed top-5 left-5 z-50 flex flex-col gap-2 max-w-[260px] text-sm"
           >
-            {role !== "admin" && (
-              <div className="absolute inset-0">
-                <FilmStripCarousel
-                  projects={NAV_PROJECTS}
-                  loading={navLoading}
-                  onProjectSelect={handleProjectSelect}
-                />
-              </div>
-            )}
-
-            {!loading && (
-              <motion.div
-                variants={PANEL}
-                initial="hidden"
-                animate="visible"
-                className="absolute top-5 left-5 z-10 flex flex-col gap-2 max-w-[260px] text-sm"
-              >
-                {user ? (
-                  <>
-                    <motion.div variants={PANEL_ITEM}>
-                      <p className="font-bold text-white truncate">
-                        {user.displayName || "User"}
-                      </p>
-                      <p className="text-xs text-white/50 truncate">
-                        {user.email}
-                      </p>
-                    </motion.div>
-                    <motion.div
-                      variants={PANEL_ITEM}
-                      className="flex flex-wrap gap-2"
-                    >
-                      {role !== "admin" && (
-                        <Link
-                          href="/dashboard"
-                          onClick={() => setIsOpen(false)}
-                          className="px-4 py-2 rounded-full bg-neutral-800 border border-neutral-700 text-white hover:bg-neutral-700 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
-                        >
-                          Dashboard
-                        </Link>
-                      )}
-                      {role === "scanner" && (
-                        <Link
-                          href="/admin"
-                          onClick={() => setIsOpen(false)}
-                          className="px-4 py-2 rounded-full bg-red-950/50 border border-red-700 text-red-200 hover:bg-red-900/50 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
-                        >
-                          Entry Portal
-                        </Link>
-                      )}
-                      <button
-                        onClick={handleSignOut}
-                        className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-white/80 hover:bg-white/20 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
-                      >
-                        Logout
-                      </button>
-                    </motion.div>
-                  </>
-                ) : (
-                  <motion.div variants={PANEL_ITEM}>
+            {user ? (
+              <>
+                <motion.div variants={PANEL_ITEM}>
+                  <p className="font-bold text-white truncate">
+                    {user.displayName || "User"}
+                  </p>
+                  <p className="text-xs text-white/50 truncate">
+                    {user.email}
+                  </p>
+                </motion.div>
+                <motion.div
+                  variants={PANEL_ITEM}
+                  className="flex flex-wrap gap-2"
+                >
+                  {role !== "admin" && (
                     <Link
-                      href="/register"
+                      href="/dashboard"
                       onClick={() => setIsOpen(false)}
-                      className="block px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs tracking-wide shadow-xl hover:bg-neutral-200 hover:-translate-y-0.5 active:scale-90 active:duration-75 transition-all duration-300 ease-out text-center"
+                      className="px-4 py-2 rounded-full bg-neutral-800 border border-neutral-700 text-white hover:bg-neutral-700 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
                     >
-                      Register Now
+                      Dashboard
                     </Link>
-                  </motion.div>
-                )}
+                  )}
+                  {role === "scanner" && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsOpen(false)}
+                      className="px-4 py-2 rounded-full bg-red-950/50 border border-red-700 text-red-200 hover:bg-red-900/50 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
+                    >
+                      Entry Portal
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleSignOut}
+                    className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-white/80 hover:bg-white/20 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
+                  >
+                    Logout
+                  </button>
+                </motion.div>
+              </>
+            ) : (
+              <motion.div variants={PANEL_ITEM}>
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs tracking-wide shadow-xl hover:bg-neutral-200 hover:-translate-y-0.5 active:scale-90 active:duration-75 transition-all duration-300 ease-out text-center"
+                >
+                  Register Now
+                </Link>
               </motion.div>
             )}
-
           </motion.div>
         )}
       </AnimatePresence>

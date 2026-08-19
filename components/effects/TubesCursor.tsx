@@ -27,6 +27,9 @@ export default function TubesCursor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    if (isTouch) return;
+
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
 

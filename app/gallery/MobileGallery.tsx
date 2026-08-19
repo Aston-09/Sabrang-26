@@ -72,7 +72,10 @@ export default function MobileGallery() {
       {/* Header */}
       <div className="max-w-xl mx-auto mb-4 px-1 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-white">
+          <h1 
+            className="text-3xl font-black uppercase tracking-tight text-white"
+            style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
+          >
             Gallery
           </h1>
           <p className="text-[11px] text-slate-400 mt-0.5 font-mono tracking-wider">

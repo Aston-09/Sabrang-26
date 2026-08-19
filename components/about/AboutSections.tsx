@@ -100,7 +100,7 @@ export function CoreSpectrumsSection() {
           <h2
             className="text-4xl sm:text-6xl font-black uppercase text-white tracking-tight leading-none"
             style={{
-              fontFamily: '"Syne", "Outfit", "Inter", sans-serif',
+              fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
               fontWeight: 850,
               color: "#ffffff",
               textShadow:
@@ -148,6 +148,7 @@ export function CoreSpectrumsSection() {
                       src={p.image}
                       alt={p.name}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-cover opacity-25 group-hover:opacity-45 scale-105 group-hover:scale-110 transition-all duration-700 mix-blend-luminosity"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#030206] via-[#030206]/80 to-transparent" />
@@ -268,7 +269,7 @@ export function AboutContentSections() {
             <h2
               className="text-4xl sm:text-6xl md:text-7xl font-black uppercase text-white tracking-tight leading-none"
               style={{
-                fontFamily: '"Syne", "Outfit", "Inter", sans-serif',
+                fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
                 fontWeight: 850,
                 color: "#ffffff",
                 textShadow: "0 0 30px rgba(255,255,255,0.7), 0 0 60px rgba(34,211,238,0.4)",
@@ -432,7 +433,7 @@ export function AboutContentSections() {
             <h2
               className="text-4xl sm:text-6xl font-black uppercase text-white tracking-tight leading-none"
               style={{
-                fontFamily: '"Syne", "Outfit", "Inter", sans-serif',
+                fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif',
                 fontWeight: 850,
                 color: "#ffffff",
                 textShadow:
@@ -504,6 +505,7 @@ export function AboutContentSections() {
                         src={item.image}
                         alt={item.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover opacity-20 group-hover:opacity-40 scale-105 group-hover:scale-110 transition-all duration-700 mix-blend-luminosity"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#030206] via-[#030206]/85 to-transparent" />

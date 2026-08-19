@@ -53,10 +53,11 @@
   --color-tertiary: #943700;
   --color-tertiary-fixed: #ffdbcd;
 
-  --font-h1: "Manrope", sans-serif;
-  --font-h2: "Manrope", sans-serif;
-  --font-h3: "Manrope", sans-serif;
+  --font-h1: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-h2: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-h3: var(--font-space-grotesk), "Space Grotesk", sans-serif;
   --font-body: "Inter", sans-serif;
+  --font-space-grotesk: var(--font-space-grotesk), "Space Grotesk", sans-serif;
   --font-darknexis: "DarkNexis", sans-serif;
 }
 
@@ -74,6 +75,10 @@
     overflow-x: clip;
     width: 100%;
     max-width: 100vw;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
   }
 
   body.lightbox-open #main-navbar {

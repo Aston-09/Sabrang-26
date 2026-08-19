@@ -102,8 +102,8 @@ void main() {
   c *= 1.0 - 0.55 * uExpand;
 
   // ---- Entrance --------------------------------------------------------
-  // Opens from a dark, collapsed interior into the full environment.
-  c *= mix(0.12, 1.0, smoothstep(0.0, 0.75, uIntro));
+  // Opens gracefully into full vibrant environment
+  c *= mix(0.70, 1.0, smoothstep(0.0, 0.75, uIntro));
 
   // sub-LSB dither against banding in the dark half
   c += (hash(gl_FragCoord.xy) - 0.5) * 0.0035;

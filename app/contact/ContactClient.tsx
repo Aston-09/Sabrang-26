@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import ContactForm from "@/components/forms/ContactForm";
-import FaqParticleBackground from "@/components/ui/FaqParticleBackground";
+import ContactPatternBackground from "@/components/contact/ContactPatternBackground";
 import { ORGANIZING_HEADS, SITE_CONFIG } from "@/lib/constants";
 
 if (typeof window !== "undefined") {
@@ -15,6 +14,15 @@ if (typeof window !== "undefined") {
 
 export default function ContactClient() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(SITE_CONFIG.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -74,7 +82,8 @@ export default function ContactClient() {
 
   return (
     <div className="relative min-h-screen py-16 px-4 sm:px-6 md:px-8 pb-24 overflow-x-hidden bg-transparent" ref={containerRef}>
-      <FaqParticleBackground />
+      {/* Geometric Conic Pattern Background */}
+      <ContactPatternBackground />
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-12 md:space-y-16">
         <motion.section 
@@ -100,79 +109,37 @@ export default function ContactClient() {
           <StaticOrganizingHeads />
         </section>
 
-        <section className="bg-neutral-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-2xl relative overflow-hidden gsap-reveal mx-2 sm:mx-0">
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none rounded-3xl">
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-[80px]" />
-          </div>
-          <div className="relative z-10 space-y-4">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-indigo-500/10 border border-indigo-500/30 rounded-full flex items-center justify-center text-indigo-400 mx-auto">
-              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h2 className="text-lg md:text-2xl font-bold text-white/90">
-              Drop Us An Email At
-            </h2>
-            <div className="break-words">
-              <a href={`mailto:${SITE_CONFIG.email}`} className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-purple-300 to-indigo-300 hover:opacity-80 transition-opacity">
-                {SITE_CONFIG.email}
-              </a>
-            </div>
+        {/* Minimalist Inline Email Bar */}
+        <section className="gsap-reveal text-center pt-2 pb-6">
+          <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 backdrop-blur-md transition-all duration-300 shadow-lg">
+            <span className="text-white/40 text-xs font-mono tracking-widest uppercase hidden sm:inline">EMAIL</span>
+            <span className="text-white/20 hidden sm:inline">/</span>
+            <a
+              href={`mailto:${SITE_CONFIG.email}`}
+              className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white hover:text-indigo-300 transition-colors"
+              style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
+            >
+              {SITE_CONFIG.email}
+            </a>
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              aria-label="Copy email"
+              title={copied ? "Copied!" : "Copy email"}
+              className="p-1 text-white/50 hover:text-white transition-colors cursor-pointer bg-transparent border-0 outline-none flex items-center justify-center active:scale-90"
+            >
+              {copied ? (
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              )}
+            </button>
           </div>
         </section>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
-          <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 md:p-10 space-y-8 shadow-xl gsap-reveal mx-2 sm:mx-0">
-            <h2 className="text-xl md:text-2xl font-bold text-white">
-              Send Us A Message
-            </h2>
-            <ContactForm />
-          </div>
-
-          <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 md:p-10 space-y-8 shadow-xl gsap-reveal mx-2 sm:mx-0 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none rounded-3xl">
-              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-[80px]" />
-            </div>
-            
-            <div className="relative z-10">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-6">
-                Festival Venue
-              </h2>
-
-              <div className="space-y-6 text-white/70 text-sm md:text-base leading-relaxed">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-500/10 border border-indigo-500/30 rounded-full flex items-center justify-center text-indigo-400 flex-shrink-0">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-base md:text-lg mb-1">
-                      {SITE_CONFIG.university.name}
-                    </h3>
-                    <p>Mahapura, Ajmer Road</p>
-                    <p>Jaipur, Rajasthan 302026</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-8 mt-8 border-t border-white/10">
-                <a
-                  href="https://maps.google.com/?q=JK+Lakshmipat+University+Jaipur"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-neutral-200 text-neutral-900 rounded-xl font-bold text-sm uppercase tracking-wide transition-all shadow-lg hover:shadow-xl"
-                >
-                  <span>View On Google Maps</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -193,12 +160,9 @@ const StaticOrganizingHeads = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/40 to-transparent" />
             <div className="absolute inset-0 p-6 flex flex-col justify-end">
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-1">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight">
                 {head.name}
               </h3>
-              <p className="text-indigo-300 font-medium text-sm mb-4">
-                {head.role || "Organizing Head"}
-              </p>
               <a
                 href={`tel:${head.phone}`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-100 rounded-lg text-sm font-medium transition-colors border border-indigo-500/30 w-fit"

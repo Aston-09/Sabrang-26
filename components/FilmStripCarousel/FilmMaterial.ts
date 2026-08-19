@@ -143,6 +143,9 @@ function holeRects(W: number, H: number): HoleRect[] {
   return rects;
 }
 
+let cachedFilmTextures: { map: THREE.CanvasTexture; bump: THREE.CanvasTexture } | null = null;
+let cachedShadowTexture: THREE.CanvasTexture | null = null;
+
 // Colour map: opaque film, transparent image window + holes, with a baked
 // bevel — light stroke on the lower-inner edge of each hole, dark on the
 // upper edge, and rail edge lines — so edges read chamfered even before
@@ -151,6 +154,11 @@ export function createFilmTextures(): {
   map: THREE.CanvasTexture;
   bump: THREE.CanvasTexture;
 } {
+  if (cachedFilmTextures) return cachedFilmTextures;
+  if (typeof document === 'undefined') {
+    const dummy = new THREE.CanvasTexture({} as HTMLCanvasElement);
+    return { map: dummy, bump: dummy };
+  }
   const W = 1024;
   const H = Math.round((W * FILM_HEIGHT) / PITCH);
   const holes = holeRects(W, H);
@@ -254,7 +262,8 @@ export function createFilmTextures(): {
   bctx.fillRect(winX, winY, winW, winH);
   const bump = new THREE.CanvasTexture(bc);
 
-  return { map, bump };
+  cachedFilmTextures = { map, bump };
+  return cachedFilmTextures;
 }
 
 // Built fresh per frame (not cloned) so each owns its own onBeforeCompile
@@ -293,6 +302,10 @@ export function createBackingMaterial(map: THREE.CanvasTexture): THREE.MeshBasic
 
 // Soft radial blob for the contact shadow under a promoted frame.
 export function createShadowTexture(): THREE.CanvasTexture {
+  if (cachedShadowTexture) return cachedShadowTexture;
+  if (typeof document === 'undefined') {
+    return new THREE.CanvasTexture({} as HTMLCanvasElement);
+  }
   const S = 256;
   const canvas = document.createElement('canvas');
   canvas.width = S;
@@ -304,7 +317,8 @@ export function createShadowTexture(): THREE.CanvasTexture {
   g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, S, S);
-  return new THREE.CanvasTexture(canvas);
+  cachedShadowTexture = new THREE.CanvasTexture(canvas);
+  return cachedShadowTexture;
 }
 
 const panelVertex = /* glsl */ `
