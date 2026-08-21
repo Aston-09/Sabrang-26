@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useReCaptcha } from "@/components/recaptcha/ReCaptchaProvider";
 
 export default function ContactForm() {
+  const { executeRecaptcha } = useReCaptcha();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -11,16 +13,39 @@ export default function ContactForm() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      // Execute invisible reCAPTCHA v3
+      const token = await executeRecaptcha("contact_form");
 
-    setSubmitted(true);
-    setLoading(false);
-    setFormData({ name: "", email: "", subject: "", message: "" });
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          recaptchaToken: token || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send message.");
+      }
+
+      setSubmitted(true);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -139,6 +164,12 @@ export default function ContactForm() {
         />
       </div>
 
+      {errorMsg && (
+        <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs font-medium">
+          {errorMsg}
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={loading}
@@ -146,6 +177,28 @@ export default function ContactForm() {
       >
         {loading ? "Sending Message..." : "Send Message"}
       </button>
+
+      <p className="text-[10px] text-white/40 text-center leading-relaxed">
+        This site is protected by reCAPTCHA and the Google{" "}
+        <a
+          href="https://policies.google.com/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white/70"
+        >
+          Privacy Policy
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://policies.google.com/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white/70"
+        >
+          Terms of Service
+        </a>{" "}
+        apply.
+      </p>
     </form>
   );
 }

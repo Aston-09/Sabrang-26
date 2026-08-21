@@ -7,10 +7,8 @@ const HeroColoursOverBlack = dynamic(
   () => import("@/components/about/HeroColoursOverBlack"),
   {
     ssr: false,
-    loading: () => (
-      <div className="fixed inset-0 bg-[#000000] -z-10" />
-    ),
-  }
+    loading: () => <div className="fixed inset-0 bg-[#000000] -z-10" />,
+  },
 );
 
 export default function AboutBackground() {

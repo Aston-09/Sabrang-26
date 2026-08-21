@@ -234,18 +234,23 @@ export default function GalleryHighlights({
         aria-labelledby="gallery-highlights-heading"
         className="fixed inset-0 z-0 overflow-y-auto bg-[#07080f] text-white"
       >
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          {/* Cube video background */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+          {/* Cube video background - scaled down and softened so it stays an accent instead of dominating */}
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="absolute inset-0 h-full w-full object-cover"
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="nodownload noplaybackrate nofullscreen"
+            onContextMenu={(e) => e.preventDefault()}
+            tabIndex={-1}
+            className="absolute inset-0 h-full w-full object-contain scale-[0.85] sm:scale-[0.8] md:scale-[0.78] opacity-75 transition-transform duration-700 pointer-events-none select-none"
             src="https://res.cloudinary.com/eprhemvt/video/upload/v1787082832/sabrang-2026/root/cube.mp4"
           />
           {/* Dark overlay so content stays readable */}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
         </div>
 
         <div className="relative z-10 h-full">

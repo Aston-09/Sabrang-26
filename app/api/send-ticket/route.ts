@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { sendRegistrationPassEmail } from "@/lib/brevo";
+import { verifyReCaptchaToken } from "@/lib/recaptcha";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +14,7 @@ export async function POST(req: NextRequest) {
       collegeName,
       eventDate,
       eventVenue,
+      recaptchaToken,
     } = body;
 
     if (!toEmail || !toName || !registrationId || !eventName) {
@@ -20,6 +22,21 @@ export async function POST(req: NextRequest) {
         { error: "Missing required registration fields" },
         { status: 400 }
       );
+    }
+
+    // Verify reCAPTCHA token if supplied
+    if (recaptchaToken) {
+      const captchaResult = await verifyReCaptchaToken(
+        recaptchaToken,
+        "send_ticket",
+        0.5,
+      );
+      if (!captchaResult.success) {
+        return NextResponse.json(
+          { error: "Security check failed. Please refresh and try again." },
+          { status: 403 },
+        );
+      }
     }
 
     // Generate QR code data URL from registration ID payload

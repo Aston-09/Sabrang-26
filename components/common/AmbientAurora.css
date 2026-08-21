@@ -23,11 +23,10 @@
     position: absolute;
     border-radius: var(--radius-lg);
     opacity: 0.25;
-    /* Reduced for subtlety */
     mix-blend-mode: screen;
     will-change: transform;
-    filter: blur(80px);
-    /* Increased blur for softer glow */
+    /* Removed filter: blur() — large radial-gradients are inherently soft;
+       the blur was forcing an extra GPU compositing pass on every animation frame. */
     transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

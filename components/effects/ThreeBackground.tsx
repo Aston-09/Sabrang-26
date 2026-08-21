@@ -119,6 +119,10 @@ function VideoBackground() {
       vid.setAttribute("muted", "");
       vid.setAttribute("playsinline", "");
       vid.setAttribute("webkit-playsinline", "");
+      vid.setAttribute("controlsList", "nodownload noplaybackrate nofullscreen");
+      vid.setAttribute("disablePictureInPicture", "true");
+      vid.setAttribute("disableRemotePlayback", "true");
+      vid.oncontextmenu = (e) => e.preventDefault();
       vid.style.display = "none";
       document.body.appendChild(vid);
 
@@ -212,6 +216,8 @@ function VideoBackground() {
   }, [hoverState]);
 
   useFrame((state) => {
+    // Skip all GPU work when tab is not visible — drops GPU usage to 0% while backgrounded.
+    if (document.hidden) return;
     if (!materialRef.current) return;
     const mat = materialRef.current;
     mat.uniforms.uTime.value = state.clock.elapsedTime;
@@ -297,11 +303,18 @@ export default function ThreeBackground() {
 
   if (!mounted) return null;
 
+  // Cap pixel ratio on integrated-GPU / low-core devices to protect frame time.
+  // hardwareConcurrency ≤ 4 is a reliable proxy for budget hardware.
+  const maxDpr =
+    typeof navigator !== "undefined" && navigator.hardwareConcurrency <= 4
+      ? 1
+      : 1.25;
+
   return (
     <div className="fixed inset-0 z-0 w-full h-full bg-[#030005] pointer-events-none overflow-hidden">
       <Canvas
         camera={{ position: [0, 0, 10], fov: 45 }}
-        dpr={[1, 1.25]}
+        dpr={[1, maxDpr]}
         gl={{ antialias: false, powerPreference: "high-performance" }}
         onCreated={({ gl }) => {
           gl.domElement?.addEventListener("webglcontextlost", (e) =>

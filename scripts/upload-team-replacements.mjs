@@ -74,22 +74,10 @@ async function uploadImage(filePath, publicId) {
 async function main() {
   const items = [
     {
-      file: path.resolve("public/kartik singh.png"),
-      publicId: "kartik-singh",
-      name: "Kartik Singh",
-      mappingKey: "/team/kartik-singh.png",
-    },
-    {
-      file: path.resolve("public/laksh.jpeg"),
-      publicId: "laksh-sharma",
-      name: "Laksh Sharma",
-      mappingKey: "/team/laksh-sharma.png",
-    },
-    {
-      file: path.resolve("public/satvik.png"),
-      publicId: "satvik-agrawal",
-      name: "Satvik Agrawal",
-      mappingKey: "/team/satvik-agrawal.png",
+      file: path.resolve("public/rishika.jpeg"),
+      publicId: "rishika-singh",
+      name: "Rishika Singh",
+      mappingKey: "/team/rishika-singh.png",
     },
   ];
 

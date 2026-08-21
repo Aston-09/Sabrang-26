@@ -185,6 +185,37 @@ body::-webkit-scrollbar {
   border-radius: 9999px !important;
 }
 
+/* Prevent image & video dragging, selection, and browser download overlays */
+img,
+video,
+canvas {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+video::-internal-media-controls-download-button,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+
+/* Completely hide the Google reCAPTCHA v3 floating badge across all states & containers */
+.grecaptcha-badge,
+.grecaptcha-badge * ,
+.grecaptcha-logo,
+div[style*="z-index: 2000000000"],
+div:has(> .grecaptcha-badge),
+body > div[style*="position: fixed"][style*="bottom: 0px"][style*="right: 0px"] {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  transform: translate(-9999px, -9999px) !important;
+}
+
 /* ── Credits page: zero out global main/footer so the fixed full-screen component owns the viewport ── */
 /* Hide footer on credits, gallery & about pages */
 .credits-layout-escape~footer,

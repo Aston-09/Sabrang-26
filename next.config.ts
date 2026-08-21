@@ -5,9 +5,13 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   output: process.env.VERCEL ? undefined : 'standalone',
   images: {
-    // Every value the app actually passes to next/image. A quality outside this
-    // list is a 400, not a fallback — 65 silently blanked the whole mobile gallery.
-    qualities: [65, 75, 85, 90],
+    // Serve AVIF first (≈40% smaller than WebP for photos), then WebP as fallback.
+    formats: ["image/avif", "image/webp"],
+    // Quality 90 removed — 85 is visually indistinguishable for festival photography.
+    qualities: [65, 75, 85],
+    // Cache optimised variants on the CDN for 30 days. Without this, Vercel re-optimises
+    // on every cold request after the default short TTL expires.
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       {
         protocol: "https",

@@ -36,7 +36,7 @@ export const ORGANIZING_HEADS: OrganizingHead[] = [
     name: "Rishika Singh",
     phone: "+917300118679",
     displayPhone: "+91 73001 18679",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084258/sabrang-2026/team/rishika-singh.png",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787334662/sabrang-2026/team/rishika-singh.jpg",
   },
   {
     name: "Pratigya Bomb",
@@ -263,7 +263,7 @@ export const TEAM_IMAGES: Record<string, string> = {
   "Pratigya Bomb": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122733/sabrang-2026/team/pratigya-bomb.png",
   "Rattan Gangadhar": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787164767/sabrang-2026/team/rattan-gangadhar.png",
   "Richa Sharma": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122739/sabrang-2026/team/richa-sharma.png",
-  "Rishika Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084258/sabrang-2026/team/rishika-singh.png",
+  "Rishika Singh": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787334662/sabrang-2026/team/rishika-singh.jpg",
   "Roshan Jangir": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084259/sabrang-2026/team/roshan-jangir.png",
   "Satvik Agrawal": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787331506/sabrang-2026/team/satvik-agrawal.png",
   "Saumya Puri": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084262/sabrang-2026/team/saumya-puri.png",

@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function CursorFollower() {
-  const [pos, setPos] = useState({ x: -100, y: -100 });
-  const [isHovered, setIsHovered] = useState(false);
+  // Only one piece of state — set once on mount, never again.
+  // Keeps the SSR render null (touch = true) → avoids hydration mismatch.
   const [isTouch, setIsTouch] = useState(true);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const hoverMatch = window.matchMedia("(hover: hover) and (pointer: fine)");
     setIsTouch(!hoverMatch.matches);
-
     if (!hoverMatch.matches) return;
 
     let mouseX = -100;
@@ -20,27 +21,28 @@ export default function CursorFollower() {
     let animId: number;
 
     const onMouseMove = (e: MouseEvent) => {
-      if (e.isTrusted) {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      }
+      if (!e.isTrusted) return;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
 
+      // Hover detection — mutate dot scale directly, no setState
       const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        typeof target.closest === "function" &&
-        target.closest('a, button, input, select, textarea, [role="button"]')
-      ) {
-        setIsHovered(true);
-      } else {
-        setIsHovered(false);
+      const interactive = !!(
+        target?.closest?.('a, button, input, select, textarea, [role="button"]')
+      );
+      if (dotRef.current) {
+        dotRef.current.style.transform = interactive ? "scale(1.5)" : "scale(1)";
+        dotRef.current.style.opacity = interactive ? "0.9" : "1";
       }
     };
 
     const update = () => {
       currentX += (mouseX - currentX) * 0.22;
       currentY += (mouseY - currentY) * 0.22;
-      setPos({ x: currentX, y: currentY });
+      // Direct DOM mutation — zero React involvement per frame
+      if (wrapRef.current) {
+        wrapRef.current.style.transform = `translate3d(${currentX - 8}px, ${currentY - 8}px, 0)`;
+      }
       animId = requestAnimationFrame(update);
     };
 
@@ -57,16 +59,15 @@ export default function CursorFollower() {
 
   return (
     <div
+      ref={wrapRef}
       aria-hidden="true"
       className="fixed top-0 left-0 z-[9990] pointer-events-none"
-      style={{
-        transform: `translate3d(${pos.x - 8}px, ${pos.y - 8}px, 0)`,
-      }}
+      style={{ transform: "translate3d(-100px, -100px, 0)" }}
     >
       <div
-        className={`w-4 h-4 rounded-full custom-cursor-circle bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)] transition-transform duration-200 ${
-          isHovered ? "scale-150 opacity-90" : "scale-100 opacity-100"
-        }`}
+        ref={dotRef}
+        className="w-4 h-4 rounded-full custom-cursor-circle bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+        style={{ transform: "scale(1)", opacity: "1", transition: "transform 0.2s, opacity 0.2s" }}
       />
     </div>
   );

@@ -127,7 +127,7 @@ export default function AboutPage() {
     <>
       <JsonLd data={aboutSchema} />
       <JsonLd data={breadcrumbSchema} />
-      <div className="relative w-full bg-[#000000] text-white min-h-screen">
+      <div className="relative w-full text-white min-h-screen">
         {/* Full-Page Persistent 3D Fluid Liquid Ribbon Background */}
         <AboutBackground />
 

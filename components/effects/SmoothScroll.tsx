@@ -51,7 +51,29 @@ export default function SmoothScroll({
 
     // { passive: false } is required so that preventDefault() is honoured.
     window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
+
+    // Prevent dragging and right-click download helpers on media
+    const handleDragStart = (e: DragEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.tagName === "IMG" || target?.tagName === "VIDEO") {
+        e.preventDefault();
+      }
+    };
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.tagName === "IMG" || target?.tagName === "VIDEO" || target?.closest("video, img")) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("dragstart", handleDragStart);
+    window.addEventListener("contextmenu", handleContextMenu);
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("dragstart", handleDragStart);
+      window.removeEventListener("contextmenu", handleContextMenu);
+    };
   }, []);
 
   return <>{children}</>;

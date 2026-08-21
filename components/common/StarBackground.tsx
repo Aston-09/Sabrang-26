@@ -113,6 +113,10 @@ const StarBackground = ({
       }
     }
 
+    // 30fps throttle: skip every other rAF tick.
+    // A slow-drifting star field is visually identical at 30fps but costs 50% less CPU.
+    let frameCount = 0;
+
     /* ── Mouse (only needed for drift parallax) ── */
     const handleMouseMove = (e: MouseEvent) => {
       if (sizing === 'container' && container) {
@@ -127,6 +131,11 @@ const StarBackground = ({
 
     /* ── Render loops ── */
     const animateDrift = () => {
+      requestId = requestAnimationFrame(animateDrift)
+      // 30fps throttle
+      frameCount++
+      if (frameCount % 2 !== 0) return
+
       ctx.clearRect(0, 0, width, height)
 
       for (const s of driftStars) {
@@ -146,11 +155,14 @@ const StarBackground = ({
         ctx.fillStyle = `rgba(var(--color-white-rgb), ${Math.max(0, s.baseAlpha)})`
         ctx.fill()
       }
-
-      requestId = requestAnimationFrame(animateDrift)
     }
 
     const animateRise = () => {
+      requestId = requestAnimationFrame(animateRise)
+      // 30fps throttle
+      frameCount++
+      if (frameCount % 2 !== 0) return
+
       ctx.clearRect(0, 0, width, height)
 
       for (const s of risingStars) {
@@ -165,12 +177,22 @@ const StarBackground = ({
         ctx.fillStyle = `rgba(var(--color-white-rgb), ${s.alpha})`
         ctx.fill()
       }
-
-      requestId = requestAnimationFrame(animateRise)
     }
 
     /* ── Bootstrap ── */
     init()
+
+    // Pause/resume the loop when the tab is hidden/shown.
+    const handleVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(requestId)
+      } else {
+        frameCount = 0
+        if (mode === 'drift') animateDrift()
+        else animateRise()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
 
     // Resize handling: use ResizeObserver for container, window resize for viewport
     let resizeObserver: ResizeObserver | null = null
@@ -191,6 +213,7 @@ const StarBackground = ({
     /* ── Cleanup ── */
     return () => {
       cancelAnimationFrame(requestId)
+      document.removeEventListener('visibilitychange', handleVisibility)
       if (resizeObserver) {
         resizeObserver.disconnect()
       } else {
