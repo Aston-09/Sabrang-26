@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import "@/lib/suppress-three-logs";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/layout/Navbar";
@@ -5,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 import TubesCursor from "@/components/effects/TubesCursor";
 import CursorFollower from "@/components/effects/CursorFollower";
 import SmoothScroll from "@/components/effects/SmoothScroll";
-import { InteractionProvider } from "@/components/InteractionContext";
+import { InteractionProvider } from "@/components/context/InteractionContext";
 import Link from "next/link";
 import "./globals.css";
 import { Inter, Space_Grotesk } from "next/font/google";
@@ -16,7 +17,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
-import type { Metadata } from "next";
 import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {

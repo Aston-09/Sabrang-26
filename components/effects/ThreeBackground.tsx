@@ -4,7 +4,7 @@ import { useRef, useEffect, useState, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useAspect } from "@react-three/drei";
 import * as THREE from "three";
-import { useInteraction } from "@/components/InteractionContext";
+import { useInteraction } from "@/components/context/InteractionContext";
 
 const videoVertex = `
 varying vec2 vUv;

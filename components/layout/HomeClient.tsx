@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import dynamic from 'next/dynamic'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Wheel, { type WheelHandle } from '@/components/ui/Wheel'
@@ -16,7 +15,7 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
-const HeroHead = dynamic(() => import('@/components/3d/Scene'), { ssr: false })
+
 
 interface HomeClientProps {
   summitImages: string[]
@@ -114,12 +113,7 @@ export default function HomeClient({
     <main className="hero-theme relative w-full bg-[var(--bg-primary)]">
       <AmbientAurora />
       
-      {/* 3D Background Layer */}
-      <div className="fixed top-0 left-0 w-full h-[100vh] z-0 pointer-events-none">
-        <div className="absolute inset-0">
-          <HeroHead />
-        </div>
-      </div>
+
 
       <HeroSection />
 
