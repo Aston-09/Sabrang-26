@@ -5,7 +5,7 @@ import JsonLd from "@/components/seo/JsonLd";
 export const metadata: Metadata = {
   title: "SABRANG 2026 | Sabrang JKLU | JK Lakshmipat University Fest",
   description:
-    "SABRANG 2026 - JK Lakshmipat University's premier annual fest. Experience Sabrang JKLU with star-studded nights, cultural pro-shows, and thrilling competitions in Jaipur.",
+    "SABRANG 2026 - JK Lakshmipat University's premier annual fest. Experience Sabrang JKLU with star-studded nights, pro-shows, and competitions in Jaipur.",
   keywords: [
     "SABRANG 2026",
     "Sabrang JKLU",
