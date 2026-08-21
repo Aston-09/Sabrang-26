@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://sabrang.jklu.edu.in";
   // Fixed date — update this when content changes significantly
-  const lastUpdated = "2026-08-14T00:00:00.000Z";
+  const lastUpdated = new Date().toISOString();
 
   return [
     {

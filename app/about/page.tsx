@@ -31,6 +31,8 @@ export const metadata: Metadata = {
     description:
       "Enter Sabrang, the annual flagship festival of JKLU celebrating art, music, design, and innovation.",
     url: "https://sabrang.jklu.edu.in/about",
+    siteName: "Sabrang 2026 - JKLU",
+    type: "website",
   },
 };
 

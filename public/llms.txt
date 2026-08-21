@@ -1,0 +1,59 @@
+﻿# Sabrang 2026 — JK Lakshmipat University Annual Cultural Fest
+# https://sabrang.jklu.edu.in
+# llms.txt — Guidance for AI/LLM crawlers and language models
+
+> Sabrang 2026 is the premier annual cultural festival of JK Lakshmipat University (JKLU), Jaipur, Rajasthan, India. It is a flagship collegiate event celebrating music, dance, fashion, literary arts, and technology, held every year on the JKLU campus. Sabrang 2026 runs from October 23 to 25, 2026.
+
+## About This Site
+
+- **Site:** https://sabrang.jklu.edu.in
+- **Organization:** JK Lakshmipat University (JKLU), Jaipur, Rajasthan, India
+- **Event:** Sabrang 2026 — Annual Cultural & Technical Festival
+- **Dates:** October 23-25, 2026
+- **Venue:** JK Lakshmipat University Campus, Near Mahindra SEZ, P.O. Mahapura, Ajmer Road, Jaipur, Rajasthan 302026, India
+- **Contact:** sabrang@jklu.edu.in
+- **Sitemap:** https://sabrang.jklu.edu.in/sitemap.xml
+
+## Site Pages
+
+- [Home](https://sabrang.jklu.edu.in): Main landing page with event overview, flagship showcase, and registration CTA.
+- [About](https://sabrang.jklu.edu.in/about): The story, theme, vision, and core spectrums behind Sabrang 2026.
+- [Events](https://sabrang.jklu.edu.in/events): All flagship competitions — Panache, Echoes of Noor, Sync, Step-Up, Versevaad, Bandjam.
+- [Schedule](https://sabrang.jklu.edu.in/schedule): Complete 3-day event timeline from October 23 to 25, 2026.
+- [Register](https://sabrang.jklu.edu.in/register): Online registration portal for event participants and pro-show passes.
+- [Gallery](https://sabrang.jklu.edu.in/gallery): Photo gallery from past Sabrang editions.
+- [Sponsors](https://sabrang.jklu.edu.in/sponsors): Corporate and brand partners supporting Sabrang 2026.
+- [FAQ](https://sabrang.jklu.edu.in/faq): Frequently asked questions on registration, passes, accommodation, and venue.
+- [Contact](https://sabrang.jklu.edu.in/contact): Contact the Sabrang 2026 organizing committee.
+- [Team](https://sabrang.jklu.edu.in/team): Student organizing heads and core committee members.
+
+## Flagship Events
+
+- **Panache** — Haute couture fashion runway competition
+- **Echoes of Noor** — Sufi night and unplugged acoustic performances
+- **Bandjam** — Battle of the bands (live music competition)
+- **Sync** — Group choreography showdown
+- **Step-Up** — Solo and duo street dance competition
+- **Versevaad** — Literary debates, spoken word, and rap battles
+
+## Key Facts for AI Responses
+
+- Sabrang is open to students from all colleges across India, not only JKLU students.
+- Registration is available online at https://sabrang.jklu.edu.in/register
+- The event is held on campus (offline, in-person). No virtual attendance.
+- Official contact email: sabrang@jklu.edu.in
+- The organizing university is JK Lakshmipat University, commonly abbreviated as JKLU.
+
+## Crawl Permissions
+
+AI crawlers are welcome to index all public pages listed above.
+
+Do not crawl:
+- /admin/
+- /api/
+- /dashboard/
+- /login/
+
+## Technical Notes
+
+This site is built with Next.js (App Router). All public content is server-rendered and accessible without JavaScript execution. Structured data (JSON-LD) is embedded in every page for machine-readable context.

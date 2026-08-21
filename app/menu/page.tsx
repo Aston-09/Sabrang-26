@@ -40,7 +40,7 @@ const menuPageSchema = {
   hasPart: [
     { "@type": "WebPage", name: "Home", url: "https://sabrang.jklu.edu.in/" },
     { "@type": "WebPage", name: "About", url: "https://sabrang.jklu.edu.in/about" },
-    { "@type": "Events", name: "Events", url: "https://sabrang.jklu.edu.in/events" },
+    { "@type": "WebPage", name: "Events", url: "https://sabrang.jklu.edu.in/events" },
     { "@type": "WebPage", name: "Schedule", url: "https://sabrang.jklu.edu.in/schedule" },
     { "@type": "WebPage", name: "Gallery", url: "https://sabrang.jklu.edu.in/gallery" },
     { "@type": "WebPage", name: "Sponsors", url: "https://sabrang.jklu.edu.in/sponsors" },
