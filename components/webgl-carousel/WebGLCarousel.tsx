@@ -86,7 +86,7 @@ function OpenedNameOverlay({ item }: { item: CarouselItemData }) {
           <div className="overflow-hidden px-6 py-1 -mx-6 -my-1">
             <div
               ref={line2Ref}
-              className="text-black pl-6 sm:pl-12 md:pl-16 pr-4"
+              className="text-white pl-6 sm:pl-12 md:pl-16 pr-4"
             >
               {secondLine}
             </div>
