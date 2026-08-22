@@ -1,0 +1,192 @@
+import { NextResponse } from 'next/server';
+import { adminDb } from '@/lib/firebaseAdmin';
+import { FieldValue } from 'firebase-admin/firestore';
+
+const escapeForSheets = (val: string) => {
+  if (typeof val === 'string' && val.startsWith('+')) return `'${val}`;
+  return val || 'N/A';
+};
+
+async function pushToSheet(webhookUrl: string, payload: object): Promise<{ success: boolean; error?: string }> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      if (attempt > 1) await new Promise(r => setTimeout(r, attempt * 2000));
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      const result = await res.json().catch(() => ({ success: false, error: 'Non-JSON response' }));
+      if (result.success === false) {
+        if (attempt === 3) return { success: false, error: result.error || 'Apps Script returned success:false' };
+        continue;
+      }
+      return { success: true };
+    } catch (err: any) {
+      if (attempt === 3) return { success: false, error: err.name === 'AbortError' ? 'Timeout (>15s)' : err.message };
+    }
+  }
+  return { success: false, error: 'Unknown error' };
+}
+
+export async function POST(req: Request) {
+  try {
+    const excelWebhook = process.env.EXCEL_SYNC_WEBHOOK_URL;
+    if (!excelWebhook) {
+      return NextResponse.json({ error: 'EXCEL_SYNC_WEBHOOK_URL is not configured on the server.' }, { status: 500 });
+    }
+
+    // Fetch all registrations and filter in-memory (avoids composite index requirement)
+    const allSnap = await adminDb
+      .collection('registrations')
+      .orderBy('registeredAt', 'asc')
+      .get();
+
+    const unsyncedDocs = allSnap.docs.filter(d => {
+      const data = d.data();
+      return data.sheetSynced !== true && data.isTest !== true;
+    });
+
+    if (unsyncedDocs.length === 0) {
+      return NextResponse.json({
+        synced: 0,
+        failed: 0,
+        hasMore: false,
+        message: 'All registrations are already synced.',
+      });
+    }
+
+    const BATCH_SIZE = 10;
+    const batchDocs = unsyncedDocs.slice(0, BATCH_SIZE);
+    const hasMore = unsyncedDocs.length > BATCH_SIZE;
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let syncedCount = 0;
+    let failedCount = 0;
+    let lastDateGroup = '';
+    const failures: string[] = [];
+
+    // Get total count for sequential numbering
+    const countSnap = await adminDb.collection('registrations').count().get();
+    const totalCount = countSnap.data().count;
+    // Sequential number starts from (total - unsynced + 1) as a best estimate
+    let rowIndex = totalCount - unsyncedDocs.length + 1;
+
+    // Initialize lastDateGroup from the previous document in the sorted allSnap list (if exists)
+    const firstDocIndex = allSnap.docs.findIndex(d => d.id === batchDocs[0].id);
+    if (firstDocIndex > 0) {
+      const prevReg = allSnap.docs[firstDocIndex - 1].data();
+      const prevDbDate = prevReg.registeredAt?.toDate() ?? new Date();
+      const prevIstDate = new Date(prevDbDate.getTime() + (5.5 * 60 * 60 * 1000));
+      const prevDay = prevIstDate.getUTCDate();
+      const prevMonth = months[prevIstDate.getUTCMonth()];
+      lastDateGroup = `${prevDay}-${prevMonth}`;
+    }
+
+    for (const docSnap of batchDocs) {
+      const reg = docSnap.data();
+      const regId = docSnap.id;
+
+      // Compute date fields from registeredAt timestamp (converted to IST using UTC methods)
+      const dbDate = reg.registeredAt?.toDate() ?? new Date();
+      const istDate = new Date(dbDate.getTime() + (5.5 * 60 * 60 * 1000));
+      const day = istDate.getUTCDate();
+      const month = months[istDate.getUTCMonth()];
+      const year = istDate.getUTCFullYear().toString().slice(-2);
+      const dateOfPayment = reg.dateOfPayment || `${day}-${month}-${year}`;
+      const dateGroup = `${day}-${month}`;
+
+      // Insert a date separator row when the date changes
+      if (lastDateGroup && lastDateGroup !== dateGroup) {
+        await pushToSheet(excelWebhook, {
+          isSeparator: true,
+          id: dateGroup,
+          name: '', email: '', phone: '', rollNumber: '', registeredAt: '',
+          gender: '', course: '',
+          parentName: '', parentPhone: '', parentEmail: '',
+          address: '', pincode: '', region: '', city: '', state: '',
+          receivedAmount: 0,
+          dateOfPayment: '', dateGroup: dateGroup,
+          paymentId: '', orderId: '', settlementId: '',
+        });
+      }
+      lastDateGroup = dateGroup;
+
+      const parentName = reg.parentName || reg.fatherName || 'N/A';
+      const parentPhone = reg.parentPhone || reg.fatherMobile || 'N/A';
+      const parentEmail = reg.parentEmail || reg.fatherEmail || 'N/A';
+      const pincode = reg.pincode || (reg.address ? (reg.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
+
+      const payload = {
+        id: String(rowIndex),
+        name: reg.name || 'N/A',
+        email: reg.email || 'N/A',
+        phone: escapeForSheets(reg.phone || reg.mobile || ''),
+        rollNumber: reg.rollNumber || reg.registrationNumber || 'N/A',
+        registeredAt: dbDate.toISOString(),
+        gender: reg.gender || 'N/A',
+        course: reg.course || 'N/A',
+        parentName,
+        parentPhone: escapeForSheets(parentPhone),
+        parentEmail,
+        fatherName: reg.fatherName || reg.parentName || 'N/A',
+        fatherMobile: escapeForSheets(reg.fatherMobile || reg.parentPhone || 'N/A'),
+        fatherEmail: reg.fatherEmail || reg.parentEmail || 'N/A',
+        motherName: reg.motherName || 'N/A',
+        motherMobile: escapeForSheets(reg.motherMobile || 'N/A'),
+        motherEmail: reg.motherEmail || 'N/A',
+        address: reg.address || 'N/A',
+        pincode,
+        region: reg.region || 'N/A',
+        city: reg.city || 'N/A',
+        state: reg.region || 'N/A',
+        receivedAmount: reg.receivedAmount ?? 2500,
+        dateOfPayment,
+        dateGroup,
+        paymentId: reg.paymentId || 'N/A',
+        orderId: reg.orderId || 'N/A',
+        settlementId: reg.settlementId || 'Pending',
+      };
+
+      const result = await pushToSheet(excelWebhook, payload);
+
+      if (result.success) {
+        // Mark registration as synced
+        await adminDb.collection('registrations').doc(regId).update({
+          sheetSynced: true,
+          sheetSyncedAt: FieldValue.serverTimestamp(),
+        });
+        syncedCount++;
+        rowIndex++;
+      } else {
+        failedCount++;
+        failures.push(`${reg.name} (${regId}): ${result.error}`);
+        console.error(`Sheet sync failed for ${regId}:`, result.error);
+      }
+    }
+
+    // Log the sync action in auditLogs
+    await adminDb.collection('auditLogs').add({
+      timestamp: FieldValue.serverTimestamp(),
+      action: 'SHEET_SYNC',
+      performedBy: 'Admin (Manual Sync)',
+      targetEntity: 'registrations',
+      details: `Manual sheet sync batch: ${syncedCount} synced, ${failedCount} failed.${failures.length ? ' Failures: ' + failures.join('; ') : ''}`,
+    });
+
+    return NextResponse.json({
+      synced: syncedCount,
+      failed: failedCount,
+      failures,
+      hasMore,
+      message: `${syncedCount} registration(s) synced to sheet.${failedCount > 0 ? ` ${failedCount} failed.` : ''}`,
+    });
+  } catch (error: any) {
+    console.error('Sync sheet error:', error);
+    return NextResponse.json({ error: error.message || 'Sync failed' }, { status: 500 });
+  }
+}

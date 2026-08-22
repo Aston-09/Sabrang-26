@@ -1,52 +1,161 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    
+    // Helper functions for role checks
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+
+    function getRole(uid) {
+      return exists(/databases/$(database)/documents/roles/$(uid)) 
+        ? get(/databases/$(database)/documents/roles/$(uid)).data.role 
+        : (exists(/databases/$(database)/documents/users/$(uid)) ? get(/databases/$(database)/documents/users/$(uid)).data.role : null);
     }
     
     function isAdmin() {
-      return isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && getRole(request.auth.uid) == 'admin';
     }
     
     function isScanner() {
-      return isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'scanner'];
+      return isSignedIn() && (getRole(request.auth.uid) == 'scanner' || getRole(request.auth.uid) == 'admin');
+    }
+    
+    function isVolunteerOrTL() {
+      return isSignedIn() && (
+        getRole(request.auth.uid) == 'volunteer' || 
+        getRole(request.auth.uid) == 'team_leader' ||
+        getRole(request.auth.uid) == 'admin'
+      );
+    }
+    
+    function isWarden() {
+      return isSignedIn() && (getRole(request.auth.uid) == 'warden' || getRole(request.auth.uid) == 'admin');
     }
 
-    // Users collection
+    // Users collection (Sabrang user profiles)
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isScanner());
       allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // Events collection
-    match /events/{eventId} {
-      allow read: if true; // Publicly readable
+    // Roles collection rules
+    match /roles/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
       allow write: if isAdmin();
     }
 
     // Registrations collection
-    match /registrations/{regId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin() || isScanner());
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      // Scanners can update check-in status (e.g. attended: true)
-      allow update: if isScanner();
+    match /registrations/{id} {
+      allow read: if isAdmin() || isScanner() || (isWarden() && resource.data.hasEntered == true) || (isSignedIn() && resource.data.userId == request.auth.uid);
+      // Registrations are created server-side via Admin SDK (bypasses rules)
+      allow create: if false;
+      allow update: if isAdmin() || isWarden() || isScanner();
+      allow delete: if isAdmin();
+    }
+
+    // Pending Registrations collection
+    match /pendingRegistrations/{id} {
+      allow read, write: if false; // Only Admin SDK can read/write
+    }
+
+    // Volunteers collection
+    match /volunteers/{id} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == id || 
+        isAdmin() || 
+        getRole(request.auth.uid) == 'team_leader'
+      );
+      allow write: if isAdmin() || isVolunteerOrTL();
+    }
+
+    // Duty Assignments collection
+    match /dutyAssignments/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Notifications/Announcements collections
+    match /notifications/{id} {
+      allow read, update, delete: if isSignedIn();
+      allow create: if isSignedIn() && (isAdmin() || isVolunteerOrTL());
+    }
+    
+    match /announcements/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Scan logs collection
+    match /scanLogs/{id} {
+      allow read: if isAdmin() || isScanner() || isWarden();
+      allow write: if isAdmin() || isScanner() || isWarden();
+    }
+
+    // Events (public schedule)
+    match /events/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Audit logs collection
+    match /auditLogs/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isSignedIn();
+    }
+
+    // Feedback collection
+    match /feedback/{id} {
+      allow create: if true;
+      allow read: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
+      allow update, delete: if isAdmin();
+    }
+
+    // Complaints collection
+    match /complaints/{id} {
+      allow create: if true;
+      allow read: if isAdmin() || (isSignedIn() && (getRole(request.auth.uid) == 'feedback' || getRole(request.auth.uid) == 'volunteer' || getRole(request.auth.uid) == 'team_leader'));
+      allow update: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
+      allow delete: if isAdmin();
+    }
+
+    // Suggestions collection
+    match /suggestions/{id} {
+      allow create: if true;
+      allow read: if isAdmin() || (isSignedIn() && (getRole(request.auth.uid) == 'feedback' || getRole(request.auth.uid) == 'volunteer' || getRole(request.auth.uid) == 'team_leader'));
+      allow update: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
+      allow delete: if isAdmin();
+    }
+
+    // Settings (e.g. active feedback day settings)
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
+    }
+
+    // Scanner Accounts collection
+    match /scannerAccounts/{id} {
+      allow read: if isSignedIn() && (request.auth.uid == id || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Warden Accounts collection
+    match /wardenAccounts/{id} {
+      allow read: if isSignedIn() && (request.auth.uid == id || isAdmin());
+      allow write: if isAdmin();
     }
 
     // Coupons collection
-    match /coupons/{couponId} {
-      allow read: if true; 
+    match /coupons/{id} {
+      allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // Contact Messages collection
+    match /contact_messages/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
   }
 }
