@@ -352,7 +352,6 @@ export default function Carousel({ items, onActiveItemChange }: CarouselProps) {
 
   return (
     <group>
-      <Background />
       {renderSlider()}
     </group>
   );

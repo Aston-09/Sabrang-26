@@ -7,8 +7,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Wheel, { type WheelHandle } from '@/components/ui/Wheel'
 import AboutSection from '@/components/sections/AboutSection'
 import HeroSection from '@/components/sections/HeroSection'
+import HeroScene from '@/components/3d/hero/HeroScene'
+import HeroBackground from '@/components/3d/hero/HeroBackground'
 import HeroConclusion from '@/components/sections/HeroConclusion'
-import AmbientAurora from '@/components/common/AmbientAurora'
 import './hero-theme.css'
 
 if (typeof window !== 'undefined') {
@@ -110,19 +111,20 @@ export default function HomeClient({
   }, [])
 
   return (
-    <main className="hero-theme relative w-full bg-[var(--bg-primary)]">
-      <AmbientAurora />
+    <main className="hero-theme relative w-full">
+      <HeroBackground />
+      <HeroScene />
       
 
 
-      <HeroSection />
+      <div className="relative w-full">
+        <HeroSection />
 
-      {/* Scroll Triggers (Main Hero Logic) */}
-      <div id="scroll-trigger" className="relative w-full z-10 pointer-events-none">
-        <section className="h-[200vh]" data-label="Zoom Phase" />
-        <section className="h-[200vh]" data-label="Scatter/DNA Phase" />
-        <section className="h-[200vh]" data-label="Space Phase" />
-        <section className="h-[200vh]" data-label="Space Phase" />
+        {/* Scroll Triggers (Main Hero Logic) */}
+        <div id="scroll-trigger" className="relative w-full z-10 pointer-events-none">
+          <section className="h-[200vh]" data-label="Zoom Phase" />
+          <section className="h-[200vh]" data-label="Scatter/DNA Phase" />
+        </div>
       </div>
 
       <AboutSection />
@@ -174,6 +176,11 @@ export default function HomeClient({
       </div>
 
       <HeroConclusion />
+      
+      {/* Dummy Section to allow continuous scrolling past everything */}
+      <section className="relative w-full h-[150vh] flex items-center justify-center border-t border-white/10 z-20 bg-black/40 backdrop-blur-sm">
+        <h2 className="text-4xl text-white/50 tracking-widest uppercase font-light">End of Scroll Test</h2>
+      </section>
     </main>
   )
 }

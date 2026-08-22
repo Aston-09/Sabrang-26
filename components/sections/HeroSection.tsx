@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { heroScrollState } from '@/components/3d/hero/heroScrollState'
 import './HeroSection.css'
 
 if (typeof window !== 'undefined') {
@@ -43,19 +44,17 @@ export default function HeroSection() {
       
       window.addEventListener('mousemove', handleMouseMove)
 
-      // Scroll transition
+      // MAIN HERO SCROLL TRIGGER
       if (triggerEl) {
         ScrollTrigger.create({
           trigger: triggerEl,
           start: 'top top',
-          end: '+=100vh',
-          scrub: true,
-          animation: gsap.to(container, {
-            y: -150,
-            opacity: 0,
-            scale: 0.95,
-            ease: "none"
-          })
+          end: '+=400vh',
+          pin: true,
+          scrub: 0.8, // Smooth GSAP scrubbing
+          onUpdate: (self) => {
+            heroScrollState.progress = self.progress
+          }
         })
       }
       
@@ -68,12 +67,9 @@ export default function HeroSection() {
   }, [])
 
   return (
-    <div ref={containerRef} className="hero-section-container">
-      <div className="hero-content">
-        <p className="hero-label hero-anim parallax-2">JK LAKSHMIPAT UNIVERSITY</p>
-        <h1 className="hero-title hero-anim parallax-1">SABRANG</h1>
-        <p className="hero-year hero-anim parallax-3">2026</p>
-      </div>
+    <div ref={containerRef} className="hero-section-container relative pointer-events-none">
+      
+      {/* HTML OVERLAYS */}
       
       <div className="hero-footer">
         <div className="hero-info hero-anim">

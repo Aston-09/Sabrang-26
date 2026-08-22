@@ -32,29 +32,27 @@ export default function AboutSection() {
         }
       });
 
-      // Mapping cards to Robot (0-33%), DNA (33-66%), Space (66-100%)
-      // Using a 30-unit virtual duration for precise 1/3 splits
-      
-      // PHASE 01: ROBOT (0 - 10)
-      tl.fromTo(step1Ref.current, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 1)
-        .to(step1Ref.current, { autoAlpha: 0, y: -50, duration: 3 }, 7)
+      // Total duration 100 virtual units to represent 0 -> 1 progress
+      // PHASE 01: ROBOT (75 - 83)
+      tl.fromTo(step1Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 4 }, 75)
+        .to(step1Ref.current, { autoAlpha: 0, y: -60, duration: 4 }, 79)
 
-      // PHASE 02: DNA (10 - 20)
-      tl.fromTo(step2Ref.current, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 4 }, 11)
-        .to(step2Ref.current, { autoAlpha: 0, y: -50, duration: 3 }, 17)
+      // PHASE 02: DNA (83 - 91)
+      tl.fromTo(step2Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 4 }, 83)
+        .to(step2Ref.current, { autoAlpha: 0, y: -60, duration: 4 }, 87)
 
-      // PHASE 03: SPACE (20 - 30 units)
+      // PHASE 03: SPACE (91 - 100)
       tl.fromTo(step3Ref.current, 
-        { autoAlpha: 0, y: 30 }, 
-        { autoAlpha: 1, y: 0, duration: 4 }, 21) // In at 21
+        { autoAlpha: 0, y: 60 }, 
+        { autoAlpha: 1, y: 0, duration: 4 }, 91)
         .to(step3Ref.current, 
-        { autoAlpha: 0, y: -30, duration: 3 }, 27) // Out at 27
+        { autoAlpha: 0, y: -60, duration: 5 }, 95)
 
-      // Background glow sync
-      tl.to(glowRef.current, { left: "0%", duration: 5, top: '40%' }, 0)
-        .to(glowRef.current, { left: "60%", duration: 10, top: '50%' }, 5)
-        .to(glowRef.current, { left: "0%", duration: 10, top: '60%' }, 15)
-        .to(glowRef.current, { autoAlpha: 0, duration: 5 }, 25);
+      // Background glow sync (delay until hero atmosphere is fading)
+      tl.to(glowRef.current, { left: "0%", duration: 5, top: '40%' }, 70)
+        .to(glowRef.current, { left: "60%", duration: 10, top: '50%' }, 75)
+        .to(glowRef.current, { left: "0%", duration: 10, top: '60%' }, 85)
+        .to(glowRef.current, { autoAlpha: 0, duration: 5 }, 95);
     });
 
     return () => {
