@@ -1,552 +1,275 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  deleteDoc,
-  doc,
-  updateDoc,
-  serverTimestamp,
-  query,
-  orderBy,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
-import { Event } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
-import { useAuth } from "@/components/auth/AuthProvider";
+import React, { useEffect, useState } from 'react';
+import { collection, onSnapshot, query, setDoc, doc, deleteDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { db } from '../../../lib/firebase';
+import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
+import { Modal } from '../../../components/admin/Modal';
+import { logAdminAction } from '../../../lib/audit';
+import { Plus, Trash2, Edit2, ShieldAlert, Power, PowerOff } from 'lucide-react';
 
-export default function AdminEvents() {
-  const { role, loading: authLoading } = useAuth();
-  const [events, setEvents] = useState<Event[]>([]);
+export default function EventManagement() {
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-  const categories = [
-    "All",
-    "Flagship",
-    "Cultural",
-    "Technical",
-    "E-Sports",
-    "Other",
-  ];
+  
+  // Modals
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   // Form state
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "Cultural" as
-      "Flagship" | "Cultural" | "Technical" | "E-Sports" | "Other",
-    dateTime: "",
-    venue: "",
-    rules: "",
-    prizePool: "",
-    coord1Name: "",
-    coord1Phone: "",
-    coord2Name: "",
-    coord2Phone: "",
+    title: '', description: '', date: '', time: '', venue: '', category: 'technical', isActive: true
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && role === "admin") {
-      fetchEvents();
-    }
-  }, [authLoading, role]);
-
-  const fetchEvents = async () => {
-    const q = query(collection(db, "events"), orderBy("dateTime", "asc"));
-    const querySnapshot = await getDocs(q);
-    setEvents(
-      querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Event),
-    );
-    setLoading(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const coordinators = [
-        { name: formData.coord1Name, phone: formData.coord1Phone },
-        { name: formData.coord2Name, phone: formData.coord2Phone },
-      ].filter((c) => c.name);
-
-      const data = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        dateTime: new Date(formData.dateTime),
-        venue: formData.venue,
-        rules: formData.rules,
-        prizePool: formData.prizePool.startsWith("₹")
-          ? formData.prizePool
-          : `₹${formData.prizePool}`,
-        coordinators,
-        createdAt: serverTimestamp(),
-      };
-
-      if (editingEvent) {
-        // Prevent title change in data update for extra safety
-        const { title, ...rest } = data;
-        await updateDoc(doc(db, "events", editingEvent.id!), rest);
-        alert("Event updated!");
-      } else {
-        await addDoc(collection(db, "events"), data);
-        alert("Event created!");
+    const unsub = onSnapshot(
+      query(collection(db, 'events')),
+      (snap) => {
+        let evts: any[] = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+        evts.sort((a, b) => {
+          const dateA = a.date instanceof Timestamp ? a.date.toMillis() : new Date(a.date).getTime();
+          const dateB = b.date instanceof Timestamp ? b.date.toMillis() : new Date(b.date).getTime();
+          return dateA - dateB;
+        });
+        setEvents(evts);
+        setLoading(false);
+      },
+      () => {
+        setLoading(false);
       }
+    );
+    return () => unsub();
+  }, []);
 
-      resetForm();
-      fetchEvents();
+  const handleOpenModal = (evt: any = null) => {
+    if (evt) {
+      setSelectedEvent(evt);
+      const d = evt.date instanceof Timestamp ? evt.date.toDate() : new Date(evt.date);
+      setFormData({
+        title: evt.title,
+        description: evt.description,
+        date: d.toISOString().split('T')[0],
+        time: evt.time,
+        venue: evt.venue,
+        category: evt.category,
+        isActive: evt.isActive
+      });
+    } else {
+      setSelectedEvent(null);
+      setFormData({ title: '', description: '', date: '', time: '', venue: '', category: 'technical', isActive: true });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const docRef = selectedEvent ? doc(db, 'events', selectedEvent.id) : doc(collection(db, 'events'));
+      const payload = {
+        ...formData,
+        date: Timestamp.fromDate(new Date(formData.date))
+      };
+      
+      await setDoc(docRef, payload, { merge: true });
+      await logAdminAction(selectedEvent ? 'EDIT_EVENT' : 'CREATE_EVENT', `events/${docRef.id}`, `Event: ${formData.title}`);
+      
+      setIsModalOpen(false);
     } catch (err) {
-      console.error(err);
-      alert("Error saving event.");
+      alert('Error saving event');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      title: "",
-      description: "",
-      category: "Cultural",
-      dateTime: "",
-      venue: "",
-      rules: "",
-      prizePool: "",
-      coord1Name: "",
-      coord1Phone: "",
-      coord2Name: "",
-      coord2Phone: "",
-    });
-    setEditingEvent(null);
-    setShowForm(false);
+  const handleToggleStatus = async (evt: any) => {
+    await updateDoc(doc(db, 'events', evt.id), { isActive: !evt.isActive });
+    await logAdminAction('TOGGLE_EVENT_STATUS', `events/${evt.id}`, `Changed active status to ${!evt.isActive}`);
   };
 
-  const handleEdit = (event: Event) => {
-    setEditingEvent(event);
-    setFormData({
-      title: event.title,
-      description: event.description,
-      category: event.category,
-      dateTime: new Date((event.dateTime as any).seconds * 1000)
-        .toISOString()
-        .slice(0, 16),
-      venue: event.venue,
-      rules: event.rules,
-      prizePool: event.prizePool?.replace("₹", "") || "",
-      coord1Name: event.coordinators?.[0]?.name || "",
-      coord1Phone: event.coordinators?.[0]?.phone || "",
-      coord2Name: event.coordinators?.[1]?.name || "",
-      coord2Phone: event.coordinators?.[1]?.phone || "",
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this event?")) {
-      await deleteDoc(doc(db, "events", id));
-      fetchEvents();
+  const handleDelete = async () => {
+    if (!selectedEvent) return;
+    try {
+      await deleteDoc(doc(db, 'events', selectedEvent.id));
+      await logAdminAction('DELETE_EVENT', `events/${selectedEvent.id}`, `Deleted event: ${selectedEvent.title}`);
+      setIsDeleteOpen(false);
+      setSelectedEvent(null);
+    } catch (err) {
+      alert('Error deleting event');
     }
   };
-
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || event.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  if (authLoading || loading)
-    return <div className="text-center mt-20">Loading...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
+    <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-          Sabrang Events Manager
-        </h1>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-          >
-            Add New Event
-          </button>
-        )}
+        <div>
+          <h1 className="font-adminHeading text-3xl font-bold mb-2">Event Management</h1>
+          <p className="text-admin-muted">Manage scheduling and event details</p>
+        </div>
+        <button 
+          onClick={() => handleOpenModal()}
+          className="bg-admin-accent hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <Plus size={20} /> Add Event
+        </button>
       </div>
 
-      {!showForm && (
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-grow relative">
-            <input
-              type="text"
-              placeholder="Search by title..."
-              className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:border-indigo-500 outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
-              Category:
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-indigo-500 transition-all shadow-sm cursor-pointer"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+      {loading ? (
+        <SkeletonTable rows={5} />
+      ) : (
+        <div className="bg-admin-surface border border-admin-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-admin-bg/50 border-b border-admin-border text-admin-muted text-sm uppercase tracking-wider">
+                  <th className="p-4 w-16 text-center border-r border-admin-border">S.No</th>
+                  <th className="p-4 font-medium">Title</th>
+                  <th className="p-4 font-medium">Category</th>
+                  <th className="p-4 font-medium">Date & Time</th>
+                  <th className="p-4 font-medium">Venue</th>
+                  <th className="p-4 font-medium">Status</th>
+                  <th className="p-4 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-admin-border">
+                {events.map((evt, idx) => (
+                  <tr key={evt.id} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-4 text-center border-r border-admin-border text-admin-muted font-medium">
+                      {idx + 1}
+                    </td>
+                    <td className="p-4 font-medium">{evt.title}</td>
+                    <td className="p-4 capitalize">{evt.category}</td>
+                    <td className="p-4 text-sm">
+                      {evt.date instanceof Timestamp ? evt.date.toDate().toLocaleDateString() : new Date(evt.date).toLocaleDateString()} at {evt.time}
+                    </td>
+                    <td className="p-4 text-sm">{evt.venue}</td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        evt.isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                      }`}>
+                        {evt.isActive ? 'Active' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="p-4 flex items-center justify-end gap-3">
+                      <button 
+                        onClick={() => handleToggleStatus(evt)}
+                        className="text-admin-muted hover:text-white transition-colors"
+                        title={evt.isActive ? 'Deactivate' : 'Reactivate'}
+                      >
+                        {evt.isActive ? <PowerOff size={18} /> : <Power size={18} />}
+                      </button>
+                      <button 
+                        onClick={() => handleOpenModal(evt)}
+                        className="text-admin-muted hover:text-white transition-colors"
+                        title="Edit Event"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button 
+                        onClick={() => { setSelectedEvent(evt); setIsDeleteOpen(true); }}
+                        className="text-red-500/70 hover:text-red-500 transition-colors"
+                        title="Delete Event"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {events.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-admin-muted">
+                      No events found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {showForm && (
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-12">
-          {/* ... existing form content ... */}
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
-                {editingEvent ? "Modify Event" : "Create Event"}
-              </h2>
-              <p className="text-slate-500 text-sm">
-                {editingEvent
-                  ? "Update the details for this existing event."
-                  : "Define a new competition for the festival."}
-              </p>
-            </div>
-            <button
-              onClick={resetForm}
-              className="text-slate-400 hover:text-slate-600 font-bold text-sm"
-            >
-              Cancel
-            </button>
+      {/* Edit/Create Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedEvent ? "Edit Event" : "Create Event"}>
+        <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-admin-muted">Event Title</label>
+            <input 
+              type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
+              className="w-full bg-admin-bg border border-admin-border rounded-lg py-2 px-4 focus:outline-none focus:border-admin-accent"
+            />
           </div>
-
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            <div className="md:col-span-2">
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Event Title {editingEvent && "(Fixed)"}
-              </label>
-              <input
-                type="text"
-                required
-                disabled={!!editingEvent}
-                className={`w-full p-4 border rounded-xl text-lg font-bold ${editingEvent ? "bg-slate-50 text-slate-500 border-slate-100" : "border-slate-200 focus:border-indigo-500 outline-none"}`}
-                placeholder="e.g. PANACHE - RAMPWALK"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Detailed Description
-              </label>
-              <textarea
-                required
-                className="w-full p-4 border border-slate-200 rounded-xl h-32 focus:border-indigo-500 outline-none transition-all"
-                placeholder="Describe the event, its significance and what participants can expect..."
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-              />
-            </div>
-
+          <div>
+            <label className="block text-sm font-medium mb-1 text-admin-muted">Description</label>
+            <textarea 
+              rows={3} required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+              className="w-full bg-admin-bg border border-admin-border rounded-lg py-2 px-4 focus:outline-none focus:border-admin-accent resize-none"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Category
-              </label>
-              <select
-                className="w-full p-4 border border-slate-200 rounded-xl bg-white focus:border-indigo-500 outline-none"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value as any })
-                }
+              <label className="block text-sm font-medium mb-1 text-admin-muted">Date</label>
+              <input 
+                type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
+                className="w-full bg-admin-bg border border-admin-border rounded-lg py-2 px-4 focus:outline-none focus:border-admin-accent [color-scheme:dark]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-admin-muted">Time</label>
+              <input 
+                type="time" required value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})}
+                className="w-full bg-admin-bg border border-admin-border rounded-lg py-2 px-4 focus:outline-none focus:border-admin-accent [color-scheme:dark]"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-admin-muted">Venue</label>
+              <input 
+                type="text" required value={formData.venue} onChange={e => setFormData({...formData, venue: e.target.value})}
+                className="w-full bg-admin-bg border border-admin-border rounded-lg py-2 px-4 focus:outline-none focus:border-admin-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-admin-muted">Category</label>
+              <select 
+                value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
+                className="w-full bg-admin-bg border border-admin-border rounded-lg py-2 px-4 focus:outline-none focus:border-admin-accent"
               >
-                <option value="Flagship">Flagship Event</option>
-                <option value="Cultural">Cultural</option>
-                <option value="Technical">Technical</option>
-                <option value="E-Sports">E-Sports</option>
-                <option value="Other">Other</option>
+                <option value="technical">Technical</option>
+                <option value="cultural">Cultural</option>
+                <option value="sports">Sports</option>
+                <option value="general">General</option>
               </select>
             </div>
+          </div>
+          
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-admin-muted hover:text-white">Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="bg-admin-accent text-black font-semibold px-4 py-2 rounded-lg hover:bg-yellow-500">
+              {isSubmitting ? 'Saving...' : 'Save Event'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
-            <div>
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Prize Pool (INR)
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
-                  ₹
-                </span>
-                <input
-                  type="text"
-                  required
-                  className="w-full p-4 pl-8 border border-slate-200 rounded-xl focus:border-indigo-500 outline-none"
-                  placeholder="50,000"
-                  value={formData.prizePool}
-                  onChange={(e) =>
-                    setFormData({ ...formData, prizePool: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Date & Time
-              </label>
-              <input
-                type="datetime-local"
-                required
-                className="w-full p-4 border border-slate-200 rounded-xl focus:border-indigo-500 outline-none"
-                value={formData.dateTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, dateTime: e.target.value })
-                }
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Venue
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full p-4 border border-slate-200 rounded-xl focus:border-indigo-500 outline-none"
-                placeholder="e.g. Main Stage / Auditorium"
-                value={formData.venue}
-                onChange={(e) =>
-                  setFormData({ ...formData, venue: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div className="md:col-span-2 flex justify-between">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
-                    Coordinators
-                  </label>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold italic">
-                    Max 2 allowed
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-slate-700 underline decoration-indigo-200">
-                    Coordinator 1
-                  </p>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="w-full p-3 border border-slate-200 rounded-lg bg-white"
-                    value={formData.coord1Name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, coord1Name: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="w-full p-3 border border-slate-200 rounded-lg bg-white"
-                    value={formData.coord1Phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, coord1Phone: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-slate-700 underline decoration-indigo-200">
-                    Coordinator 2
-                  </p>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="w-full p-3 border border-slate-200 rounded-lg bg-white"
-                    value={formData.coord2Name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, coord2Name: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="w-full p-3 border border-slate-200 rounded-lg bg-white"
-                    value={formData.coord2Phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, coord2Phone: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                Event Rules & Guidelines
-              </label>
-              <textarea
-                required
-                className="w-full p-4 border border-slate-200 rounded-xl h-48 focus:border-indigo-500 outline-none"
-                placeholder="1. Team size: 8-12 members..."
-                value={formData.rules}
-                onChange={(e) =>
-                  setFormData({ ...formData, rules: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="md:col-span-2 bg-indigo-50 p-4 rounded-xl flex items-center gap-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-indigo-600"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              <p className="text-xs text-indigo-700 font-medium">
-                Posters for events are managed directly in the codebase and
-                cannot be edited here.
-              </p>
-            </div>
-
-            <div className="md:col-span-2 flex justify-end gap-4 pt-4">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-8 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all"
-              >
-                Discard Changes
-              </button>
-              <button
-                type="submit"
-                className="bg-indigo-600 text-white px-12 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-              >
-                {editingEvent ? "Save Event" : "Publish Event"}
-              </button>
-            </div>
-          </form>
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} title="Delete Event">
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 text-red-500 bg-red-500/10 p-4 rounded-lg border border-red-500/20">
+            <ShieldAlert size={24} />
+            <p className="text-sm">Are you sure you want to delete <strong>{selectedEvent?.title}</strong>? This cannot be undone.</p>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setIsDeleteOpen(false)} className="px-4 py-2 rounded-lg text-admin-muted hover:text-white">Cancel</button>
+            <button onClick={handleDelete} className="bg-red-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-600">
+              Delete Event
+            </button>
+          </div>
         </div>
-      )}
-
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b">
-            <tr>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Event
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Venue
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Prize
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredEvents.map((event) => (
-              <tr
-                key={event.id}
-                className="hover:bg-slate-50/50 transition-colors group"
-              >
-                <td className="px-6 py-4 font-bold text-slate-900">
-                  {event.title}
-                </td>
-                <td className="px-6 py-4 text-sm">
-                  <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider">
-                    {event.category}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-500 font-medium">
-                  {formatDate(event.dateTime)}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-500">
-                  {event.venue}
-                </td>
-                <td className="px-6 py-4 text-sm font-bold text-amber-600">
-                  {event.prizePool || "-"}
-                </td>
-                <td className="px-6 py-4 text-right space-x-3">
-                  <button
-                    onClick={() => handleEdit(event)}
-                    className="text-indigo-600 hover:text-indigo-800 font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(event.id!)}
-                    className="text-red-600 hover:text-red-800 font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filteredEvents.length === 0 && (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-12 text-center text-slate-500 italic"
-                >
-                  No events found matching your filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      </Modal>
     </div>
   );
 }

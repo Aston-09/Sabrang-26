@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     return new Response(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="Aarambh_Receipt_${safeName}.pdf"`
+        'Content-Disposition': `attachment; filename="Sabrang_Receipt_${safeName}.pdf"`
       }
     });
   } catch (error: any) {

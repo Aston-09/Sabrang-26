@@ -39,15 +39,34 @@ export async function POST(req: Request) {
       enteredBy: volunteerName || scannerId || 'UNKNOWN'
     });
 
-    // 2. Add document to scanLogs
-    const logRef = await adminDb.collection('scanLogs').add({
-      scannerId: scannerId || 'API_GATE',
-      volunteerName: volunteerName || 'Gate Scanner',
-      registrationID: registrationID,
-      attendeeName: data.name || 'N/A',
-      timestamp: FieldValue.serverTimestamp(),
-      result: 'accepted'
-    });
+    // 2. Add document to entryLogs and scanLogs
+    const eventName = data.eventName || data.eventTitle || 'General Fest Entry';
+    const regTicketId = data.ticketId || data.orderId || `TKT-${registrationID.substring(0, 8).toUpperCase()}`;
+
+    await Promise.allSettled([
+      adminDb.collection('entryLogs').add({
+        ticketId: regTicketId,
+        registrationId: registrationID,
+        eventId: data.eventId || 'general',
+        eventTitle: eventName,
+        attendeeName: data.name || 'N/A',
+        attendeeEmail: data.email || 'N/A',
+        attendeeRoll: data.rollNumber || data.registrationNumber || 'N/A',
+        entryTime: FieldValue.serverTimestamp(),
+        scannedBy: volunteerName || scannerId || 'Gate Scanner',
+        scannerId: scannerId || 'API_GATE',
+        status: 'ACCEPTED',
+        createdAt: new Date().toISOString(),
+      }),
+      adminDb.collection('scanLogs').add({
+        scannerId: scannerId || 'API_GATE',
+        volunteerName: volunteerName || 'Gate Scanner',
+        registrationID: registrationID,
+        attendeeName: data.name || 'N/A',
+        timestamp: FieldValue.serverTimestamp(),
+        result: 'accepted'
+      }),
+    ]);
 
     // 3. Write Audit Log
     try {

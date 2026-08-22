@@ -1,18 +1,18 @@
-import AdminSidebar from "@/components/layout/AdminSidebar";
-import AdminTopBar from "@/components/layout/AdminTopBar";
+import type { Metadata } from 'next';
+import AdminLayoutWrapper from '@/components/admin/AdminLayoutWrapper';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex bg-ink min-h-screen">
-      <AdminSidebar />
-      <div className="flex-grow ml-64 flex flex-col">
-        <AdminTopBar />
-        <main className="p-10">{children}</main>
-      </div>
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Admin Panel",
+  description: "Organizer administration panel for participant registrations, transactions, and logs for Sabrang 2026.",
+  alternates: {
+    canonical: '/admin',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  }
+};
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return <AdminLayoutWrapper>{children}</AdminLayoutWrapper>;
 }

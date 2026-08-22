@@ -10,7 +10,7 @@ const rateLimitMap = new Map<string, { count: number; firstRequest: number }>();
  * NOTE: This map is process-local. On serverless platforms like Cloud Run, each
  * new instance starts with an empty map, so very short bursts across cold-starts can
  * bypass the limit. For production-grade enforcement, replace this with a Redis-backed
- * limiter (e.g., Upstash). For Aarambh-scale traffic this is sufficient.
+ * limiter (e.g., Upstash). For Sabrang-scale traffic this is sufficient.
  */
 export function isRateLimited(ip: string, limit: number = 5, windowMs: number = 60000): boolean {
   const now = Date.now();

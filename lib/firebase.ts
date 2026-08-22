@@ -1,6 +1,6 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { initializeFirestore, persistentLocalCache, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, persistentLocalCache, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { initializeAppCheck, ReCaptchaV3Provider, CustomProvider } from 'firebase/app-check';
 
@@ -26,22 +26,32 @@ export function isFirebaseConfigured(): boolean {
 }
 
 export const FIREBASE_SETUP_MESSAGE =
-  'Firebase is not configured. Copy .env.example to .env.local, add your Firebase web app keys from the Firebase Console (project: aarambh-26), then restart `npm run dev`.';
+  'Firebase is not configured. Copy .env.example to .env.local, add your Firebase web app keys from the Firebase Console (project: sabrang-26), then restart `npm run dev`.';
 
-const app: FirebaseApp | null = isFirebaseConfigured()
-  ? getApps().length === 0
-    ? initializeApp(firebaseConfig)
-    : getApps()[0]
-  : null;
+const app: FirebaseApp =
+  getApps().length > 0
+    ? getApp()
+    : initializeApp(
+        firebaseConfig.apiKey
+          ? firebaseConfig
+          : {
+              apiKey: "AIzaSyDummyApiKeyForLocalDevelopment01",
+              projectId: "sabrang-26",
+              authDomain: "sabrang-26.firebaseapp.com",
+            }
+      );
 
-// Only initialize Auth/Firestore when config is valid — avoids auth/invalid-api-key on load
-export const auth: Auth | null = app ? getAuth(app) : null;
-export const db: Firestore | null = app
-  ? initializeFirestore(app, {
+export const auth: Auth = getAuth(app);
+export const db: Firestore = (() => {
+  try {
+    return initializeFirestore(app, {
       localCache: typeof window !== 'undefined' ? persistentLocalCache() : undefined,
-    })
-  : null;
-export const storage: FirebaseStorage | null = app ? getStorage(app) : null;
+    });
+  } catch {
+    return getFirestore(app);
+  }
+})();
+export const storage: FirebaseStorage = getStorage(app);
 if (storage) {
   storage.maxUploadRetryTime = 6000;
   storage.maxOperationRetryTime = 6000;

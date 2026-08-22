@@ -88,13 +88,13 @@ async function sendSummaryEmail(
     }
 
     const mailOptions = {
-      from: `"Aarambh Reconciler" <${process.env.SMTP_FROM || ''}>`,
-      to: 'devamgupta@jklu.edu.in',
-      subject: `[Aarambh Reconciler] Daily Run Summary - ${runTime.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}`,
+      from: `"Sabrang Reconciler" <${process.env.SMTP_FROM || ''}>`,
+      to: process.env.SMTP_FROM || 'admin@jklu.edu.in',
+      subject: `[Sabrang Reconciler] Daily Run Summary - ${runTime.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-          <div style="background-color: #0d21dd; color: white; padding: 20px; text-align: center;">
-            <h2 style="margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">Aarambh Reconciler Run Summary</h2>
+          <div style="background-color: #7C3AED; color: white; padding: 20px; text-align: center;">
+            <h2 style="margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">Sabrang Reconciler Run Summary</h2>
             <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">Run time: ${formattedDate} IST | Mode: ${isManual ? 'Manual Trigger' : 'Cloud Scheduler (Cron)'}</p>
           </div>
           
@@ -108,60 +108,56 @@ async function sendSummaryEmail(
               </tr>
               <tr>
                 <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Recovered Registrations</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">${recovered.length}</td>
-                <td style="border: 1px solid #ddd; padding: 10px;">Stuck Cashfree transactions that were recovered and registered.</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; color: #16a34a;">${recovered.length}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; font-size: 13px;">Registrations finalized via active payment capture.</td>
               </tr>
               <tr>
                 <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Reconciled Settlements</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">${reconciled.length}</td>
-                <td style="border: 1px solid #ddd; padding: 10px;">Settlement IDs reconciled and synced to Google Sheets.</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; color: #2563eb;">${reconciled.length}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; font-size: 13px;">Existing registrations updated with Cashfree Settlement IDs.</td>
               </tr>
               <tr>
-                <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Pending Checked</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${checkedCount}</td>
-                <td style="border: 1px solid #ddd; padding: 10px;">Total pending database records checked in this run.</td>
+                <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Pending / Unsettled</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; color: #d97706;">${remainingCount}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; font-size: 13px;">Registrations still awaiting bank clearance.</td>
               </tr>
               <tr>
-                <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Remaining Pending</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${remainingCount}</td>
-                <td style="border: 1px solid #ddd; padding: 10px;">Unsettled/pending transactions remaining in the database.</td>
+                <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Total Scanned Orders</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">${checkedCount}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; font-size: 13px;">Total orders verified in this run.</td>
               </tr>
             </table>
 
-            <h3>Recovered Registrations Detail (${recovered.length})</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
-              <thead>
+            ${recovered.length > 0 ? `
+              <h3>Recovered Registrations Detail</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
                 <tr style="background-color: #f8fafc;">
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Student Name</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Name</th>
                   <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Email</th>
                   <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Order ID</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Amount</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Ticket Email Status</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Payment ID</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Amount</th>
                 </tr>
-              </thead>
-              <tbody>
                 ${recoveredRows}
-              </tbody>
-            </table>
+              </table>
+            ` : ''}
 
-            <h3>Reconciled Settlements Detail (${reconciled.length})</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
-              <thead>
+            ${reconciled.length > 0 ? `
+              <h3>Reconciled Settlements Detail</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
                 <tr style="background-color: #f8fafc;">
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Student Name</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Name</th>
                   <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Order ID</th>
                   <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Settlement ID</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Google Sheet Sync</th>
+                  <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Amount</th>
                 </tr>
-              </thead>
-              <tbody>
                 ${reconciledRows}
-              </tbody>
-            </table>
+              </table>
+            ` : ''}
           </div>
-          
+
           <div style="background-color: #f8fafc; padding: 15px; text-align: center; font-size: 11px; color: #777777; border-top: 1px solid #e2e8f0;">
-            This is an automated run summary from the Aarambh Event Management Portal.
+            This is an automated run summary from the Sabrang Event Management Portal.
           </div>
         </div>
       `

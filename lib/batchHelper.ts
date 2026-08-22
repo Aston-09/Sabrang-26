@@ -38,14 +38,12 @@ async function generateFallbackSchedulePDF(batchName: string): Promise<Uint8Arra
   
   page.drawText('JK Lakshmipat University', { x: 50, y: 350, size: 18, color: rgb(0.01, 0.01, 0.01) });
   page.drawText(`Official Schedule: ${batchName}`, { x: 50, y: 310, size: 22, color: rgb(1, 0.6, 0) });
-  page.drawText('Orientation Program — Aarambh 2026', { x: 50, y: 280, size: 12, color: rgb(0.4, 0.4, 0.4) });
+  page.drawText('Sabrang 2026 — Annual Festival', { x: 50, y: 280, size: 12, color: rgb(0.4, 0.4, 0.4) });
   
-  page.drawText('Schedule Outline:', { x: 50, y: 220, size: 14, color: rgb(0.1, 0.1, 0.1) });
-  page.drawText('• Day 1: Reporting, Registration and Welcome Inaugural Session', { x: 50, y: 190, size: 10 });
-  page.drawText('• Day 2: Academic Orientation & Campus Tours', { x: 50, y: 170, size: 10 });
-  page.drawText('• Day 3: Ice-breaking Activities & Club Introductions', { x: 50, y: 150, size: 10 });
-  page.drawText('• Day 4-7: Skill Workshops, Guest Lectures & Cultural Rehearsals', { x: 50, y: 130, size: 10 });
-  page.drawText('• Day 8: Convocation & Aarambh Gala Event Night', { x: 50, y: 110, size: 10 });
+  page.drawText('Festival Schedule Outline:', { x: 50, y: 220, size: 14, color: rgb(0.1, 0.1, 0.1) });
+  page.drawText('• Day 1: Opening Ceremony, Tech Hackathons, Step-Up Prelims & DJ Night', { x: 50, y: 190, size: 10 });
+  page.drawText('• Day 2: Business Quizzes, E-Sports, Panache Runway & Bandjam', { x: 50, y: 170, size: 10 });
+  page.drawText('• Day 3: Panache Grand Finale, Prize Distribution & Celebrity Pro-Show', { x: 50, y: 150, size: 10 });
   
   page.drawLine({ start: { x: 50, y: 70 }, end: { x: 550, y: 70 }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
   page.drawText('This is a system-generated schedule document.', { x: 50, y: 55, size: 8, color: rgb(0.5, 0.5, 0.5) });
@@ -58,7 +56,7 @@ async function generateFallbackSchedulePDF(batchName: string): Promise<Uint8Arra
  * Checks Firestore collection 'studentBatches' first, then falls back to course rules.
  */
 export async function getStudentBatchDetails(studentData: any, regId: string): Promise<{ batchName: string; pdfFileName: string }> {
-  let resolvedBatch = 'Batch 1';
+  let resolvedBatch = 'General Pass';
   
   try {
     // 1. Check if there is a manual override document in Firestore for this registration ID
@@ -95,7 +93,7 @@ export async function getStudentBatchDetails(studentData: any, regId: string): P
   // Every student receives the same final schedule PDF
   return { 
     batchName: resolvedBatch, 
-    pdfFileName: 'Aarambh_2026_Schedule.pdf' 
+    pdfFileName: 'Sabrang_2026_Schedule.pdf' 
   };
 }
 
@@ -121,7 +119,7 @@ export async function sendCheckInEmail(
   appNumber: string,
   batchName: string,
   pdfFileName?: string,
-  subject: string = "Check-In Confirmation – Batch Details & Schedule"
+  subject: string = "Sabrang '26 Check-In Confirmation — Pass Details & Schedule"
 ) {
   console.log(`Preparing to send check-in email to ${toEmail} for batch ${batchName}...`);
   const transporter = await getEmailTransporter();
@@ -133,12 +131,12 @@ export async function sendCheckInEmail(
   let logoAttachment: any = null;
   let jkluAttachment: any = null;
   try {
-    const logoPath = path.join(process.cwd(), 'public', 'logos', 'Aarambh_new_logo.png');
+    const logoPath = path.join(process.cwd(), 'public', 'sabrang logo.png');
     const logoBytes = await fs.readFile(logoPath);
     logoAttachment = {
-      filename: 'Aarambh_new_logo.png',
+      filename: 'sabrang_logo.png',
       content: logoBytes,
-      cid: 'aarambh_logo'
+      cid: 'sabrang_logo'
     };
 
     const jkluPath = path.join(process.cwd(), 'public', 'logos', 'jklu_logo.png');
@@ -182,7 +180,7 @@ export async function sendCheckInEmail(
                 <img src="cid:jklu_logo" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />
               </td>
               <td align="center" valign="middle" style="padding-left: 20px; border-left: 1px solid rgba(0,0,0,0.1);">
-                <img src="cid:aarambh_logo" alt="Aarambh '26 Logo" style="max-height: 70px; width: auto; display: block;" />
+                <img src="cid:sabrang_logo" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />
               </td>
             </tr>
           </table>
@@ -193,41 +191,41 @@ export async function sendCheckInEmail(
           
           <p>Your registration details are as follows:</p>
           <ul style="line-height: 1.8;">
-            <li><strong>Student Name:</strong> ${safeName}</li>
-            <li><strong>Application Number:</strong> ${safeAppNum}</li>
-            <li><strong>Assigned Batch:</strong> ${safeBatch}</li>
+            <li><strong>Participant Name:</strong> ${safeName}</li>
+            <li><strong>Registration Number:</strong> ${safeAppNum}</li>
+            <li><strong>Category / Batch:</strong> ${safeBatch}</li>
           </ul>
 
-          <p>We recommend reviewing the event schedule carefully. You can download the complete Aarambh 2026 Event Schedule using the link below:</p>
+          <p>You can view and explore the complete 3-day schedule directly on our portal.</p>
           <div style="margin: 15px 0;">
-            <a href="https://storage.googleapis.com/aarambh-26.firebasestorage.app/Aarambh_2026_Schedule.pdf" style="display: inline-block; padding: 10px 20px; background-color: #0D21DD; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px;">
-              Download Complete Event Schedule
+            <a href="https://sabrang.jklu.edu.in/schedule" style="display: inline-block; padding: 10px 20px; background-color: #7C3AED; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px;">
+              View Event Timeline & Schedule
             </a>
           </div>
 
           ${leaderDetails ? `
-          <p>If you have any questions or require further assistance, please feel free to contact your Cohort Leader (<strong>Cohort ${htmlEscape(cohort || '')}</strong>):</p>
+          <p>If you have any questions or require further assistance, please feel free to contact your Event Coordinator:</p>
           <p style="background-color: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; display: inline-block; font-size: 14px; line-height: 1.5;">
             <strong>Name:</strong> ${htmlEscape(leaderDetails.name)}<br/>
-            <strong>Phone Number:</strong> <a href="tel:${htmlEscape(leaderDetails.phone.replace(/\s+/g, ''))}" style="color: #0D21DD; text-decoration: none; font-weight: bold;">+91 ${htmlEscape(leaderDetails.phone)}</a>
+            <strong>Phone Number:</strong> <a href="tel:${htmlEscape(leaderDetails.phone.replace(/\s+/g, ''))}" style="color: #7C3AED; text-decoration: none; font-weight: bold;">+91 ${htmlEscape(leaderDetails.phone)}</a>
           </p>
           ` : `
-          <p>If you have any questions or require further assistance, please feel free to visit the helpdesk at the venue or contact our Organizing Team.</p>
+          <p>If you have any questions or require assistance, please visit the helpdesk at the venue or contact our Organizing Team.</p>
           `}
           
-          <p>We look forward to seeing you!</p>
-          <p>Best regards,<br/><strong>AARAMBH Team</strong></p>
+          <p>We look forward to seeing you at Sabrang 2026!</p>
+          <p>Best regards,<br/><strong>SABRANG Team</strong></p>
         </div>
         <div class="footer">
           <div class="social-icons">
-            <a href="https://www.instagram.com/aarambh_jklu?igsh=NmZzYjFrcDNtejMw">Instagram</a> &bull; 
+            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull; 
             <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull; 
             <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull; 
             <a href="https://www.facebook.com/share/1Hsdb57Jcf/">Facebook</a>
           </div>
           <p style="margin-bottom: 5px;">JK Lakshmipat University, Jaipur</p>
-          <p style="margin-top: 0;"><a href="https://aarambh.jklu.edu.in" class="footer-link">aarambh.jklu.edu.in</a></p>
-          <p style="margin-top: 15px; font-size: 11px; opacity: 0.7;">&copy; 2026 Aarambh Event Management System</p>
+          <p style="margin-top: 0;"><a href="https://sabrang.jklu.edu.in" class="footer-link">sabrang.jklu.edu.in</a></p>
+          <p style="margin-top: 15px; font-size: 11px; opacity: 0.7;">&copy; 2026 Sabrang Event Management System</p>
         </div>
       </div>
     </body>
@@ -235,7 +233,7 @@ export async function sendCheckInEmail(
   `;
 
   const mailOptions: any = {
-    from: `"Aarambh Team" <${process.env.SMTP_FROM || ''}>`,
+    from: `"Sabrang Team" <${process.env.SMTP_FROM || ''}>`,
     to: toEmail,
     subject: subject,
     html: htmlContent,

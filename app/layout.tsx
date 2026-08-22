@@ -17,6 +17,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
+import { Suspense } from "react";
+import TrafficTracker from "@/components/analytics/TrafficTracker";
 import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
@@ -145,6 +147,9 @@ export default function RootLayout({
             </AuthProvider>
           </InteractionProvider>
         </ReCaptchaProvider>
+        <Suspense fallback={null}>
+          <TrafficTracker />
+        </Suspense>
         <Analytics />
         <SpeedInsights />
       </body>

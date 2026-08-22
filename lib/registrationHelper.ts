@@ -43,25 +43,25 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
     console.warn('PDF Left Logo (JKLU) load failed:', error);
   }
 
-  // 2. Right Logo: AARAMBH Main Logo (Transparent removebg PNG variant)
-  let aarambhScaledWidth = 0;
-  let aarambhScaledHeight = 0;
-  let aarambhLogoImage;
+  // 2. Right Logo: Festival Main Logo
+  let festScaledWidth = 0;
+  let festScaledHeight = 0;
+  let festLogoImage;
   try {
-    const aarambhLogoPath = path.join(
+    const festLogoPath = path.join(
       process.cwd(), 
       'public', 
-      'logos',
-      'Aarambh_new_logo.png'
+      'images',
+      'logo.png'
     );
-    const aarambhLogoBytes = await fs.readFile(aarambhLogoPath);
-    aarambhLogoImage = await pdfDoc.embedPng(aarambhLogoBytes);
+    const festLogoBytes = await fs.readFile(festLogoPath);
+    festLogoImage = await pdfDoc.embedPng(festLogoBytes);
     const targetHeight = 35;
-    const scaleFactor = targetHeight / aarambhLogoImage.height;
-    aarambhScaledWidth = aarambhLogoImage.width * scaleFactor;
-    aarambhScaledHeight = aarambhLogoImage.height * scaleFactor;
+    const scaleFactor = targetHeight / festLogoImage.height;
+    festScaledWidth = festLogoImage.width * scaleFactor;
+    festScaledHeight = festLogoImage.height * scaleFactor;
   } catch (error) {
-    console.warn('PDF Right Logo (Aarambh) load failed:', error);
+    // Optional logo watermark
   }
 
   // Draw Left Logo (JKLU Logo) directly on white background
@@ -74,13 +74,13 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
     });
   }
 
-  // Draw Right Logo (AARAMBH Logo) directly on white background
-  if (aarambhLogoImage) {
-    page.drawImage(aarambhLogoImage, {
-      x: width - 40 - aarambhScaledWidth,
+  // Draw Right Logo (Festival Logo) directly on white background
+  if (festLogoImage) {
+    page.drawImage(festLogoImage, {
+      x: width - 40 - festScaledWidth,
       y: height - 90,
-      width: aarambhScaledWidth,
-      height: aarambhScaledHeight,
+      width: festScaledWidth,
+      height: festScaledHeight,
     });
   }
 
@@ -90,7 +90,7 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   const titleSize = 20;
   const titleWidth = helveticaFont.widthOfTextAtSize(titleText, titleSize);
 
-  const subtitleText = 'Aarambh Registration · JK Lakshmipat University';
+  const subtitleText = 'Sabrang 2026 Registration · JK Lakshmipat University';
   const subtitleSize = 8.5;
   const subtitleWidth = helveticaFont.widthOfTextAtSize(subtitleText, subtitleSize);
 
@@ -135,7 +135,7 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   // Receipt No
   const rollNumberStr = data.rollNumber || data.registrationNumber || id.slice(-4).toUpperCase();
   page.drawText('Receipt No.'.toUpperCase(), { x: 40, y: 590, size: 7.5, color: greyColor });
-  page.drawText(`AARAMBH2026-${rollNumberStr}`, { x: 40, y: 575, size: 10.5, color: darkColor });
+  page.drawText(`SABRANG2026-${rollNumberStr}`, { x: 40, y: 575, size: 10.5, color: darkColor });
 
   // Date of Issue
   const issueDate = dateOfPayment || data.dateOfPayment || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
@@ -177,25 +177,25 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
     page.drawText(clean(value), { x, y: y - 13, size: 10.5, color: darkColor });
   };
 
-  // 1. STUDENT INFORMATION Section
-  drawSectionHeader('STUDENT INFORMATION', 525);
+  // 1. PARTICIPANT INFORMATION Section
+  drawSectionHeader('PARTICIPANT INFORMATION', 525);
   drawField('Full Name', data.name || 'N/A', 40, 502);
-  drawField('Enrollment No.', data.rollNumber || data.registrationNumber || 'N/A', 300, 502);
+  drawField('Registration ID / Roll No.', data.rollNumber || data.registrationNumber || id, 300, 502);
   
-  drawField('Branch / Programme', data.course || 'B.Tech', 40, 469);
+  drawField('College / Course', data.course || data.college || 'JKLU', 40, 469);
   
   drawField('Email Address', data.email || 'N/A', 40, 436);
   drawField('Mobile Number', formatPhoneNumber(data.phone || data.mobile || ''), 300, 436);
 
-  // 2. PARENT DETAILS Section
-  drawSectionHeader('PARENT DETAILS', 395);
-  drawField('Parent Name', data.parentName || data.fatherName || 'N/A', 40, 372);
-  drawField('Parent Phone', formatPhoneNumber(data.parentPhone || data.fatherMobile || ''), 300, 372);
+  // 2. CONTACT DETAILS Section
+  drawSectionHeader('CONTACT DETAILS', 395);
+  drawField('Contact Name', data.parentName || data.fatherName || data.name || 'N/A', 40, 372);
+  drawField('Contact Phone', formatPhoneNumber(data.parentPhone || data.fatherMobile || data.phone || data.mobile || ''), 300, 372);
   
-  drawField('Parent Email', data.parentEmail || data.fatherEmail || 'N/A', 40, 339);
+  drawField('Contact Email', data.parentEmail || data.fatherEmail || data.email || 'N/A', 40, 339);
 
-  // 3. PERMANENT ADDRESS Section
-  drawSectionHeader('PERMANENT ADDRESS', 298);
+  // 3. ADDRESS Section
+  drawSectionHeader('ADDRESS', 298);
   drawField('Street / Locality', data.address || 'N/A', 40, 275);
   const pinCode = data.pincode || (data.address ? (data.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
   const cityName = data.city || 'N/A';
@@ -216,13 +216,13 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   page.drawText('Confirmed', { x: 410, y: 165, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
 
   // Disclaimer Notes
-  page.drawText('This receipt confirms successful registration and payment for Aarambh 2026. Please retain this document for your records.', {
+  page.drawText('This receipt confirms successful registration and payment for Sabrang 2026. Please retain this document for your records.', {
     x: 40,
     y: 110,
     size: 7,
     color: greyColor
   });
-  page.drawText('For queries, contact the university administration.', {
+  page.drawText('For queries, contact the Sabrang organizing committee.', {
     x: 40,
     y: 99,
     size: 7,
@@ -323,7 +323,7 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
                 <img src="cid:jklu_logo" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />
               </td>
               <td align="center" valign="middle" style="padding-left: 20px; border-left: 1px solid rgba(0,0,0,0.1);">
-                <img src="cid:aarambh_logo" alt="Aarambh '26 Logo" style="max-height: 70px; width: auto; display: block;" />
+                <img src="cid:sabrang_logo" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />
               </td>
             </tr>
           </table>
@@ -332,32 +332,32 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
           <div class="success-badge">✓ Registration Confirmed</div>
           <h2 style="margin-top: 0;">Dear ${name},</h2>
           <p>Congratulations! 🎉</p>
-          <p>Your registration for <strong>AARAMBH 2026</strong>, the Orientation Program at JK Lakshmipat University, has been successfully completed.</p>
-          <p>Please find your unique QR Code attached to this email. This QR code will serve as your entry pass and will be required during the check-in process on campus.</p>
+          <p>Your registration for <strong>SABRANG 2026</strong>, the Annual Festival at JK Lakshmipat University, has been successfully completed.</p>
+          <p>Please find your unique QR Code and Registration Receipt attached to this email. This will serve as your entry pass and will be required during the check-in process on campus.</p>
           
           <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0;">
             <p style="margin: 0; font-size: 14px; color: #64748b;"><strong>Important:</strong></p>
             <ul style="margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
               <li>Save this email for future reference.</li>
-              <li>Keep your QR code safe and easily accessible.</li>
-              <li>You may either carry a digital copy on your phone or a printed copy during reporting.</li>
+              <li>Keep your pass QR code safe and easily accessible.</li>
+              <li>You may carry a digital copy on your mobile or a printed copy during fest entry.</li>
             </ul>
           </div>
 
-          <p>We look forward to welcoming you to the JKLU family and helping you begin this exciting new chapter.</p>
+          <p>We look forward to welcoming you to Sabrang 2026!</p>
           <p>If you have any questions, please feel free to reach out to us.</p>
-          <p>Warm regards,<br/><strong>AARAMBH 2026 Team</strong><br/>JK Lakshmipat University</p>
+          <p>Warm regards,<br/><strong>SABRANG 2026 Team</strong><br/>JK Lakshmipat University</p>
         </div>
         <div class="footer">
           <div class="social-icons">
-            <a href="https://www.instagram.com/aarambh_jklu?igsh=NmZzYjFrcDNtejMw">Instagram</a> &bull; 
+            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull; 
             <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull; 
             <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull; 
             <a href="https://www.facebook.com/share/1Hsdb57Jcf/">Facebook</a>
           </div>
           <p style="margin-bottom: 5px;">JK Lakshmipat University, Jaipur</p>
-          <p style="margin-top: 0;"><a href="https://aarambh.jklu.edu.in" class="footer-link">aarambh.jklu.edu.in</a></p>
-          <p style="margin-top: 15px; font-size: 11px; opacity: 0.7;">&copy; 2026 Aarambh Event Management System</p>
+          <p style="margin-top: 0;"><a href="https://sabrang.jklu.edu.in" class="footer-link">sabrang.jklu.edu.in</a></p>
+          <p style="margin-top: 15px; font-size: 11px; opacity: 0.7;">&copy; 2026 Sabrang Festival Management System</p>
         </div>
       </div>
     </body>
@@ -370,12 +370,12 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
     const fs = await import('fs/promises');
     const path = await import('path');
     
-    const logoPath = path.join(process.cwd(), 'public', 'logos', 'Aarambh_new_logo.png');
+    const logoPath = path.join(process.cwd(), 'public', 'sabrang logo.png');
     const logoBytes = await fs.readFile(logoPath);
     logoAttachment = {
-      filename: 'Aarambh_new_logo.png',
+      filename: 'sabrang_logo.png',
       content: logoBytes,
-      cid: 'aarambh_logo' // same cid value as in the html img src
+      cid: 'sabrang_logo'
     };
 
     const jkluPath = path.join(process.cwd(), 'public', 'logos', 'jklu_logo.png');
@@ -386,17 +386,17 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
       cid: 'jklu_logo'
     };
   } catch (err) {
-    console.warn("Failed to load logo for email attachment:", err);
+    // Non-fatal if branding images missing locally
   }
 
   const mailOptions: any = {
-    from: `"Aarambh Team" <${process.env.SMTP_FROM || ''}>`,
+    from: `"Sabrang Team" <${process.env.SMTP_FROM || ''}>`,
     to: to,
-    subject: "Welcome to Aarambh 2026 – Registration Confirmed!",
+    subject: "Welcome to Sabrang 2026 – Registration Confirmed!",
     html: htmlContent,
     attachments: [
       {
-        filename: 'Aarambh_Registration_Receipt.pdf',
+        filename: 'Sabrang_Registration_Receipt.pdf',
         content: Buffer.from(pdfBytes),
         contentType: 'application/pdf'
       }
@@ -428,47 +428,16 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
 
 export async function sendSystemErrorEmail(performedBy: string, targetEntity: string, details: string) {
   try {
-    const transporter = await getTransporter();
-
-    const mailOptions = {
-      from: `"Aarambh System Monitor" <${process.env.SMTP_FROM || ''}>`,
-      to: 'devamgupta@jklu.edu.in',
-      subject: `🚨 [Aarambh Error] SYSTEM_ERROR Alert`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-          <div style="background-color: #ef4444; color: white; padding: 20px; text-align: center;">
-            <h2 style="margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">🚨 System Error Detected</h2>
-          </div>
-          <div style="padding: 25px; background-color: #ffffff; color: #333333; line-height: 1.6;">
-            <p>An automated system error has been logged in the Aarambh event registration portal.</p>
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-              <tr>
-                <td style="padding: 8px 0; font-weight: bold; width: 120px; color: #666;">Source:</td>
-                <td style="padding: 8px 0;">${performedBy}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; font-weight: bold; color: #666;">Target:</td>
-                <td style="padding: 8px 0; font-family: monospace;">${targetEntity}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; font-weight: bold; color: #666;">Timestamp:</td>
-                <td style="padding: 8px 0;">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</td>
-              </tr>
-            </table>
-            <h4 style="margin: 15px 0 5px 0; color: #ef4444;">Error Details:</h4>
-            <pre style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; margin: 0;">${details}</pre>
-          </div>
-          <div style="background-color: #f8fafc; padding: 15px; text-align: center; font-size: 11px; color: #777777; border-top: 1px solid #e2e8f0;">
-            This is an automated alert from the Aarambh Event Management Portal.
-          </div>
-        </div>
-      `
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log("System error email alert sent successfully to devamgupta@jklu.edu.in");
+    const { sendErrorNotificationAlert } = await import('./errorAlertService');
+    await sendErrorNotificationAlert({
+      message: details,
+      type: 'System Exception',
+      path: targetEntity,
+      userId: performedBy,
+      environment: process.env.NODE_ENV || 'production',
+    });
   } catch (err) {
-    console.error("Failed to send system error email alert:", err);
+    console.error("Failed to route system error alert:", err);
   }
 }
 
@@ -477,13 +446,22 @@ export async function sendSystemErrorEmail(performedBy: string, targetEntity: st
 // ============================================================================
 export async function finalizeRegistration(formData: any, paymentId: string, orderId: string, skipBackgroundTasks: boolean = false) {
   console.log("Saving registration to Firestore...");
-  let paymentAmount = 2500;
-  const couponCode = (formData.coupon || '').trim().toUpperCase();
+  const basePrice = Number(formData.amount || formData.price || formData.originalPrice || 500);
+  let paymentAmount = basePrice;
+  const couponCode = (formData.coupon || '').trim().toLowerCase();
   if (couponCode) {
     try {
-      const docSnap = await adminDb.collection('coupons').doc(couponCode).get();
-      if (docSnap.exists && docSnap.data()?.active) {
-        paymentAmount = docSnap.data()?.amount ?? 2500;
+      let docSnap = await adminDb.collection('coupons').doc(couponCode).get();
+      if (!docSnap.exists) {
+        docSnap = await adminDb.collection('coupons').doc(couponCode.toUpperCase()).get();
+      }
+      if (docSnap.exists) {
+        const { calculateCouponDiscount } = await import('@/lib/couponHelper');
+        const eventTarget = formData.eventId || formData.event || formData.eventName || formData.eventTitle || '';
+        const res = calculateCouponDiscount(docSnap.data(), basePrice, eventTarget);
+        if (res.valid) {
+          paymentAmount = res.finalPrice;
+        }
       }
     } catch (err) {
       console.error("Error fetching coupon during finalizeRegistration:", err);
@@ -513,6 +491,14 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
   try {
     await lockRef.create({ lockedAt: FieldValue.serverTimestamp() });
     
+    const ownRoll = formData.registrationNumber || formData.rollNumber;
+    const { generateOwnReferralCode, normalizeReferralCode, attachReferralData, DEFAULT_REFERRAL_CODE } = await import('./referralHelper');
+    const ownReferralCode = generateOwnReferralCode(ownRoll);
+    const rawEntered = formData.referredByCode || formData.referralCode || formData.referral || formData.referredBy;
+    const effectiveReferral = rawEntered && rawEntered.trim() 
+      ? normalizeReferralCode(rawEntered) 
+      : (ownReferralCode !== DEFAULT_REFERRAL_CODE ? DEFAULT_REFERRAL_CODE : null);
+
     // We got the lock! Save data to Firestore Registration Collection
     const docRef = await adminDb.collection('registrations').add({
       ...formData,
@@ -520,6 +506,9 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
       email: formData.email,
       phone: formData.mobile,
       rollNumber: formData.registrationNumber,
+      referralCode: ownReferralCode, // ALWAYS exists in lowercase
+      referredByCode: effectiveReferral || DEFAULT_REFERRAL_CODE, // SILENT DEFAULT: 2024btech014
+      referralSource: effectiveReferral || DEFAULT_REFERRAL_CODE,
       gender: formData.gender || 'N/A',
       course: formData.course || 'N/A',
       pincode: formData.pincode || (formData.address ? (formData.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A'),
@@ -543,6 +532,9 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
     });
     docId = docRef.id;
     console.log("Registration saved. Firestore ID:", docId);
+
+    // Process referral relationship asynchronously
+    attachReferralData(formData, docId).catch(err => console.error("Failed to attach referral tracking:", err));
   } catch (err: any) {
     if (err.code === 6 || err.message?.includes('ALREADY_EXISTS')) {
       console.log(`Database lock exists for order ${orderId}. Fetching existing ID...`);
@@ -553,12 +545,23 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
         docId = existingRegQuery.docs[0].id;
       } else {
         console.warn("Database lock existed but registration not found. Creating fallback registration document...");
+        const ownRoll = formData.registrationNumber || formData.rollNumber;
+        const { generateOwnReferralCode, normalizeReferralCode, attachReferralData, DEFAULT_REFERRAL_CODE } = await import('./referralHelper');
+        const ownReferralCode = generateOwnReferralCode(ownRoll);
+        const rawEntered = formData.referredByCode || formData.referralCode || formData.referral || formData.referredBy;
+        const effectiveReferral = rawEntered && rawEntered.trim() 
+          ? normalizeReferralCode(rawEntered) 
+          : (ownReferralCode !== DEFAULT_REFERRAL_CODE ? DEFAULT_REFERRAL_CODE : null);
+
         const docRef = await adminDb.collection('registrations').add({
           ...formData,
           name: formData.name,
           email: formData.email,
           phone: formData.mobile,
           rollNumber: formData.registrationNumber,
+          referralCode: ownReferralCode, // ALWAYS exists in lowercase
+          referredByCode: effectiveReferral || DEFAULT_REFERRAL_CODE, // SILENT DEFAULT: 2024btech014
+          referralSource: effectiveReferral || DEFAULT_REFERRAL_CODE,
           gender: formData.gender || 'N/A',
           course: formData.course || 'N/A',
           pincode: formData.pincode || (formData.address ? (formData.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A'),
@@ -582,6 +585,7 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
         });
         docId = docRef.id;
         console.log("Registration saved via lock fallback. Firestore ID:", docId);
+        attachReferralData(formData, docId).catch(err => console.error("Failed to attach referral tracking:", err));
       }
     } else {
       throw err;

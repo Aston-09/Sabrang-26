@@ -65,17 +65,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Bot detected' }, { status: 400 });
     }
 
-    const checkCoupon = async (code: string) => {
-      if (!code) return { valid: false, amount: 2500 };
+    const checkCoupon = async (code: string, originalPrice: number = 500, eventIdOrTitle?: string) => {
+      if (!code) return { valid: false, amount: originalPrice, finalPrice: originalPrice, error: 'No coupon code provided.' };
       try {
-        const docSnap = await adminDb.collection('coupons').doc(code).get();
-        if (docSnap.exists && docSnap.data()?.active) {
-          return { valid: true, amount: docSnap.data()?.amount ?? 2500 };
+        const lowerCode = code.trim().toLowerCase();
+        const upperCode = code.trim().toUpperCase();
+        
+        let docSnap = await adminDb.collection('coupons').doc(lowerCode).get();
+        if (!docSnap.exists) {
+          docSnap = await adminDb.collection('coupons').doc(upperCode).get();
+        }
+
+        if (docSnap.exists) {
+          const couponData = docSnap.data();
+          const { calculateCouponDiscount } = await import('@/lib/couponHelper');
+          const res = calculateCouponDiscount(couponData, originalPrice, eventIdOrTitle);
+          return {
+            valid: res.valid,
+            amount: res.finalPrice,
+            finalPrice: res.finalPrice,
+            discountAmount: res.discountAmount,
+            discountType: res.discountType,
+            discountValue: res.discountValue,
+            error: res.error,
+            applicableEvents: res.applicableEvents,
+          };
         }
       } catch (err) {
         console.error("Error fetching coupon:", err);
       }
-      return { valid: false, amount: 2500 };
+      return { valid: false, amount: originalPrice, finalPrice: originalPrice, error: 'Invalid or expired coupon code.' };
     };
 
     if (action === 'VERIFY_COUPON') {
@@ -84,8 +103,18 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Too many coupon attempts. Please wait a moment.' }, { status: 429 });
       }
       const code = (data.coupon || '').trim().toUpperCase();
-      const couponStatus = await checkCoupon(code);
+      const basePrice = Number(data.amount || data.price || data.originalPrice || 500);
+      const eventTarget = data.eventId || data.event || data.eventName || data.eventTitle || '';
+      const couponStatus = await checkCoupon(code, basePrice, eventTarget);
       return NextResponse.json(couponStatus);
+    }
+
+    if (action === 'VERIFY_REFERRAL') {
+      const { validateReferralCode } = await import('@/lib/referralHelper');
+      const enteredCode = data.referralCode || data.code || '';
+      const ownRoll = data.registrationNumber || data.rollNumber || '';
+      const referralStatus = await validateReferralCode(enteredCode, ownRoll);
+      return NextResponse.json(referralStatus);
     }
     if (action === 'VERIFY_PINCODE') {
       const pin = (data.pincode || '').trim();
@@ -125,23 +154,21 @@ export async function POST(req: Request) {
 
 
     if (action === 'CREATE_ORDER') {
-      // Registrations are closed
-      return NextResponse.json({ error: 'Registrations for Aarambh 2026 are closed.' }, { status: 400 });
-
-      // CREATE_ORDER: strict — max 3 per minute per IP to prevent order spam
-      if (isRateLimited(`${ip}:order`, 3, 60 * 1000)) {
+      // CREATE_ORDER: strict — max 5 per minute per IP to prevent order spam
+      if (isRateLimited(`${ip}:order`, 5, 60 * 1000)) {
         return NextResponse.json({ error: 'Too many payment attempts. Please wait a minute and try again.' }, { status: 429 });
       }
       try {
-        if (!data.registrationNumber || !validateRegistrationNumber(data.registrationNumber)) {
-          console.warn("Invalid registration number received:", data.registrationNumber);
-          return NextResponse.json({ error: 'Invalid Application Number format (E.g. JKLU/BBA/2025/0310)' }, { status: 400 });
+        if (!data.registrationNumber && !data.rollNumber && !data.email) {
+          return NextResponse.json({ error: 'Participant identification or Email is required.' }, { status: 400 });
         }
 
         const orderId = `order_${crypto.randomUUID()}`;
         const couponCode = (data.coupon || '').trim().toUpperCase();
-        const couponStatus = await checkCoupon(couponCode);
-        const orderAmount = couponStatus.valid ? couponStatus.amount : 2500;
+        const basePrice = Number(data.amount || data.price || data.originalPrice || 500);
+        const eventTarget = data.eventId || data.event || data.eventName || data.eventTitle || '';
+        const couponStatus = await checkCoupon(couponCode, basePrice, eventTarget);
+        const orderAmount = couponStatus.valid ? couponStatus.finalPrice : basePrice;
 
         console.log("Saving pending registration for order ID:", orderId);
         // 1. Save pending registration details under pendingRegistrations using Admin SDK
@@ -166,7 +193,7 @@ export async function POST(req: Request) {
         console.log("Creating Cashfree Order via PGCreateOrder...");
         
         // Strip non-digit characters and ensure a clean 10-digit format for Cashfree validation
-        let cleanPhone = data.mobile ? data.mobile.replace(/\D/g, '') : '';
+        let cleanPhone = data.mobile ? data.mobile.replace(/\D/g, '') : (data.phone ? data.phone.replace(/\D/g, '') : '');
         if (cleanPhone.length > 10) {
           if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
             cleanPhone = cleanPhone.slice(2);
@@ -179,7 +206,7 @@ export async function POST(req: Request) {
           cleanPhone = '9999999999';
         }
 
-        let host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'aarambh.jklu.edu.in';
+        let host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'sabrang.jklu.edu.in';
         if (host.includes('0.0.0.0')) {
           host = host.replace('0.0.0.0', 'localhost');
         }
@@ -189,7 +216,7 @@ export async function POST(req: Request) {
         // During local development, allow localhost.
         const origin = isLocal 
           ? ((isProd) ? `https://${host}` : `http://${host}`)
-          : (process.env.NEXT_PUBLIC_SITE_URL || 'https://aarambh.jklu.edu.in');
+          : (process.env.NEXT_PUBLIC_SITE_URL || 'https://sabrang.jklu.edu.in');
 
         // Decode HTML entities that sanitizeInput may have introduced — Cashfree
         // rejects encoded strings like &amp; or &#039; in customer name/email.
@@ -201,14 +228,14 @@ export async function POST(req: Request) {
           order_amount: orderAmount,
           order_currency: 'INR',
           customer_details: {
-            customer_id: (data.registrationNumber || `cust_${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '_'),
+            customer_id: (data.registrationNumber || data.rollNumber || `cust_${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '_'),
             customer_name: cashfreeName,
             customer_email: cashfreeEmail,
             customer_phone: cleanPhone,
           },
           order_meta: {
             return_url: `${origin}/register?order_id={order_id}`,
-            notify_url: `https://aarambh.jklu.edu.in/api/webhook`
+            notify_url: process.env.CASHFREE_NOTIFY_URL || `https://sabrang.jklu.edu.in/api/webhook`
           }
         });
         console.log("Cashfree order created successfully.");

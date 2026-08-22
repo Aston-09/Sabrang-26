@@ -11,8 +11,13 @@ export default function AdminSidebar() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut(auth);
-    router.push("/");
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("sabrang_auth");
+    }
+    try {
+      await signOut(auth);
+    } catch {}
+    router.push("/login");
   };
 
   const menuItems = [
