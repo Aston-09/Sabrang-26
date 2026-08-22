@@ -51,7 +51,7 @@ export default function HeroPrism() {
   })
   
   // Extract geometry to build custom mesh
-  let customGeometry = null
+  let customGeometry: THREE.BufferGeometry | null = null
   scene.traverse((child: any) => {
     if ((child as THREE.Mesh).isMesh && !customGeometry) {
       customGeometry = (child as THREE.Mesh).geometry.clone()

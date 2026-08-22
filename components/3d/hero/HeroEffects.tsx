@@ -7,7 +7,7 @@ import * as THREE from 'three'
 
 export default function HeroEffects() {
   return (
-    <EffectComposer disableNormalPass>
+    <EffectComposer>
       {/* Subtle bloom for typography and specular highlights */}
       <Bloom 
         luminanceThreshold={0.5}
@@ -16,9 +16,10 @@ export default function HeroEffects() {
         mipmapBlur
       />
       {/* Very subtle chromatic aberration globally (mostly handled by material, but this grounds the lens) */}
+      {/* @ts-ignore - type definition in @react-three/postprocessing is broken for blendFunction */}
       <ChromaticAberration
         blendFunction={BlendFunction.NORMAL} // blend mode
-        offset={new THREE.Vector2(0.001, 0.001)} // color offset
+        offset={[0.001, 0.001]} // color offset as tuple
       />
       {/* Film grain to unify the dark environment */}
       <Noise 
