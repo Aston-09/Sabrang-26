@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import WebGLCarousel from "@/components/webgl-carousel/WebGLCarousel";
 import { TEAM_MEMBERS, TEAM_IMAGES } from "@/lib/constants";
-import { Hero } from "@/components/ui/tailwind-css-background-snippet";
 
 export default function TeamClient() {
   useEffect(() => {
@@ -57,10 +56,7 @@ export default function TeamClient() {
   }));
 
   return (
-    <div className="fixed inset-0 z-10 w-screen h-screen overflow-hidden bg-transparent flex items-center justify-center p-0 m-0">
-      <div className="absolute inset-0 z-0">
-        <Hero />
-      </div>
+    <div className="fixed inset-0 z-10 w-screen h-screen overflow-hidden bg-black flex items-center justify-center p-0 m-0">
       {/* Full Viewport WebGL 3D Refraction Carousel */}
       <div className="absolute inset-0 z-10 w-screen h-screen px-0 m-0">
         <WebGLCarousel
