@@ -16,9 +16,7 @@ export default function HeroEffects() {
         mipmapBlur
       />
       {/* Very subtle chromatic aberration globally (mostly handled by material, but this grounds the lens) */}
-      {/* @ts-ignore - type definition in @react-three/postprocessing is broken for blendFunction */}
       <ChromaticAberration
-        blendFunction={BlendFunction.NORMAL} // blend mode
         offset={[0.001, 0.001]} // color offset as tuple
       />
       {/* Film grain to unify the dark environment */}
