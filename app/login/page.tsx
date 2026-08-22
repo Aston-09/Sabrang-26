@@ -22,11 +22,11 @@ export default function LoginPage() {
     try {
       const cleanEmail = email.trim().toLowerCase();
 
-      // Check default demo credentials
+      // Check default administrator credentials
       if (
-        (cleanEmail === "admin@sabrang.com" && password === "AdminPass123!") ||
-        (cleanEmail.startsWith("scanner") && password.length >= 6) ||
-        (cleanEmail === "adminsabrang@jklu.edu.in" && password === "181723891188")
+        (cleanEmail === "admin@sabrang.com" && password === "Sabrang#2026!Adm9xQ") ||
+        (cleanEmail === "adminsabrang@jklu.edu.in" && password === "Sabrang#2026!Adm9xQ") ||
+        (cleanEmail.startsWith("scanner") && password.length >= 8)
       ) {
         const role = cleanEmail.includes("scanner") ? "scanner" : "admin";
         sessionStorage.setItem(
@@ -80,7 +80,7 @@ export default function LoginPage() {
         return;
       } catch (clientErr: any) {
         console.warn("Client authentication failed:", clientErr);
-        throw new Error("Invalid email or password. Use demo credentials or verify your Firebase account.");
+        throw new Error("Invalid email or password. Please verify your credentials.");
       }
     } catch (err: any) {
       console.error("Login error:", err);
@@ -114,7 +114,7 @@ export default function LoginPage() {
             <input
               type="email"
               required
-              placeholder="admin@sabrang.com"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-[#1a1a26] border border-white/10 rounded-xl text-white text-sm outline-none focus:border-purple-500 transition-colors"
