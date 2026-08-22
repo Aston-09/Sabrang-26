@@ -69,7 +69,8 @@ export default function FAQClient() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const ctx = gsap.context(() => {
       // Reveal for single sections
@@ -121,7 +122,7 @@ export default function FAQClient() {
           }
         );
       }
-    }, containerRef);
+    }, container);
 
     return () => ctx.revert();
   }, []);

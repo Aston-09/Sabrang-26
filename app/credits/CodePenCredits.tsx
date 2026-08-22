@@ -76,12 +76,12 @@ export default function CodePenCredits() {
 
   /* ── GSAP & Animation ── */
   useEffect(() => {
-    if (!rootRef.current) return;
+    const root = rootRef.current;
+    if (!root) return;
     gsap.registerPlugin(CustomEase);
     CustomEase.create("hop", "M0,0 C0.3,0 0.1,1 1,1");
 
     const ctx = gsap.context(() => {
-      const root = rootRef.current!;
       const wrapperLeft = root.querySelector<HTMLElement>(".cc-wrapper-left")!;
       const wrapperRight = root.querySelector<HTMLElement>(
         ".cc-wrapper-right-marquee",
@@ -233,7 +233,7 @@ export default function CodePenCredits() {
         () => goActionRef.current(true),
         AUTO_ADVANCE_MS + 1300,
       );
-    }, rootRef);
+    }, root);
 
     return () => {
       ctx.revert();

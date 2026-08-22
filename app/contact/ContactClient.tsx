@@ -25,7 +25,8 @@ export default function ContactClient() {
   };
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const ctx = gsap.context(() => {
       const revealElements = gsap.utils.toArray<HTMLElement>('.gsap-reveal');
@@ -75,7 +76,7 @@ export default function ContactClient() {
           }
         );
       }
-    }, containerRef);
+    }, container);
 
     return () => ctx.revert();
   }, []);
