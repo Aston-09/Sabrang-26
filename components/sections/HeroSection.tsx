@@ -49,7 +49,7 @@ export default function HeroSection() {
         ScrollTrigger.create({
           trigger: triggerEl,
           start: 'top top',
-          end: '+=400vh',
+          end: '+=200vh',
           pin: true,
           scrub: 0.8, // Smooth GSAP scrubbing
           onUpdate: (self) => {

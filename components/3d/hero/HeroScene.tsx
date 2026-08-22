@@ -4,6 +4,7 @@ import React, { Suspense, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroScrollState } from '@/components/3d/hero/heroScrollState'
+import { Environment, Lightformer } from '@react-three/drei'
 import HeroTypography from './HeroTypography'
 import HeroPrism from './HeroPrism'
 import HeroLights from './HeroLights'
@@ -12,6 +13,21 @@ import HeroEffects from './HeroEffects'
 function SceneContents() {
   return (
     <>
+      {/* 
+        Custom white studio environment using Lightformers.
+        This provides massive, soft white rectangles for the glass to reflect,
+        completely eliminating the dark HDRI mirror effect while keeping the 
+        background neutral.
+      */}
+      <Environment resolution={512}>
+        <Lightformer form="rect" intensity={2} position={[0, 4, -4]} scale={[20, 2, 1]} color="white" />
+        <Lightformer form="rect" intensity={1.5} position={[-4, 2, 4]} scale={[2, 10, 1]} color="white" />
+        <Lightformer form="rect" intensity={1.5} position={[4, 2, 4]} scale={[2, 10, 1]} color="#f2f2f2" />
+        <Lightformer form="rect" intensity={0.5} position={[0, -4, 0]} scale={[10, 10, 1]} color="#f8f8f8" rotation={[-Math.PI / 2, 0, 0]} />
+        {/* Subtle spectral edge highlights */}
+        <Lightformer form="rect" intensity={1} position={[-5, 0, -5]} scale={[1, 5, 1]} color="#e0f2fe" />
+        <Lightformer form="rect" intensity={1} position={[5, 0, -5]} scale={[1, 5, 1]} color="#f3e8ff" />
+      </Environment>
       <HeroLights />
       <HeroTypography />
       <HeroPrism />
@@ -24,7 +40,9 @@ function CameraController() {
   const currentCameraPos = useRef(new THREE.Vector3(0, 0, 8))
   
   useFrame((state, delta) => {
-    const p = heroScrollState.progress
+    const rawProgress = heroScrollState.progress
+    // Normalize progress so the camera zoom completes by 30% of scroll
+    const p = THREE.MathUtils.clamp(rawProgress, 0, 0.3) / 0.3
 
     // PHASE 2: Camera Z movement (8 -> 20)
     // Map progress 0->1 to Z 8->20

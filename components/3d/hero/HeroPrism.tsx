@@ -1,102 +1,254 @@
 'use client'
 
-import React, { useRef, useMemo, useLayoutEffect } from 'react'
-import { useGLTF, MeshTransmissionMaterial, Center } from '@react-three/drei'
+import React, { useMemo, useRef } from 'react'
+import {
+  Center,
+  MeshTransmissionMaterial,
+  useGLTF,
+} from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+
 import { heroScrollState } from '@/components/3d/hero/heroScrollState'
 
+const MODEL_PATH = '/models/SABRANG_TRANSPARENT_STRIP_PRISM.glb'
+
 export default function HeroPrism() {
-  const { scene } = useGLTF('/models/alche_style_optical_prism.glb')
+  const { scene } = useGLTF(MODEL_PATH)
+
   const groupRef = useRef<THREE.Group>(null)
+
   const { viewport } = useThree()
 
-  // Dynamic scaling
-  const scale = Math.min(viewport.width * 0.25, 3.5)
+  /*
+   * ================================================================
+   * RESPONSIVE SCALE
+   * ================================================================
+   */
 
-  // Configure target rotations
-  const currentRotation = useRef(new THREE.Vector2(0, 0))
+  const PRISM_SCALE_MULTIPLIER = 0.85
+
+  const scale = Math.min(
+    viewport.width * 0.25,
+    3.5
+  ) * PRISM_SCALE_MULTIPLIER
+
+  /*
+   * ================================================================
+   * SMOOTH MOUSE ROTATION
+   * ================================================================
+   */
+
+  const currentRotation = useRef(
+    new THREE.Vector2(0, 0)
+  )
+
+  /*
+   * ================================================================
+   * EXTRACT FIRST VALID MESH GEOMETRY
+   *
+   * We keep the ORIGINAL GLB geometry.
+   *
+   * No new prism.
+   * No silhouette changes.
+   * No geometry replacement.
+   * ================================================================
+   */
+
+  const customGeometry = useMemo<THREE.BufferGeometry | null>(() => {
+    let geometry: THREE.BufferGeometry | null = null
+
+    scene.traverse((child) => {
+      if (
+        !geometry &&
+        child instanceof THREE.Mesh &&
+        child.geometry
+      ) {
+        geometry = child.geometry
+      }
+    })
+
+    return geometry
+  }, [scene])
+
+  /*
+   * ================================================================
+   * ANIMATION
+   * ================================================================
+   */
 
   useFrame((state, delta) => {
-    if (!groupRef.current) return
-    
-    const p = heroScrollState.progress
+    const group = groupRef.current
 
-    // PHASE 5: Prism Z movement (0 -> 4.5)
-    const targetZ = THREE.MathUtils.mapLinear(p, 0, 1, 0, 4.5)
+    if (!group) return
 
-    // PHASE 6: Prism scroll rotation
-    const scrollRotationY = p * Math.PI
+    /*
+     * --------------------------------------------------------------
+     * SCROLL PROGRESS
+     * --------------------------------------------------------------
+     */
 
-    // Idle rotation
-    const idleRotationY = state.clock.elapsedTime * 0.1
+    // Normalize progress so the hero animation completes by 30% of scroll
+    const progress = THREE.MathUtils.clamp(
+      heroScrollState.progress,
+      0,
+      0.3
+    ) / 0.3
 
-    // PHASE 7: Mouse rotation parallax
-    const targetMouseRotX = (state.pointer.x * Math.PI) * 0.15
-    const targetMouseRotY = (state.pointer.y * Math.PI) * 0.15
+    /*
+     * --------------------------------------------------------------
+     * DEPTH MOVEMENT
+     *
+     * 0 → 4.5
+     * --------------------------------------------------------------
+     */
 
-    currentRotation.current.x = THREE.MathUtils.damp(currentRotation.current.x, targetMouseRotX, 4, delta)
-    currentRotation.current.y = THREE.MathUtils.damp(currentRotation.current.y, targetMouseRotY, 4, delta)
+    const targetZ = THREE.MathUtils.mapLinear(
+      progress,
+      0,
+      1,
+      0,
+      4.5
+    )
 
-    // Apply combined transformations with damping for physical feel
-    groupRef.current.position.z = THREE.MathUtils.damp(groupRef.current.position.z, targetZ, 4, delta)
-    groupRef.current.rotation.y = idleRotationY + scrollRotationY + currentRotation.current.x
-    groupRef.current.rotation.x = currentRotation.current.y
+    group.position.z = THREE.MathUtils.damp(
+      group.position.z,
+      targetZ,
+      4,
+      delta
+    )
 
-    // Subtle float remains
-    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.45) * 0.15
+    /*
+     * --------------------------------------------------------------
+     * SCROLL ROTATION
+     *
+     * One complete rotation through the hero sequence.
+     * --------------------------------------------------------------
+     */
 
-    // Scale remains constant; Z movement creates the depth illusion
-    groupRef.current.scale.setScalar(scale)
+    const scrollRotationY =
+      progress * Math.PI
+
+    /*
+     * --------------------------------------------------------------
+     * VERY SUBTLE IDLE ROTATION
+     * --------------------------------------------------------------
+     */
+
+    const idleRotationY =
+      state.clock.elapsedTime * 0.1
+
+    /*
+     * --------------------------------------------------------------
+     * MOUSE PARALLAX
+     * --------------------------------------------------------------
+     */
+
+    const targetMouseRotX =
+      state.pointer.y *
+      Math.PI *
+      0.15
+
+    const targetMouseRotY =
+      state.pointer.x *
+      Math.PI *
+      0.15
+
+    currentRotation.current.x =
+      THREE.MathUtils.damp(
+        currentRotation.current.x,
+        targetMouseRotX,
+        4,
+        delta
+      )
+
+    currentRotation.current.y =
+      THREE.MathUtils.damp(
+        currentRotation.current.y,
+        targetMouseRotY,
+        4,
+        delta
+      )
+
+    /*
+     * --------------------------------------------------------------
+     * APPLY ROTATION
+     * --------------------------------------------------------------
+     */
+
+    group.rotation.y =
+      idleRotationY +
+      scrollRotationY +
+      currentRotation.current.y
+
+    group.rotation.x =
+      currentRotation.current.x
+
+    /*
+     * --------------------------------------------------------------
+     * SUBTLE FLOATING
+     * --------------------------------------------------------------
+     */
+
+    group.position.y =
+      Math.sin(
+        state.clock.elapsedTime * 0.45
+      ) * 0.15
+
+    /*
+     * --------------------------------------------------------------
+     * RESPONSIVE SCALE
+     * --------------------------------------------------------------
+     */
+
+    group.scale.setScalar(scale)
   })
-  
-  // Extract geometry to build custom mesh
-  let customGeometry: THREE.BufferGeometry | null = null
-  scene.traverse((child: any) => {
-    if ((child as THREE.Mesh).isMesh && !customGeometry) {
-      customGeometry = (child as THREE.Mesh).geometry.clone()
-      customGeometry.computeBoundingBox()
-    }
-  })
 
-  useLayoutEffect(() => {
-    if (customGeometry) {
-      const box = new THREE.Box3().setFromObject(scene)
-      const size = box.getSize(new THREE.Vector3())
-      console.log('--- PRISM BOUNDS ---')
-      console.log('Size:', size)
-      console.log('Min:', box.min)
-      console.log('Max:', box.max)
-    }
-  }, [scene, customGeometry])
+  /*
+   * ================================================================
+   * RENDER
+   * ================================================================
+   */
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]}>
-      {customGeometry && (
-        <Center>
-          <mesh geometry={customGeometry}>
-            <MeshTransmissionMaterial
-              backside
-              samples={4}
-              thickness={1.5}
-              chromaticAberration={0.08}
-              anisotropy={0.2}
-              distortion={0.1}
-              distortionScale={0.2}
-              temporalDistortion={0.05}
-              ior={1.48}
-              color="#e2e8f0"
-              attenuationDistance={2}
-              attenuationColor="#4f46e5"
-              clearcoat={1}
-              roughness={0}
-              transmission={1}
+    <group
+      ref={groupRef}
+      position={[0, 0, 0]}
+    >
+      <Center>
+        {customGeometry && (
+          <mesh
+            geometry={customGeometry}
+            castShadow
+            receiveShadow
+          >
+            <meshPhysicalMaterial
+              color="#FFFFFF"
+              transmission={1.0}
+              thickness={0.18}
+              roughness={0.008}
+              ior={1.46}
+              clearcoat={0.08}
+              clearcoatRoughness={0.005}
+              transparent={false}
+              opacity={1.0}
+              envMapIntensity={1.0}
             />
           </mesh>
-        </Center>
-      )}
+        )}
+      </Center>
     </group>
   )
 }
 
-useGLTF.preload('/models/alche_style_optical_prism.glb')
+/*
+ * ==================================================================
+ * PRELOAD
+ * ==================================================================
+ *
+ * IMPORTANT:
+ * This MUST be outside the component.
+ * ==================================================================
+ */
+
+useGLTF.preload(MODEL_PATH)

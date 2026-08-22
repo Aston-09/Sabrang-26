@@ -20,7 +20,9 @@ export default function HeroTypography() {
   useFrame((state, delta) => {
     if (!textRef.current || !groupRef.current || !materialRef.current) return
     
-    const p = heroScrollState.progress
+    const rawProgress = heroScrollState.progress
+    // Normalize progress so the typography animation completes by 30% of scroll
+    const p = THREE.MathUtils.clamp(rawProgress, 0, 0.3) / 0.3
 
     // PHASE 3 & 4: Map scroll progress to targets
     let targetZ = -2

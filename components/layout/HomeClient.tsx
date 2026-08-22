@@ -75,9 +75,9 @@ export default function HomeClient({
 
     const trigger = ScrollTrigger.create({
       trigger: wheelSectionRef.current,
-      start: 'top top',
-      end: '+=400%',
-      pin: true,
+      start: 'top bottom', // Start animating when it enters the screen
+      end: 'bottom top',   // Finish animating when it leaves the screen
+      pin: false,          // Remove the scroll trap!
       scrub: true,
       onUpdate: (self) => {
         if (wheelRef.current) {
@@ -122,8 +122,8 @@ export default function HomeClient({
 
         {/* Scroll Triggers (Main Hero Logic) */}
         <div id="scroll-trigger" className="relative w-full z-10 pointer-events-none">
-          <section className="h-[200vh]" data-label="Zoom Phase" />
-          <section className="h-[200vh]" data-label="Scatter/DNA Phase" />
+          <section className="h-[100vh]" data-label="Zoom Phase" />
+          <section className="h-[100vh]" data-label="Scatter/DNA Phase" />
         </div>
       </div>
 
@@ -177,10 +177,6 @@ export default function HomeClient({
 
       <HeroConclusion />
       
-      {/* Dummy Section to allow continuous scrolling past everything */}
-      <section className="relative w-full h-[150vh] flex items-center justify-center border-t border-white/10 z-20 bg-black/40 backdrop-blur-sm">
-        <h2 className="text-4xl text-white/50 tracking-widest uppercase font-light">End of Scroll Test</h2>
-      </section>
     </main>
   )
 }

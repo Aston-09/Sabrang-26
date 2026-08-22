@@ -33,26 +33,29 @@ export default function AboutSection() {
       });
 
       // Total duration 100 virtual units to represent 0 -> 1 progress
-      // PHASE 01: ROBOT (75 - 83)
-      tl.fromTo(step1Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 4 }, 75)
-        .to(step1Ref.current, { autoAlpha: 0, y: -60, duration: 4 }, 79)
+      // PHASE 01: ROBOT (30 - 50)
+      tl.fromTo(step1Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 8 }, 30)
+        .to(step1Ref.current, { autoAlpha: 0, y: -60, duration: 8 }, 42)
 
-      // PHASE 02: DNA (83 - 91)
-      tl.fromTo(step2Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 4 }, 83)
-        .to(step2Ref.current, { autoAlpha: 0, y: -60, duration: 4 }, 87)
+      // PHASE 02: DNA (50 - 70)
+      tl.fromTo(step2Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 8 }, 50)
+        .to(step2Ref.current, { autoAlpha: 0, y: -60, duration: 8 }, 62)
 
-      // PHASE 03: SPACE (91 - 100)
+      // PHASE 03: SPACE (70 - 90)
       tl.fromTo(step3Ref.current, 
         { autoAlpha: 0, y: 60 }, 
-        { autoAlpha: 1, y: 0, duration: 4 }, 91)
+        { autoAlpha: 1, y: 0, duration: 8 }, 70)
         .to(step3Ref.current, 
-        { autoAlpha: 0, y: -60, duration: 5 }, 95)
+        { autoAlpha: 0, y: -60, duration: 8 }, 82)
 
       // Background glow sync (delay until hero atmosphere is fading)
-      tl.to(glowRef.current, { left: "0%", duration: 5, top: '40%' }, 70)
-        .to(glowRef.current, { left: "60%", duration: 10, top: '50%' }, 75)
-        .to(glowRef.current, { left: "0%", duration: 10, top: '60%' }, 85)
-        .to(glowRef.current, { autoAlpha: 0, duration: 5 }, 95);
+      tl.to(glowRef.current, { left: "0%", duration: 5, top: '40%' }, 20)
+        .to(glowRef.current, { left: "60%", duration: 20, top: '50%' }, 30)
+        .to(glowRef.current, { left: "0%", duration: 20, top: '60%' }, 50)
+        .to(glowRef.current, { autoAlpha: 0, duration: 10 }, 80);
+
+      // Force total duration to exactly 100 so `30` maps perfectly to 0.3 progress
+      tl.set({}, {}, 100);
     });
 
     return () => {
