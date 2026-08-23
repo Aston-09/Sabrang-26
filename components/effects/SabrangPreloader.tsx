@@ -446,6 +446,7 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
                 fill="#ffffff"
                 style={{
                   fontFamily: "'FlorasDisplay', 'Syne', serif",
+                  opacity: i === 0 ? 1 : 0
                 }}
               >
                 {char}
