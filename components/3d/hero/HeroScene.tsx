@@ -1,82 +1,129 @@
 'use client'
 
-import React, { Suspense, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import React, { Suspense, useEffect, useRef, useState } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { heroScrollState } from '@/components/3d/hero/heroScrollState'
-import { Environment, Lightformer } from '@react-three/drei'
+
+import { heroConfig, heroDebugEnabled, mountHeroDebugPanel } from './heroConfig'
+import { heroInput, heroScrollState, startHeroInput } from './heroScrollState'
+import HeroEnvironment from './HeroEnvironment'
 import HeroTypography from './HeroTypography'
 import HeroPrism from './HeroPrism'
 import HeroLights from './HeroLights'
 import HeroEffects from './HeroEffects'
 
-function SceneContents() {
+function SceneContents({ mobile }: { mobile: boolean }) {
   return (
     <>
-      {/* 
-        Custom white studio environment using Lightformers.
-        This provides massive, soft white rectangles for the glass to reflect,
-        completely eliminating the dark HDRI mirror effect while keeping the 
-        background neutral.
-      */}
-      <Environment resolution={512}>
-        <Lightformer form="rect" intensity={2} position={[0, 4, -4]} scale={[20, 2, 1]} color="white" />
-        <Lightformer form="rect" intensity={1.5} position={[-4, 2, 4]} scale={[2, 10, 1]} color="white" />
-        <Lightformer form="rect" intensity={1.5} position={[4, 2, 4]} scale={[2, 10, 1]} color="#f2f2f2" />
-        <Lightformer form="rect" intensity={0.5} position={[0, -4, 0]} scale={[10, 10, 1]} color="#f8f8f8" rotation={[-Math.PI / 2, 0, 0]} />
-        {/* Subtle spectral edge highlights */}
-        <Lightformer form="rect" intensity={1} position={[-5, 0, -5]} scale={[1, 5, 1]} color="#e0f2fe" />
-        <Lightformer form="rect" intensity={1} position={[5, 0, -5]} scale={[1, 5, 1]} color="#f3e8ff" />
-      </Environment>
+      {/* The chamber. Also the reflection source for everything in it. */}
+      <HeroEnvironment mobile={mobile} />
       <HeroLights />
-      <HeroTypography />
-      <HeroPrism />
-      <HeroEffects />
+      <HeroTypography mobile={mobile} />
+      <HeroPrism mobile={mobile} />
+      <HeroEffects mobile={mobile} />
     </>
   )
 }
 
+/**
+ * Past the hero the canvas is still the page's visible backdrop -- AboutSection and
+ * everything after it are transparent fixed overlays -- so it cannot simply stop.
+ * Demand mode plus a 20Hz tick keeps the drift and the float alive at a third of the
+ * cost, for the majority of a session that is spent below the fold.
+ */
+function FrameThrottle() {
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => {
+    const id = setInterval(invalidate, 50)
+    return () => clearInterval(id)
+  }, [invalidate])
+  return null
+}
+
 function CameraController() {
-  const currentCameraPos = useRef(new THREE.Vector3(0, 0, 8))
-  
+  const current = useRef(new THREE.Vector3(0, 0, heroConfig.cameraDistance))
+
   useFrame((state, delta) => {
-    const rawProgress = heroScrollState.progress
-    // Normalize progress so the camera zoom completes by 30% of scroll
-    const p = THREE.MathUtils.clamp(rawProgress, 0, 0.3) / 0.3
+    const d = Math.min(delta, 0.05)
+    const p = THREE.MathUtils.clamp(heroScrollState.progress, 0, 0.3) / 0.3
+    const cam = state.camera as THREE.PerspectiveCamera
 
-    // PHASE 2: Camera Z movement (8 -> 20)
-    // Map progress 0->1 to Z 8->20
-    const targetZ = 8 + (12 * p)
+    if (cam.fov !== heroConfig.cameraFOV) {
+      cam.fov = heroConfig.cameraFOV
+      cam.updateProjectionMatrix()
+    }
 
-    // PHASE 7: Mouse parallax for Camera
-    // Max movement: X +/- 0.25, Y +/- 0.15
-    const targetX = (state.pointer.x * 0.25)
-    const targetY = (state.pointer.y * 0.15)
+    // pull back through the chamber as the hero sequence plays out
+    const targetZ = heroConfig.cameraDistance + 12 * p
+    const targetX = heroInput.x * 0.25
+    const targetY = heroInput.y * 0.15
 
-    // Interpolate towards target (Damping ~4 for heavy cinematic feel)
-    currentCameraPos.current.x = THREE.MathUtils.damp(currentCameraPos.current.x, targetX, 4, delta)
-    currentCameraPos.current.y = THREE.MathUtils.damp(currentCameraPos.current.y, targetY, 4, delta)
-    currentCameraPos.current.z = THREE.MathUtils.damp(currentCameraPos.current.z, targetZ, 4, delta)
+    current.current.x = THREE.MathUtils.damp(current.current.x, targetX, 4, d)
+    current.current.y = THREE.MathUtils.damp(current.current.y, targetY, 4, d)
+    current.current.z = THREE.MathUtils.damp(current.current.z, targetZ, 4, d)
 
-    state.camera.position.copy(currentCameraPos.current)
-    state.camera.lookAt(0, 0, 0)
+    cam.position.copy(current.current)
+    cam.lookAt(0, 0, 0)
   })
-  
+
   return null
 }
 
 export default function HeroScene() {
+  // null until measured, so the scene is built once at the right quality tier
+  const [mobile, setMobile] = useState<boolean | null>(null)
+  // The hero pin ends at progress 1. Past it this canvas is still running a full
+  // transmission + PMREM + bloom pipeline behind the rest of the page.
+  const [awake, setAwake] = useState(true)
+
+  useEffect(() => {
+    setMobile(window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches)
+    const stopInput = startHeroInput()
+    const stopPanel = heroDebugEnabled() ? mountHeroDebugPanel() : undefined
+
+    // Full rate while scrolling anywhere; throttles a second after the last scroll, and
+    // only if the hero is behind us. That delay also outlasts GSAP's 0.8s scrub tail, so
+    // progress has settled by the time it is read.
+    let sleepTimer: ReturnType<typeof setTimeout>
+    const onScroll = () => {
+      setAwake(true)
+      clearTimeout(sleepTimer)
+      sleepTimer = setTimeout(() => setAwake(heroScrollState.progress <= 0.99), 1000)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      clearTimeout(sleepTimer)
+      stopInput()
+      stopPanel?.()
+    }
+  }, [])
+
+  if (mobile === null) return <div className="hero-scene-wrapper fixed inset-0 z-0" />
+
   return (
-    <div className="hero-scene-wrapper fixed inset-0 z-10 pointer-events-none" style={{ touchAction: 'none' }}>
-      <Canvas 
-        camera={{ position: [0, 0, 8], fov: 40, near: 0.1, far: 100 }} 
-        style={{ pointerEvents: 'auto' }} 
-        dpr={[1, 1.75]} 
-        gl={{ antialias: false, alpha: true }}
+    <div
+      className="hero-scene-wrapper fixed inset-0 z-0 pointer-events-none"
+      style={{ touchAction: 'none', background: '#000' }}
+    >
+      <Canvas
+        frameloop={awake ? 'always' : 'demand'}
+        camera={{ position: [0, 0, heroConfig.cameraDistance], fov: heroConfig.cameraFOV, near: 0.1, far: 200 }}
+        dpr={mobile ? [1, 1.25] : [1, 1.75]}
+        // opaque: the wrapper is already #000, so blending against the page buys nothing
+        gl={{ antialias: false, alpha: false, stencil: false, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => {
+          // The prism's transmission:1 makes three re-render the whole scene into an
+          // offscreen target every frame. Refraction through 0.55 thickness is blurry,
+          // so quartering that target's pixel count costs nothing visible.
+          gl.transmissionResolutionScale = mobile ? 0.35 : 0.5
+        }}
       >
         <CameraController />
+        {!awake && <FrameThrottle />}
         <Suspense fallback={null}>
-          <SceneContents />
+          <SceneContents mobile={mobile} />
         </Suspense>
       </Canvas>
     </div>

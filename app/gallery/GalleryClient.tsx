@@ -61,12 +61,42 @@ const LIGHTBOX_IMAGES = GALLERY_IMAGES.map((image) => ({
   src: optimized(image.src, 1920),
 }));
 
+// 150 meshes mount at once but only 50 sources are distinct — without a cap
+// every one of those first hits Next's image optimizer simultaneously, and
+// 50 concurrent cold Sharp resizes stall the server long enough that the
+// tube sits blank for seconds on first load.
+const MAX_CONCURRENT_LOADS = 6;
+let activeLoads = 0;
+const loadQueue: Array<() => void> = [];
+
+function runNextQueued() {
+  if (activeLoads >= MAX_CONCURRENT_LOADS || loadQueue.length === 0) return;
+  activeLoads++;
+  loadQueue.shift()!();
+}
+
 function loadTile(src: string): Promise<Texture> {
   const cached = textureCache.get(src);
   if (cached) return cached;
 
   const pending = new Promise<Texture>((resolve, reject) => {
-    textureLoader.load(optimized(src, 640), resolve, undefined, reject);
+    loadQueue.push(() => {
+      textureLoader.load(
+        optimized(src, 640),
+        (tex) => {
+          activeLoads--;
+          runNextQueued();
+          resolve(tex);
+        },
+        undefined,
+        (err) => {
+          activeLoads--;
+          runNextQueued();
+          reject(err);
+        },
+      );
+    });
+    runNextQueued();
   }).then((tex) => {
     tex.colorSpace = SRGBColorSpace;
     tex.minFilter = LinearFilter;
@@ -575,6 +605,11 @@ export default function GalleryClient() {
       Math.abs(event.clientX - dragStart.current.x) > 6 ||
       Math.abs(event.clientY - dragStart.current.y) > 6
     ) {
+      if (!pointerMovedRef.current && dragPointerId.current === event.pointerId) {
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        } catch {}
+      }
       pointerMovedRef.current = true;
     }
 
@@ -602,9 +637,11 @@ export default function GalleryClient() {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     dragPointerId.current = event.pointerId;
     dragLastY.current = event.clientY;
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {}
+    // Capture is deferred to onPointerMove, once the drag threshold is actually
+    // crossed. Capturing here unconditionally retargets every subsequent event
+    // (including the native "click") from the canvas to this div, so R3F's
+    // raycasted onClick on a tile mesh never fires — a plain tap looked like it
+    // did nothing.
   }, []);
 
   const endDrag = useCallback((event?: React.PointerEvent<HTMLDivElement>) => {

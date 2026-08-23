@@ -8,7 +8,6 @@ import Wheel, { type WheelHandle } from '@/components/ui/Wheel'
 import AboutSection from '@/components/sections/AboutSection'
 import HeroSection from '@/components/sections/HeroSection'
 import HeroScene from '@/components/3d/hero/HeroScene'
-import HeroBackground from '@/components/3d/hero/HeroBackground'
 import HeroConclusion from '@/components/sections/HeroConclusion'
 import './hero-theme.css'
 
@@ -112,7 +111,6 @@ export default function HomeClient({
 
   return (
     <main className="hero-theme relative w-full">
-      <HeroBackground />
       <HeroScene />
       
 
