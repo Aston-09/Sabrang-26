@@ -273,7 +273,6 @@ body.loader-active * {
 
 body.loader-active .tubes-cursor-container,
 body.loader-active .custom-cursor-circle {
-  display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }

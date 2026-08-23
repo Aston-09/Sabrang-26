@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { heroScrollState, HERO_PIN_END, HERO_SCRUB } from '@/components/3d/hero/heroScrollState'
@@ -71,6 +71,12 @@ export default function HeroSection() {
       
       {/* HTML OVERLAYS */}
       
+      <div className="absolute inset-0 flex flex-col items-center justify-center mt-[28vh] pointer-events-auto z-10">
+        <div className="hero-anim">
+          <HeroCountdown />
+        </div>
+      </div>
+      
       <div className="hero-footer">
         <div className="hero-info hero-anim">
           <p>THE CULTURAL FESTIVAL OF JKLU</p>
@@ -82,6 +88,72 @@ export default function HeroSection() {
           <div className="scroll-arrow">&darr;</div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function HeroCountdown() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+
+  useEffect(() => {
+    // Target date: October 23, 2026 09:00:00 IST
+    const target = new Date('2026-10-23T09:00:00+05:30').getTime()
+    
+    const interval = setInterval(() => {
+      const now = new Date().getTime()
+      const diff = target - now
+      if (diff <= 0) {
+        clearInterval(interval)
+        return
+      }
+      
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000)
+      })
+    }, 1000)
+    
+    // Initial call
+    const diff = target - new Date().getTime()
+    if (diff > 0) {
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000)
+      })
+    }
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  const pad = (num: number) => num.toString().padStart(2, '0')
+
+  return (
+    <div className="flex items-center gap-4 sm:gap-6 select-none relative">
+      {/* Subtle backdrop glow for the entire counter */}
+      <div className="absolute inset-0 bg-white/5 blur-2xl rounded-full" />
+      
+      <TimeUnit value={pad(timeLeft.days)} label="DAYS" />
+      <span className="text-white/30 text-2xl sm:text-4xl font-light mb-5 sm:mb-6">:</span>
+      <TimeUnit value={pad(timeLeft.hours)} label="HRS" />
+      <span className="text-white/30 text-2xl sm:text-4xl font-light mb-5 sm:mb-6">:</span>
+      <TimeUnit value={pad(timeLeft.minutes)} label="MINS" />
+      <span className="text-white/30 text-2xl sm:text-4xl font-light mb-5 sm:mb-6">:</span>
+      <TimeUnit value={pad(timeLeft.seconds)} label="SECS" />
+    </div>
+  )
+}
+
+function TimeUnit({ value, label }: { value: string, label: string }) {
+  return (
+    <div className="flex flex-col items-center relative z-10">
+      <div className="text-white/90 text-3xl sm:text-5xl font-light tracking-widest font-mono tabular-nums min-w-[3rem] sm:min-w-[4rem] text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+        {value}
+      </div>
+      <span className="text-[0.6rem] sm:text-[0.65rem] text-white/50 tracking-[0.3em] mt-2 font-sans font-medium uppercase">{label}</span>
     </div>
   )
 }

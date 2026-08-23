@@ -42,9 +42,9 @@ const SHELL_RADIUS = 4.1;
  * dominant, but with the rest of the archive still legible around it.
  */
 const TILE_HEIGHT = 0.62;
-const FOCUS_SCALE = 1.7;
+const FOCUS_SCALE = 2.0;
 /** A phone is width-constrained, so it needs its own ratio. */
-const FOCUS_SCALE_NARROW = 2.2;
+const FOCUS_SCALE_NARROW = 2.6;
 const FOCUS_OPACITY = 1;
 const RESTING_OPACITY = 0.58;
 
@@ -435,6 +435,12 @@ function ArchiveSphere({
                 onTileClick(index);
               }
             }}
+            onPointerEnter={() => {
+              document.body.style.cursor = "pointer";
+            }}
+            onPointerLeave={() => {
+              document.body.style.cursor = "auto";
+            }}
           />
         );
       })}
@@ -662,11 +668,12 @@ export default function ArchiveScene({
       };
       dragMovedRef.current = 0;
 
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch {
-        // Pointer capture is best-effort; drag still works without it.
-      }
+      // NOTE: pointer capture is intentionally NOT used here.
+      // setPointerCapture redirects ALL subsequent pointer events (including
+      // pointerup) to the capturing element, which prevents R3F from seeing
+      // the native pointerup on the <canvas> — so mesh onPointerUp handlers
+      // never fire, and tile-tap detection breaks. The onPointerLeave handler
+      // already handles drags that leave the container.
     },
     [],
   );
@@ -675,17 +682,7 @@ export default function ArchiveScene({
     (event?: React.PointerEvent<HTMLDivElement>) => {
       if (!isDraggingRef.current) return;
       isDraggingRef.current = false;
-
-      const pointerId = dragPointerIdRef.current;
       dragPointerIdRef.current = null;
-
-      if (event && pointerId != null) {
-        try {
-          event.currentTarget.releasePointerCapture(pointerId);
-        } catch {
-          // Already released.
-        }
-      }
 
       snapToNearest();
     },

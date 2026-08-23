@@ -13,9 +13,29 @@ import HeroLights from './HeroLights'
 import HeroEffects from './HeroEffects'
 import { detectHeroTier, heroQuality, type HeroQuality } from './heroTier'
 
+import { MeshReflectorMaterial } from '@react-three/drei'
+
 function SceneContents({ mobile, q }: { mobile: boolean; q: HeroQuality }) {
   return (
     <>
+      {/* Glossy Floor Reflection */}
+      <mesh position={[0, -1.3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[50, 50]} />
+        <MeshReflectorMaterial
+          blur={[400, 100]}
+          resolution={1024}
+          mixBlur={1}
+          mixStrength={15}
+          roughness={1}
+          depthScale={1.2}
+          minDepthThreshold={0.4}
+          maxDepthThreshold={1.4}
+          color="#050505"
+          metalness={0.5}
+          mirror={0.5}
+        />
+      </mesh>
+
       {/* The chamber. Also the reflection source for everything in it. */}
       <HeroEnvironment mobile={mobile} q={q} />
       <HeroLights />
@@ -94,6 +114,7 @@ export default function HeroScene() {
         dpr={q.dpr}
         // opaque: the wrapper is already #000, so blending against the page buys nothing
         gl={{ antialias: false, alpha: false, stencil: false, powerPreference: 'high-performance' }}
+        style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => {
           // The prism's transmission:1 makes three re-render the whole scene into an
           // offscreen target every frame. Refraction through 0.55 thickness is blurry,

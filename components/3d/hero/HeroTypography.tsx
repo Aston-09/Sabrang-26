@@ -8,7 +8,7 @@ import { heroConfig } from '@/components/3d/hero/heroConfig'
 import { heroInput, heroScrollState } from '@/components/3d/hero/heroScrollState'
 import type { HeroQuality } from '@/components/3d/hero/heroTier'
 
-const FONT = '/fonts/havienne/Havienne.ttf'
+const FONT = '/fonts/FlorasDisplay.ttf'
 
 /* ==================================================================
  * VOLUMETRIC LIGHT / SHADOW PASS  (port of the VFX-JS `h1` shader)
