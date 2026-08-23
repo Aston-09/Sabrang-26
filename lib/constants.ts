@@ -507,7 +507,7 @@ export const DEV_TEAM: DevTeamMember[] = [
   },
   {
     name: "Kartik Saini",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060384/sabrang-2026/tech-team-credit/Kartik-Saini.png",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/v1787409090/Kartik-Saini.png",
     linkedin: "https://linkedin.com/in/kartik-14saini",
     github: "https://github.com/PrimeKartik",
     email: "kartiksaini@jklu.edu.in",
