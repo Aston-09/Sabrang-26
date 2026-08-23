@@ -12,12 +12,7 @@ import {
   ShieldCheck, 
   ArrowUpRight, 
   TrendingUp,
-  CreditCard,
-  Tag,
-  Share2,
-  FileText,
-  AlertTriangle,
-  ChevronRight
+  CreditCard
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -125,51 +120,6 @@ export default function AdminDashboard() {
     year: 'numeric'
   });
 
-  const quickLinks = [
-    {
-      title: 'Ticket Scanner',
-      desc: 'Scan gate QR codes to verify entrance passes',
-      href: '/admin/scanner',
-      icon: QrCode,
-      color: 'text-purple-600 bg-purple-50 border-purple-100',
-    },
-    {
-      title: 'Registrations',
-      desc: 'View participant records & download Excel (.xlsx)',
-      href: '/admin/registrations',
-      icon: Users,
-      color: 'text-blue-600 bg-blue-50 border-blue-100',
-    },
-    {
-      title: 'Entry Logs',
-      desc: 'Real-time check-in stream filtered by event',
-      href: '/admin/entry-logs',
-      icon: ShieldCheck,
-      color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    },
-    {
-      title: 'Referrals',
-      desc: 'Student referral tracking, codes & leaderboard',
-      href: '/admin/referrals',
-      icon: Share2,
-      color: 'text-amber-600 bg-amber-50 border-amber-100',
-    },
-    {
-      title: 'Coupons',
-      desc: 'Manage discount codes, fixed pricing & limits',
-      href: '/admin/coupons',
-      icon: Tag,
-      color: 'text-rose-600 bg-rose-50 border-rose-100',
-    },
-    {
-      title: 'Audit Logs',
-      desc: 'System mutation logs and security records',
-      href: '/admin/audit',
-      icon: FileText,
-      color: 'text-slate-600 bg-slate-100 border-slate-200',
-    },
-  ];
-
   return (
     <div className="space-y-8 text-slate-800 font-sans">
       {/* Formal Clean Header */}
@@ -198,7 +148,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Top Row: Key Activity Metrics (4 Formal Cards) */}
+      {/* Registration & Attendance Metrics */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -271,45 +221,7 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Middle Section: Quick Access Portals (Easy To Access) */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Quick Navigation & Portals
-          </h2>
-          <span className="text-xs text-slate-400 font-medium">Direct Shortcuts</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.title}
-                href={link.href}
-                className="group bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm rounded-xl p-4 transition-all flex items-center justify-between cursor-pointer"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className={`p-2.5 rounded-xl border ${link.color}`}>
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 group-hover:text-purple-600 transition-colors">
-                      {link.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                      {link.desc}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all shrink-0" />
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Bottom Row: Financial Collection Cards (2 Formal Cards) */}
+      {/* Financial Collections (Total Collection & Today's Collection) */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
