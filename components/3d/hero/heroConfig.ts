@@ -13,7 +13,7 @@ export const heroConfig = {
   cameraDistance: 8,
 
   // --- central object ---
-  objectScale: 1,
+  objectScale: 0.85,
   roughness: 0.035,
   noiseScale: 3.4,
   noiseAmount: 0.16,

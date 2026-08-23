@@ -66,13 +66,138 @@ function patchMaterial(material: THREE.MeshPhysicalMaterial) {
   material.customProgramCacheKey = () => 'hero-prism-noise'
 }
 
+/* ==================================================================
+ * REFRACTION LIGHT BEAMS (PINK FLOYD EFFECT)
+ * ================================================================== */
+const BEAM_VERTEX = `
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  void main() {
+    vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`
+
+const BEAM_FRAGMENT = `
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  uniform vec3 uColor;
+  uniform float uProgress;
+  uniform float uBeamType; // 0.0 = white incident, 1.0 = rainbow refracted
+  void main() {
+    // Fade out softly at both ends of the cylinder (y=0 and y=1)
+    float fadeY = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.8, vUv.y);
+    
+    // Core glow (fresnel): brighter in center, fading at edges
+    vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(vViewPosition);
+    float rim = 1.0 - abs(dot(viewDir, normal));
+    rim = smoothstep(0.0, 1.0, rim);
+    
+    // Animation logic
+    float progressMask = 1.0;
+    if (uBeamType == 0.0) {
+      // White beam animates left (0) to right (1)
+      progressMask = smoothstep(vUv.y - 0.1, vUv.y, uProgress);
+    } else {
+      // Rainbow beams animate from left (0) to right (1) after white beam finishes
+      progressMask = smoothstep(vUv.y - 0.2, vUv.y, uProgress - 1.0);
+    }
+    
+    float alpha = (1.0 - rim) * fadeY * 1.5 * progressMask;
+    
+    gl_FragColor = vec4(uColor, alpha);
+  }
+`
+
+function LightBeams({ prismGroupRef }: { prismGroupRef: React.RefObject<THREE.Group | null> }) {
+  const rainbowGroupRef = useRef<THREE.Group>(null)
+  
+  const uniforms = useMemo(() => ({
+    uProgress: { value: 0 }
+  }), [])
+
+  useFrame((state) => {
+    // Delay animation slightly on load, then play: white beam (0-1), rainbow (1-2)
+    const t = Math.max(0, state.clock.elapsedTime - 0.5)
+    uniforms.uProgress.value = Math.min(t * 1.5, 2.5)
+    
+    if (prismGroupRef.current && rainbowGroupRef.current) {
+      const pEuler = new THREE.Euler().setFromQuaternion(prismGroupRef.current.quaternion)
+      // Refraction physics: rainbow bends inversely to the prism's rotation
+      rainbowGroupRef.current.rotation.y = pEuler.y * -0.7
+      rainbowGroupRef.current.rotation.x = pEuler.x * -0.4
+    }
+  })
+
+  const whiteBeamMat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: BEAM_VERTEX,
+    fragmentShader: BEAM_FRAGMENT,
+    uniforms: { 
+      uColor: { value: new THREE.Color('#ffffff') },
+      uProgress: uniforms.uProgress,
+      uBeamType: { value: 0.0 }
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  }), [uniforms])
+
+  const colors = ['#ff2a2a', '#ff7a00', '#ffdf00', '#2aff2a', '#00aaff', '#aa00ff']
+  
+  const rainbowMats = useMemo(() => colors.map(c => new THREE.ShaderMaterial({
+    vertexShader: BEAM_VERTEX,
+    fragmentShader: BEAM_FRAGMENT,
+    uniforms: { 
+      uColor: { value: new THREE.Color(c) },
+      uProgress: uniforms.uProgress,
+      uBeamType: { value: 1.0 }
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  })), [uniforms])
+
+  return (
+    <group>
+      {/* Incident White Beam (Fixed in space) */}
+      <mesh material={whiteBeamMat} position={[-2.5, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        <cylinderGeometry args={[0.015, 0.015, 5, 16, 1, true]} />
+      </mesh>
+
+      {/* Refracted Rainbow Beams (Bends dynamically based on prism rotation) */}
+      <group ref={rainbowGroupRef} position={[0, 0, 0]}>
+        {colors.map((color, i) => {
+          const spread = 0.21
+          const angle = (i / (colors.length - 1)) * spread - (spread / 2)
+          return (
+            <group key={color} rotation={[0, 0, angle]}>
+              <mesh material={rainbowMats[i]} position={[2.5, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+                <cylinderGeometry args={[0.012, 0.001, 5, 16, 1, true]} />
+              </mesh>
+            </group>
+          )
+        })}
+      </group>
+    </group>
+  )
+}
+
 /* ================================================================== */
 
 export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
   const { scene } = useGLTF(MODEL_PATH)
   const { size } = useThree()
 
-  const groupRef = useRef<THREE.Group>(null)
+  const wrapperRef = useRef<THREE.Group>(null)
+  const prismRef = useRef<THREE.Group>(null)
   const targetQuat = useRef(new THREE.Quaternion())
   const euler = useRef(new THREE.Euler())
   const lastProgress = useRef(0)
@@ -135,8 +260,9 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
     Math.min(baseHeight * 0.62, baseWidth * 0.85) * heroConfig.objectScale
 
   useFrame((state, delta) => {
-    const group = groupRef.current
-    if (!group) return
+    const wrapper = wrapperRef.current
+    const prism = prismRef.current
+    if (!wrapper || !prism) return
 
     const cfg = heroConfig
     const d = Math.min(delta, 0.05)
@@ -156,13 +282,13 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
     )
 
     // depth + float
-    group.position.z = THREE.MathUtils.damp(
-      group.position.z,
+    wrapper.position.z = THREE.MathUtils.damp(
+      wrapper.position.z,
       THREE.MathUtils.mapLinear(progress, 0, 1, 0, 4.5),
       4,
       d
     )
-    group.position.y = Math.sin(state.clock.elapsedTime * 0.35) * 0.12
+    wrapper.position.y = Math.sin(state.clock.elapsedTime * 0.35) * 0.12
 
     /* --------------------------------------------------------------
      * ORIENTATION
@@ -187,9 +313,9 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
       cfg.rotationZ + heroInput.x * mouse * 0.12
     )
     targetQuat.current.setFromEuler(euler.current)
-    group.quaternion.slerp(targetQuat.current, 1 - Math.exp(-3.2 * d))
+    prism.quaternion.slerp(targetQuat.current, 1 - Math.exp(-3.2 * d))
 
-    group.scale.setScalar(worldHeight * unitScale)
+    wrapper.scale.setScalar(worldHeight * unitScale)
 
     // live-tunable material
     material.roughness = cfg.roughness
@@ -210,8 +336,11 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
   if (!geometry) return null
 
   return (
-    <group ref={groupRef}>
-      <mesh geometry={geometry} material={material} />
+    <group ref={wrapperRef}>
+      <group ref={prismRef}>
+        <mesh geometry={geometry} material={material} />
+      </group>
+      <LightBeams prismGroupRef={prismRef} />
     </group>
   )
 }
