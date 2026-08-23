@@ -61,21 +61,32 @@ function initFirebaseAdmin(): App | null {
       return app;
     }
 
-    // 4. Fallback to Application Default Credentials with explicit Project ID
+    // 4. Fallback: Only attempt applicationDefault if running inside Google Cloud or GOOGLE_APPLICATION_CREDENTIALS is set
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'sabrang-26';
-    try {
-      const app = initializeApp({
-        credential: applicationDefault(),
-        projectId: projectId
-      });
-      console.log("Firebase Admin SDK initialized using Default Application Credentials.");
-      return app;
-    } catch {
-      // Fallback app for build-time static analysis
-      return initializeApp({ projectId }, 'build-fallback');
+    const isGoogleCloudEnv = !!(
+      process.env.GOOGLE_APPLICATION_CREDENTIALS || 
+      process.env.K_SERVICE || 
+      process.env.GAE_INSTANCE || 
+      process.env.GCP_PROJECT
+    );
+
+    if (isGoogleCloudEnv) {
+      try {
+        const app = initializeApp({
+          credential: applicationDefault(),
+          projectId: projectId
+        });
+        console.log("Firebase Admin SDK initialized using Default Application Credentials.");
+        return app;
+      } catch (err: any) {
+        console.warn("ADC initialization failed:", err.message);
+      }
     }
+
+    // Default fast initialization without hanging on GCP metadata server
+    return initializeApp({ projectId }, 'client-admin-fallback');
   } catch (error: any) {
-    console.warn("Firebase Admin SDK initialization warning (non-fatal for build):", error.message || error);
+    console.warn("Firebase Admin SDK initialization warning:", error.message || error);
     try {
       return initializeApp({ projectId: 'sabrang-26' }, 'build-fallback');
     } catch {

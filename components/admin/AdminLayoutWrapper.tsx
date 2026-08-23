@@ -4,33 +4,36 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db, isFirebaseConfigured, FIREBASE_SETUP_MESSAGE } from '../../lib/firebase';
+import { auth, db, FIREBASE_SETUP_MESSAGE } from '../../lib/firebase';
 import Sidebar from './Sidebar';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminLayoutWrapper({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [configError, setConfigError] = useState(false);
   const router = useRouter();
+
   useEffect(() => {
-    // Check session fallback first
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sabrang_auth');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed.role === 'admin' || parsed.role === 'scanner') {
-            setLoading(false);
-            return;
-          }
-        } catch {}
-      }
+    setMounted(true);
+
+    // 1. Instant check from sessionStorage
+    const stored = typeof window !== 'undefined' ? sessionStorage.getItem('sabrang_auth') : null;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.role === 'admin' || parsed.role === 'scanner') {
+          setIsAuthenticated(true);
+          return;
+        }
+      } catch {}
     }
 
+    // 2. Firebase Auth fallback
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         if (typeof window !== 'undefined' && sessionStorage.getItem('sabrang_auth')) {
-          setLoading(false);
+          setIsAuthenticated(true);
           return;
         }
         router.push('/login');
@@ -46,13 +49,12 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
         const role = roleDoc?.exists() ? roleDoc.data()?.role : (userDoc?.exists() ? userDoc.data()?.role : 'admin');
 
         if (role === 'scanner') {
-          router.push('/scanner');
+          router.push('/admin/scanner');
         } else {
-          setLoading(false);
+          setIsAuthenticated(true);
         }
       } catch {
-        // Safe fallback for authenticated user
-        setLoading(false);
+        setIsAuthenticated(true);
       }
     });
 
@@ -61,13 +63,13 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
 
   if (configError) {
     return (
-      <div className="min-h-screen bg-admin-bg flex items-center justify-center p-6 text-center font-adminBody">
-        <div className="max-w-md bg-admin-surface border-4 border-brand-ink p-8 rounded-md shadow-[6px_6px_0px_0px_#030404]">
-          <h2 className="text-2xl font-black text-brand-orange mb-4 font-adminHeading uppercase tracking-tight">Firebase Unconfigured</h2>
-          <p className="text-brand-ink/75 text-sm mb-6 leading-relaxed font-bold">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center">
+        <div className="max-w-md bg-white border border-slate-200 p-8 rounded-xl shadow-lg">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Firebase Configuration Required</h2>
+          <p className="text-slate-600 text-sm mb-6 leading-relaxed">
             {FIREBASE_SETUP_MESSAGE}
           </p>
-          <div className="text-xs bg-brand-cloud border-2 border-brand-ink p-4 rounded-md text-left font-mono overflow-x-auto text-brand-ink font-semibold">
+          <div className="text-xs bg-slate-100 border border-slate-200 p-3 rounded-lg text-left font-mono text-slate-800">
             1. Copy .env.example to .env.local<br/>
             2. Fill in your Firebase configuration keys
           </div>
@@ -76,10 +78,11 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
     );
   }
 
-  if (loading) {
+  // Consistent SSR / Initial client render avoids hydration mismatch
+  if (!mounted || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-admin-bg flex items-center justify-center">
-        <Loader2 className="animate-spin text-admin-accent" size={48} />
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+        <Loader2 className="animate-spin text-slate-400" size={36} />
       </div>
     );
   }
@@ -88,7 +91,7 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
     <div className="admin-portal-scope flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans">
       <Sidebar />
       <main className="flex-1 w-full md:w-[calc(100%-16rem)] pt-16 md:pt-0 overflow-y-auto relative bg-[#f8fafc]">
-        <header className="sticky top-0 z-30 bg-white px-6 md:px-8 h-16 hidden md:flex items-center justify-between border-b border-slate-200 shadow-sm">
+        <header className="sticky top-0 z-30 bg-white px-6 md:px-8 h-16 hidden md:flex items-center justify-between border-b border-slate-200 shadow-xs">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
             Sabrang 2026 Management System
           </span>

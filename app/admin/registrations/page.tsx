@@ -197,20 +197,43 @@ export default function Registrations() {
   const itemsPerPage = 50;
 
   useEffect(() => {
+    let active = true;
+    const safetyTimeout = setTimeout(() => {
+      if (active) setLoading(false);
+    }, 2500);
+
     const unsub = onSnapshot(
       query(collection(db, 'registrations'), orderBy('registeredAt', 'desc')),
       (snap) => {
+        if (!active) return;
+        clearTimeout(safetyTimeout);
         const allRegs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         const validRegs = allRegs.filter((reg: any) => reg.name && reg.name.trim() !== '');
         setRegistrations(validRegs);
         setLoading(false);
       },
       (err) => {
-        console.warn("Registrations listener restricted:", err.message);
-        setLoading(false);
+        console.warn("Registrations ordered query fallback:", err.message);
+        onSnapshot(
+          collection(db, 'registrations'),
+          (snap) => {
+            if (!active) return;
+            clearTimeout(safetyTimeout);
+            const allRegs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            setRegistrations(allRegs.filter((reg: any) => reg.name && reg.name.trim() !== ''));
+            setLoading(false);
+          },
+          () => {
+            if (active) setLoading(false);
+          }
+        );
       }
     );
-    return () => unsub();
+    return () => {
+      active = false;
+      clearTimeout(safetyTimeout);
+      unsub();
+    };
   }, []);
 
   const handleSort = (field: string) => {

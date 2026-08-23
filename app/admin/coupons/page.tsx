@@ -98,7 +98,9 @@ export default function CouponsPage() {
         });
         setAvailableEvents(merged);
       }
-    }, () => {});
+    }, (err) => {
+      console.warn("Coupons events listener notice:", err?.message);
+    });
 
     return () => unsubEvents();
   }, []);

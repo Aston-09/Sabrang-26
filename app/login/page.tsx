@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase/client";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -22,69 +22,48 @@ export default function LoginPage() {
     try {
       const cleanEmail = email.trim().toLowerCase();
 
-      // Check default administrator credentials
-      if (
-        (cleanEmail === "admin@sabrang.com" && password === "Sabrang#2026!Adm9xQ") ||
-        (cleanEmail === "adminsabrang@jklu.edu.in" && password === "Sabrang#2026!Adm9xQ") ||
-        (cleanEmail.startsWith("scanner") && password.length >= 8)
-      ) {
-        const role = cleanEmail.includes("scanner") ? "scanner" : "admin";
-        sessionStorage.setItem(
-          "sabrang_auth",
-          JSON.stringify({
-            email: cleanEmail,
-            role: role,
-            name: "Sabrang Administrator",
-          })
-        );
+      // Secure Firebase Client Authentication (no hardcoded passwords)
+      const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      const user = userCredential.user;
 
-        // Try Firebase Client Auth in parallel if available
-        try {
-          await signInWithEmailAndPassword(auth, cleanEmail, password);
-        } catch {
-          // Fallback handled via sessionStorage
+      // Fetch user role from Firestore
+      let role = "admin";
+      let name = user.displayName || "Administrator";
+
+      try {
+        const [userDoc, roleDoc] = await Promise.all([
+          getDoc(doc(db, "users", user.uid)).catch(() => null),
+          getDoc(doc(db, "roles", user.uid)).catch(() => null),
+        ]);
+
+        if (userDoc?.exists()) {
+          role = userDoc.data()?.role || "admin";
+          name = userDoc.data()?.name || name;
+        } else if (roleDoc?.exists()) {
+          role = roleDoc.data()?.role || "admin";
         }
-
-        window.location.href = "/admin";
-        return;
+      } catch {
+        // Fallback to token default
       }
 
-      // Standard Firebase Client Authentication
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
-        const user = userCredential.user;
+      sessionStorage.setItem(
+        "sabrang_auth",
+        JSON.stringify({
+          email: user.email || cleanEmail,
+          role: role,
+          name: name,
+          uid: user.uid,
+        })
+      );
 
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          const role = userDoc.exists() ? (userDoc.data()?.role || "admin") : "admin";
-          sessionStorage.setItem(
-            "sabrang_auth",
-            JSON.stringify({
-              email: cleanEmail,
-              role: role,
-              name: user.displayName || "Administrator",
-            })
-          );
-        } catch {
-          sessionStorage.setItem(
-            "sabrang_auth",
-            JSON.stringify({
-              email: cleanEmail,
-              role: "admin",
-              name: "Administrator",
-            })
-          );
-        }
-
-        window.location.href = "/admin";
-        return;
-      } catch (clientErr: any) {
-        console.warn("Client authentication failed:", clientErr);
-        throw new Error("Invalid email or password. Please verify your credentials.");
+      if (role === "scanner") {
+        router.push("/admin/scanner");
+      } else {
+        router.push("/admin");
       }
     } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err.message || "Failed to sign in. Please verify your credentials.");
+      console.error("Authentication failed:", err?.code || err?.message);
+      setError("Invalid email or password. Please verify your credentials.");
     } finally {
       setLoading(false);
     }
@@ -97,7 +76,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
             Sabrang Portal
           </h1>
-          <p className="text-sm text-neutral-400 mt-1">Admin & Staff Access</p>
+          <p className="text-sm text-neutral-400 mt-1">Authorized Access Only</p>
         </div>
 
         {error && (
@@ -140,7 +119,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 font-semibold rounded-xl text-sm transition-all shadow-lg shadow-purple-900/30 disabled:opacity-50 cursor-pointer"
           >
-            {loading ? "Signing in..." : "Sign In to Admin"}
+            {loading ? "Verifying..." : "Sign In"}
           </button>
         </form>
 

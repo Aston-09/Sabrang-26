@@ -98,7 +98,9 @@ export default function EventEntryLogsPage() {
         }
       });
       setAvailableEvents(Array.from(foundEvents));
-    }, () => {});
+    }, (err) => {
+      console.warn("Entry logs registrations listener notice:", err?.message);
+    });
 
     return () => unsubRegs();
   }, []);

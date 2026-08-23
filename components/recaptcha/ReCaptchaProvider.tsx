@@ -33,56 +33,30 @@ export function ReCaptchaProvider({ children }: ReCaptchaProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Hide any dynamically injected badge directly on the DOM
-    const hideBadges = () => {
-      const badges = document.querySelectorAll<HTMLElement>(
-        ".grecaptcha-badge, div[style*='z-index: 2000000000']",
-      );
-      badges.forEach((b) => {
-        b.style.setProperty("visibility", "hidden", "important");
-        b.style.setProperty("opacity", "0", "important");
-        b.style.setProperty("pointer-events", "none", "important");
-        b.style.setProperty("display", "none", "important");
-      });
-    };
-
-    hideBadges();
-    const interval = setInterval(hideBadges, 800);
-    const observer = new MutationObserver(hideBadges);
-    observer.observe(document.body, { childList: true, subtree: true });
-
     if (!siteKey) {
       if (process.env.NODE_ENV === "development") {
         console.info(
           "[reCAPTCHA] NEXT_PUBLIC_RECAPTCHA_SITE_KEY is not defined. Skipping reCAPTCHA script injection.",
         );
       }
-      return () => {
-        clearInterval(interval);
-        observer.disconnect();
-      };
+      return;
     }
 
     if (typeof window !== "undefined" && window.grecaptcha) {
-      window.grecaptcha.ready(() => {
-        setIsLoaded(true);
-        hideBadges();
-      });
+      try {
+        window.grecaptcha.ready(() => {
+          setIsLoaded(true);
+        });
+      } catch (err) {
+        console.warn("[reCAPTCHA] Ready callback notice:", err);
+      }
     }
-
-    return () => {
-      clearInterval(interval);
-      observer.disconnect();
-    };
   }, [siteKey]);
 
   const executeRecaptcha = useCallback(
     async (action: string): Promise<string | null> => {
       if (!siteKey) {
         if (process.env.NODE_ENV === "development") {
-          console.warn(
-            `[reCAPTCHA] Simulated execution for action: "${action}" (NEXT_PUBLIC_RECAPTCHA_SITE_KEY not set).`,
-          );
           return "dev-mock-recaptcha-token";
         }
         return null;
@@ -123,14 +97,24 @@ export function ReCaptchaProvider({ children }: ReCaptchaProviderProps) {
           strategy="lazyOnload"
           onLoad={() => {
             if (window.grecaptcha) {
-              window.grecaptcha.ready(() => {
-                setIsLoaded(true);
-              });
+              try {
+                window.grecaptcha.ready(() => {
+                  setIsLoaded(true);
+                });
+              } catch (err) {
+                console.warn("[reCAPTCHA] onLoad callback notice:", err);
+              }
             }
           }}
         />
       )}
       {children}
+      {/* Official Google-compliant styling to hide badge without breaking DOM container */}
+      <style jsx global>{`
+        .grecaptcha-badge {
+          visibility: hidden !important;
+        }
+      `}</style>
     </ReCaptchaContext.Provider>
   );
 }
