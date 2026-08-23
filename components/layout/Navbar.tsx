@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { NAV_PROJECTS } from "@/components/FilmStripCarousel/projects";
 import type { Project } from "@/components/FilmStripCarousel/types";
+import MusicToggleButton from "@/components/audio/MusicToggleButton";
 import "@/components/ui/StaggeredMenu.css";
 
 const FilmStripCarousel = dynamic(
@@ -145,7 +146,11 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <div className="pointer-events-auto flex items-center gap-3 md:gap-4">
+        <div className="pointer-events-auto flex items-center gap-2.5 md:gap-4">
+          <div className={`transition-opacity duration-300 ${isOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+            <MusicToggleButton />
+          </div>
+
           <a
             href="https://jklu.edu.in"
             target="_blank"

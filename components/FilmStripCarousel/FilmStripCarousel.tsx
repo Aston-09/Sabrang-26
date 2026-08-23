@@ -201,9 +201,28 @@ export default function FilmStripCarousel({
     [cancelExpand, goToCinematic]
   );
 
-  const [mounted, setMounted] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [hasDimensions, setHasDimensions] = useState(false);
+
   useEffect(() => {
     setMounted(true);
+    const el = wrapRef.current;
+    if (!el) return;
+
+    if (el.clientWidth > 0 && el.clientHeight > 0) {
+      setHasDimensions(true);
+    }
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          setHasDimensions(true);
+        }
+      }
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   return (
@@ -216,7 +235,7 @@ export default function FilmStripCarousel({
         onPointerMove={active ? onWrapPointerMove : undefined}
         onClick={active ? onWrapClick : undefined}
       >
-        {mounted && (
+        {mounted && hasDimensions && (
           <Canvas
             frameloop={active ? "always" : "never"}
             style={{ pointerEvents: active ? 'auto' : 'none' }}

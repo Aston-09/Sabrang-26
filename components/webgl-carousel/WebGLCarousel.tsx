@@ -176,9 +176,29 @@ export default function WebGLCarousel({
 }: WebGLCarouselProps) {
   const [activeItem, setActiveItem] = useState<CarouselItemData | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [hasDimensions, setHasDimensions] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
+    const el = containerRef.current;
+    if (el && el.clientWidth > 0 && el.clientHeight > 0) {
+      setHasDimensions(true);
+    }
+    if (el) {
+      const ro = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+            setHasDimensions(true);
+          }
+        }
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+  }, []);
+
+  useEffect(() => {
     // Preload unique texture URLs concurrently
     const uniqueImages = Array.from(new Set(items.map((i) => i.image).filter(Boolean)));
     uniqueImages.forEach((url) => {
@@ -200,7 +220,7 @@ export default function WebGLCarousel({
   }, [activeItem]);
 
   return (
-    <div className={`relative overflow-hidden rounded-3xl ${className}`}>
+    <div ref={containerRef} className={`relative overflow-hidden rounded-3xl ${className}`}>
       {/* Page Heading (fades out when a card is active) */}
       <div
         className={`team-page-heading absolute top-10 left-0 w-full z-20 text-center pointer-events-none transition-all duration-500 ease-in-out ${activeItem ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
@@ -213,7 +233,7 @@ export default function WebGLCarousel({
         </h1>
       </div>
 
-      {isMounted && (
+      {isMounted && hasDimensions && (
         <Canvas
           style={{ touchAction: "none" }}
           dpr={[1, 2]}

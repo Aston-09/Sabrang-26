@@ -717,12 +717,33 @@ export default function ArchiveScene({
   }, [textures, onReady]);
 
   const [mounted, setMounted] = useState(false);
+  const [hasDimensions, setHasDimensions] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setMounted(true);
+    const el = containerRef.current;
+    if (!el) return;
+
+    if (el.clientWidth > 0 && el.clientHeight > 0) {
+      setHasDimensions(true);
+    }
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          setHasDimensions(true);
+        }
+      }
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   return (
     <div
+      ref={containerRef}
       className="absolute inset-0 select-none touch-none"
       onPointerMove={onPointerMove}
       onPointerDown={onPointerDown}
@@ -730,7 +751,7 @@ export default function ArchiveScene({
       onPointerCancel={endDrag}
       onPointerLeave={onPointerLeave}
     >
-      {mounted && (
+      {mounted && hasDimensions && (
         <Canvas
           frameloop={active ? "always" : "never"}
           dpr={[1, 2]}

@@ -1,5 +1,5 @@
 // Suppress noisy third-party Three.js console output that has no effect on runtime behavior.
-// Loaded once globally via layout.tsx before any Three.js code runs.
+// Loaded globally on both client and server before Three.js renders.
 
 import * as THREE from "three";
 
@@ -10,13 +10,31 @@ const SUPPRESSED_STRINGS = [
   "THREE.BufferGeometry.computeBoundingSphere",
   "computeBoundingSphere",
   "Computed radius is NaN",
-  "position attribute is likely to have NaN",
-  "position attribute is likely to have NaN values",
+  "position",
+  "THREE.WebGLProgram: Program Info Log",
+  "Program Info Log",
+  "warning X4122",
+  "double precision",
+  "cannot be represented accurately",
+  "depthBuffer",
+  "ValidateTextureDescriptor",
+  "CreateTexture",
+  "swapchain texture of size 0",
+  "Invalid Texture",
+  "Invalid TextureView",
+  "Invalid CommandBuffer",
+  "renderContext",
+  "TextureDescriptor",
+  "TextureViewDescriptor",
+  "CommandEncoder",
+  "APIInjectError",
+  "Extent3D",
+  "mipLevelCount",
 ];
 
 const filterLog = (origFn: (...args: unknown[]) => void) => {
   return (...args: unknown[]) => {
-    const msg = args.map((a) => (typeof a === "string" ? a : String(a))).join(" ");
+    const msg = args.map((a) => (typeof a === "string" ? a : JSON.stringify(a) || String(a))).join(" ");
     if (SUPPRESSED_STRINGS.some((s) => msg.includes(s))) {
       return;
     }
@@ -27,6 +45,7 @@ const filterLog = (origFn: (...args: unknown[]) => void) => {
 // Apply on Node.js (server / terminal) and browser alike
 console.warn = filterLog(console.warn);
 console.error = filterLog(console.error);
+console.log = filterLog(console.log);
 
 // ─── Browser-only patches ──────────────────────────────────────────────────────
 if (typeof window !== "undefined") {
@@ -54,3 +73,4 @@ if (typeof window !== "undefined") {
 }
 
 export {};
+

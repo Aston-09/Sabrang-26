@@ -6,7 +6,9 @@ import Footer from "@/components/layout/Footer";
 import TubesCursor from "@/components/effects/TubesCursor";
 import CursorFollower from "@/components/effects/CursorFollower";
 import SmoothScroll from "@/components/effects/SmoothScroll";
+import PreloaderGate from "@/components/effects/PreloaderGate";
 import { InteractionProvider } from "@/components/context/InteractionContext";
+import { AudioPlayerProvider } from "@/components/audio/AudioPlayerProvider";
 import Link from "next/link";
 import "./globals.css";
 import { Inter, Space_Grotesk } from "next/font/google";
@@ -132,21 +134,25 @@ export default function RootLayout({
           />
         )}
         <JsonLd data={organizationSchema} />
-        <ReCaptchaProvider>
-          <InteractionProvider>
-            <AuthProvider>
-              <SmoothScroll>
-                <TubesCursor />
-                <CursorFollower />
-                <div className="min-h-screen flex flex-col text-white overflow-x-clip">
-                  <Navbar />
-                  <main className="flex-grow w-full">{children}</main>
-                  <Footer />
-                </div>
-              </SmoothScroll>
-            </AuthProvider>
-          </InteractionProvider>
-        </ReCaptchaProvider>
+        <PreloaderGate>
+          <AudioPlayerProvider>
+            <ReCaptchaProvider>
+              <InteractionProvider>
+                <AuthProvider>
+                  <SmoothScroll>
+                    <div className="min-h-screen flex flex-col text-white overflow-x-clip">
+                      <Navbar />
+                      <main className="flex-grow w-full">{children}</main>
+                      <Footer />
+                    </div>
+                  </SmoothScroll>
+                </AuthProvider>
+              </InteractionProvider>
+            </ReCaptchaProvider>
+          </AudioPlayerProvider>
+        </PreloaderGate>
+        <TubesCursor />
+        <CursorFollower />
         <Suspense fallback={null}>
           <TrafficTracker />
         </Suspense>
