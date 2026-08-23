@@ -69,17 +69,17 @@ const QUALITY: Record<HeroTier, Omit<HeroQuality, 'tier'>> = {
     textGlow: true
   },
   high: {
-    dpr: [1, 1.5],
-    transmissionScale: 0.3,
+    dpr: [1, 1],
+    transmissionScale: 0.2,
     segments: 64,
     fbmOctaves: 2,
-    warpLevels: 2,
+    warpLevels: 1,
     envSize: 64,
     envInterval: 3,
     dispersion: 1.6,
     iridescence: 0.45,
     bloom: true,
-    grain: true,
+    grain: false,
     textGlow: true
   }
 }
