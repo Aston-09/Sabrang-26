@@ -4,40 +4,39 @@ import React, { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+/**
+ * Direct lighting is deliberately minimal: nearly all of the prism's look comes
+ * from the captured chamber environment map. These are specular accents only —
+ * teal, deep violet, and a single white key, matching the chamber palette.
+ */
 export default function HeroLights() {
-  const purpleLight = useRef<THREE.PointLight>(null)
-  const blueLight = useRef<THREE.PointLight>(null)
-  const cyanLight = useRef<THREE.PointLight>(null)
-  const whiteLight = useRef<THREE.PointLight>(null)
+  const violet = useRef<THREE.PointLight>(null)
+  const teal = useRef<THREE.PointLight>(null)
+  const key = useRef<THREE.PointLight>(null)
 
   useFrame((state) => {
     const t = state.clock.elapsedTime
 
-    if (purpleLight.current) {
-      purpleLight.current.position.x = -5 + Math.sin(t * 0.3) * 2
-      purpleLight.current.position.y = 5 + Math.cos(t * 0.2) * 1
+    if (violet.current) {
+      violet.current.position.x = -5 + Math.sin(t * 0.18) * 1.5
+      violet.current.position.y = 4 + Math.cos(t * 0.13) * 1.0
     }
-    if (blueLight.current) {
-      blueLight.current.position.x = 5 + Math.cos(t * 0.4) * 2
-      blueLight.current.position.z = 2 + Math.sin(t * 0.3) * 2
+    if (teal.current) {
+      teal.current.position.x = 5 + Math.cos(t * 0.22) * 1.5
+      teal.current.position.z = 2 + Math.sin(t * 0.17) * 1.5
     }
-    if (cyanLight.current) {
-      cyanLight.current.position.x = 4 + Math.sin(t * 0.5) * 1.5
-      cyanLight.current.position.y = -3 + Math.cos(t * 0.4) * 1.5
-    }
-    if (whiteLight.current) {
-      whiteLight.current.position.x = -2 + Math.cos(t * 0.2) * 1
-      whiteLight.current.position.y = 2 + Math.sin(t * 0.1) * 1
+    if (key.current) {
+      key.current.position.x = -1.5 + Math.cos(t * 0.11) * 0.8
+      key.current.position.y = 2.5 + Math.sin(t * 0.08) * 0.6
     }
   })
 
   return (
     <>
-      <ambientLight intensity={0.2} color="#050510" />
-      <pointLight ref={purpleLight} position={[-5, 5, -2]} intensity={20} color="#8b5cf6" distance={20} />
-      <pointLight ref={blueLight} position={[5, 2, 2]} intensity={30} color="#3b82f6" distance={20} />
-      <pointLight ref={cyanLight} position={[4, -3, -2]} intensity={15} color="#06b6d4" distance={15} />
-      <pointLight ref={whiteLight} position={[-2, 2, 5]} intensity={10} color="#ffffff" distance={15} />
+      <ambientLight intensity={0.12} color="#0a1416" />
+      <pointLight ref={violet} position={[-5, 4, -2]} intensity={14} color="#6d4fd6" distance={22} />
+      <pointLight ref={teal} position={[5, 1, 2]} intensity={16} color="#1fb4a8" distance={22} />
+      <pointLight ref={key} position={[-1.5, 2.5, 5]} intensity={9} color="#fff4e6" distance={16} />
     </>
   )
 }

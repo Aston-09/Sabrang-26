@@ -318,11 +318,11 @@ export default function GalleryHighlights({
                 {/* METADATA */}
                 <div
                   aria-live="polite"
-                  className={`pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-6 transition-opacity duration-500 sm:px-8 sm:pb-8 md:px-12 md:pb-12 ${ready ? "opacity-100" : "opacity-0"
+                  className={`pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-20 transition-opacity duration-500 sm:px-8 sm:pb-20 md:px-12 md:pb-16 ${ready ? "opacity-100" : "opacity-0"
                     }`}
                 >
                   {/* Navigation Buttons: Bottom-Right on mobile, Centered on Desktop */}
-                  <div className="absolute right-5 bottom-6 md:left-1/2 md:-translate-x-1/2 md:right-auto md:bottom-12 flex items-center gap-2 sm:gap-3 md:gap-6 pointer-events-auto z-20">
+                  <div className="relative flex items-center gap-2 sm:gap-3 md:gap-6 w-max ml-auto md:mx-auto pointer-events-auto z-20">
                     <button
                       onClick={() => step(-1)}
                       className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 backdrop-blur-md text-white transition-all hover:bg-white/15 hover:border-white/30 active:scale-90"

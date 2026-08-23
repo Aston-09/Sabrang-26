@@ -50,7 +50,7 @@
 /* ---- title ---- */
 .fsc-titlebox {
   position: absolute;
-  top: 11%;
+  top: 7%;
   left: 0;
   right: 0;
   text-align: center;
@@ -208,7 +208,7 @@
 
 @media (max-width: 767px) {
   .fsc-titlebox {
-    top: 78px;
+    top: 54px;
   }
 
   .fsc-title {

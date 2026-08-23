@@ -163,7 +163,8 @@ type ArchiveSphereProps = {
   snapPitchRef: React.RefObject<number>;
   registerPlacements: (placements: TilePlacement[]) => void;
   onFocusChange: (itemIndex: number) => void;
-  onTilePointerDown: (itemIndex: number) => void;
+  onTileClick: (itemIndex: number) => void;
+  dragMovedRef: React.RefObject<number>;
 };
 
 function ArchiveSphere({
@@ -179,7 +180,8 @@ function ArchiveSphere({
   snapPitchRef,
   registerPlacements,
   onFocusChange,
-  onTilePointerDown,
+  onTileClick,
+  dragMovedRef,
 }: ArchiveSphereProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRefs = useRef<Array<THREE.Mesh | null>>([]);
@@ -427,9 +429,11 @@ function ArchiveSphere({
             geometry={geometry}
             material={materials[itemIndex]}
             scale={[size.width, size.height, 1]}
-            onPointerDown={(event: ThreeEvent<PointerEvent>) => {
-              event.stopPropagation();
-              onTilePointerDown(index);
+            onPointerUp={(event: ThreeEvent<PointerEvent>) => {
+              if (dragMovedRef.current != null && dragMovedRef.current < 6) {
+                event.stopPropagation();
+                onTileClick(index);
+              }
             }}
           />
         );
@@ -591,14 +595,24 @@ export default function ArchiveScene({
     };
   }, [focusItem, focusRequestRef]);
 
+  useEffect(() => {
+    const handleGlobalPointerMove = (e: PointerEvent) => {
+      if (!isDraggingRef.current) {
+        pointerRef.current = {
+          x: (e.clientX / window.innerWidth) * 2 - 1,
+          y: -(e.clientY / window.innerHeight) * 2 - 1,
+        };
+      }
+    };
+    window.addEventListener("pointermove", handleGlobalPointerMove, { passive: true });
+    return () => window.removeEventListener("pointermove", handleGlobalPointerMove);
+  }, []);
+
   const onPointerMove = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) return;
-
       pointerRef.current = {
-        x: ((event.clientX - rect.left) / rect.width) * 2 - 1,
-        y: -(((event.clientY - rect.top) / rect.height) * 2 - 1),
+        x: (event.clientX / window.innerWidth) * 2 - 1,
+        y: -(event.clientY / window.innerHeight) * 2 - 1,
       };
 
       if (
@@ -687,17 +701,13 @@ export default function ArchiveScene({
   );
 
   /** A tap on a photograph (as opposed to a drag) brings it forward. */
-  const onTilePointerDown = useCallback(
+  const handleTileClick = useCallback(
     (placementIndex: number) => {
       const placement = placementsRef.current[placementIndex];
       if (!placement) return;
 
-      window.setTimeout(() => {
-        if (dragMovedRef.current < 6) {
-          focusItem(placement.itemIndex);
-          onTileTap?.(placement.itemIndex);
-        }
-      }, 0);
+      focusItem(placement.itemIndex);
+      onTileTap?.(placement.itemIndex);
     },
     [focusItem, onTileTap],
   );
@@ -755,7 +765,8 @@ export default function ArchiveScene({
             snapPitchRef={snapPitchRef}
             registerPlacements={registerPlacements}
             onFocusChange={onFocusChange}
-            onTilePointerDown={onTilePointerDown}
+            onTileClick={handleTileClick}
+            dragMovedRef={dragMovedRef}
           />
         )}
       </Canvas>
