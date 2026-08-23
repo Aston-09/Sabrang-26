@@ -139,18 +139,12 @@
   border-radius: 8px !important;
 }
 
-/* Hide default browser system cursor globally on desktop (pointer: fine) */
+/* Hide default browser system cursor globally on desktop (pointer: fine), except on admin portal */
 @media (hover: hover) and (pointer: fine) {
 
-  html,
-  body,
-  body *,
-  a,
-  button,
-  input,
-  select,
-  textarea,
-  [role="button"] {
+  html:not(:has(.admin-portal-scope)),
+  body:not(:has(.admin-portal-scope)),
+  body:not(:has(.admin-portal-scope)) *:not(.admin-portal-scope):not(.admin-portal-scope *) {
     cursor: none !important;
   }
 }

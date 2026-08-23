@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import {
   CURSOR_TRAIL_COLORS,
   CURSOR_TRAIL_IDLE_MS,
@@ -24,9 +25,12 @@ if (typeof window !== "undefined") {
 }
 
 export default function TubesCursor() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin") || pathname === "/login";
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (isAdmin) return;
     const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
     if (isTouch) return;
 
@@ -233,7 +237,9 @@ export default function TubesCursor() {
         app.dispose();
       }
     };
-  }, []);
+  }, [isAdmin]);
+
+  if (isAdmin) return null;
 
   return (
     <div

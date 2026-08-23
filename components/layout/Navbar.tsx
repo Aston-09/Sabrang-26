@@ -6,9 +6,6 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
 import { NAV_PROJECTS } from "@/components/FilmStripCarousel/projects";
 import type { Project } from "@/components/FilmStripCarousel/types";
 import "@/components/ui/StaggeredMenu.css";
@@ -23,7 +20,6 @@ const preloadFilmStrip = () => {
     import("@/components/FilmStripCarousel/FilmStripCarousel");
   }
 };
-
 
 const PANEL = {
   hidden: {},
@@ -42,7 +38,6 @@ const PANEL_ITEM = {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, role, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -108,13 +103,7 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  if (pathname && pathname.startsWith("/admin")) return null;
-
-  const handleSignOut = async () => {
-    await signOut(auth);
-    setIsOpen(false);
-    router.push("/");
-  };
+  if (pathname && (pathname.startsWith("/admin") || pathname === "/login")) return null;
 
   const handleProjectSelect = (project: Project) => {
     if (pathname === project.href) {
@@ -198,27 +187,25 @@ export default function Navbar() {
       {/* ── Film strip: always mounted so the WebGL context is never cold-started.
            The canvas is invisible and pointer-inactive when the menu is closed.
            frameloop="never" means zero GPU work while hidden. ── */}
-      {role !== "admin" && (
-        <div
-          aria-hidden={!isOpen}
-          className={`fixed inset-0 z-40 bg-black transition-opacity duration-200 ease-out ${
-            isOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <FilmStripCarousel
-            projects={NAV_PROJECTS}
-            loading={navLoading}
-            active={isOpen}
-            onProjectSelect={handleProjectSelect}
-          />
-        </div>
-      )}
+      <div
+        aria-hidden={!isOpen}
+        className={`fixed inset-0 z-40 bg-black transition-opacity duration-200 ease-out ${
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <FilmStripCarousel
+          projects={NAV_PROJECTS}
+          loading={navLoading}
+          active={isOpen}
+          onProjectSelect={handleProjectSelect}
+        />
+      </div>
 
-      {/* ── User panel stagger — only needs to animate in/out ── */}
+      {/* ── Public CTA button only — zero admin session leakage ── */}
       <AnimatePresence>
-        {isOpen && !loading && (
+        {isOpen && (
           <motion.div
             key="user-panel"
             variants={PANEL}
@@ -227,57 +214,15 @@ export default function Navbar() {
             exit="hidden"
             className="fixed top-5 left-5 z-50 flex flex-col gap-2 max-w-[260px] text-sm"
           >
-            {user ? (
-              <>
-                <motion.div variants={PANEL_ITEM}>
-                  <p className="font-bold text-white truncate">
-                    {user.displayName || "User"}
-                  </p>
-                  <p className="text-xs text-white/50 truncate">
-                    {user.email}
-                  </p>
-                </motion.div>
-                <motion.div
-                  variants={PANEL_ITEM}
-                  className="flex flex-wrap gap-2"
-                >
-                  {role !== "admin" && (
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="px-4 py-2 rounded-full bg-neutral-800 border border-neutral-700 text-white hover:bg-neutral-700 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                  {role === "scanner" && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setIsOpen(false)}
-                      className="px-4 py-2 rounded-full bg-red-950/50 border border-red-700 text-red-200 hover:bg-red-900/50 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
-                    >
-                      Entry Portal
-                    </Link>
-                  )}
-                  <button
-                    onClick={handleSignOut}
-                    className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-white/80 hover:bg-white/20 hover:-translate-y-0.5 active:scale-90 active:duration-75 font-semibold text-xs transition-all duration-300 ease-out"
-                  >
-                    Logout
-                  </button>
-                </motion.div>
-              </>
-            ) : (
-              <motion.div variants={PANEL_ITEM}>
-                <Link
-                  href="/register"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs tracking-wide shadow-xl hover:bg-neutral-200 hover:-translate-y-0.5 active:scale-90 active:duration-75 transition-all duration-300 ease-out text-center"
-                >
-                  Register Now
-                </Link>
-              </motion.div>
-            )}
+            <motion.div variants={PANEL_ITEM}>
+              <Link
+                href="/register"
+                onClick={() => setIsOpen(false)}
+                className="block px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs tracking-wide shadow-xl hover:bg-neutral-200 hover:-translate-y-0.5 active:scale-90 active:duration-75 transition-all duration-300 ease-out text-center"
+              >
+                Register Now
+              </Link>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

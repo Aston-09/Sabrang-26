@@ -91,7 +91,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07070a] text-white flex items-center justify-center p-4">
+    <div className="admin-portal-scope min-h-screen bg-[#07070a] text-white flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-[#12121a] border border-white/10 rounded-2xl p-8 shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">

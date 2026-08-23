@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function CursorFollower() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin") || pathname === "/login";
+
   // Only one piece of state — set once on mount, never again.
   // Keeps the SSR render null (touch = true) → avoids hydration mismatch.
   const [isTouch, setIsTouch] = useState(true);
@@ -10,6 +14,7 @@ export default function CursorFollower() {
   const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isAdmin) return;
     const hoverMatch = window.matchMedia("(hover: hover) and (pointer: fine)");
     setIsTouch(!hoverMatch.matches);
     if (!hoverMatch.matches) return;
@@ -53,9 +58,9 @@ export default function CursorFollower() {
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [isAdmin]);
 
-  if (isTouch) return null;
+  if (isTouch || isAdmin) return null;
 
   return (
     <div
