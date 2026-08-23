@@ -18,7 +18,7 @@ export const heroConfig = {
   noiseScale: 3.4,
   noiseAmount: 0.16,
   materialColor: '#ffffff',
-  reflectionIntensity: 1.45,
+  reflectionIntensity: 2.4,
   screenDistortion: 0.42, // transmission thickness -> refraction strength
   rotationX: 0,
   rotationY: 0,
@@ -42,7 +42,7 @@ export const heroConfig = {
   fluidContrast: 0.82,  // how black the gaps between terraces go
 
   // --- typography ---
-  textGlow: 0.42, // cursor light / shadow pass behind SABRANG
+  textGlow: 0.21, // cursor light / shadow pass behind SABRANG
   textBlur: 2.6   // mip bias on the occlusion mask; higher = softer shafts
 }
 

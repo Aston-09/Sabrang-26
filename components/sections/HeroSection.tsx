@@ -56,6 +56,26 @@ export default function HeroSection() {
             heroScrollState.progress = self.progress
           }
         })
+
+        // Drop the countdown down near the footer before PHASE_01 arrives
+        // (AboutSection card 1 starts at 30/100), so it stays on screen for the
+        // whole sequence without sitting on top of the cards.
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: triggerEl,
+            start: 'top top',
+            end: HERO_PIN_END,
+            scrub: HERO_SCRUB,
+            invalidateOnRefresh: true, // re-read the vh-based y on resize
+          }
+        })
+          .to('.hero-countdown', {
+            y: () => window.innerHeight * 0.24,
+            scale: 0.6,
+            duration: 12,
+            ease: 'power2.inOut',
+          }, 8)
+          .set({}, {}, 100) // force total duration to 100 == progress 1
       }
       
       return () => {
@@ -71,8 +91,10 @@ export default function HeroSection() {
       
       {/* HTML OVERLAYS */}
       
-      <div className="absolute inset-0 flex flex-col items-center justify-center mt-[28vh] pointer-events-auto z-10">
-        <div className="hero-anim">
+      {/* .hero-countdown carries the scroll transform, .hero-anim the entrance
+          one -- separate elements so the two timelines don't fight over `y`. */}
+      <div className="hero-countdown absolute inset-0 flex flex-col items-center justify-center mt-[28vh] pointer-events-none z-10">
+        <div className="hero-anim pointer-events-auto">
           <HeroCountdown />
         </div>
       </div>

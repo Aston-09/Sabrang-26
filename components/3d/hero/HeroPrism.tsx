@@ -343,7 +343,8 @@ export default function HeroPrism({ mobile = false, q }: { mobile?: boolean; q: 
       <group ref={prismRef}>
         <mesh geometry={geometry} material={material} />
       </group>
-      <LightBeams prismGroupRef={prismRef} />
+      {/* Disabled: white beam → rainbow refraction effect. Re-enable by uncommenting. */}
+      {/* <LightBeams prismGroupRef={prismRef} /> */}
     </group>
   )
 }
