@@ -225,6 +225,24 @@ export default function GalleryHighlights({
     [step],
   );
 
+  // Global keyboard listener so arrow keys work without clicking into the 3D area first.
+  const stepRef = useRef(step);
+  stepRef.current = step;
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        stepRef.current(1);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        stepRef.current(-1);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
   const onReady = useCallback(() => setReady(true), []);
   const focused = items[focusedIndex] ?? items[0];
 
@@ -287,9 +305,10 @@ export default function GalleryHighlights({
                       onReady={onReady}
                       focusRequestRef={focusRequestRef}
                       onTileTap={(itemIndex) => {
-                        if (itemIndex === focusedIndex) {
-                          setExpandedItem(items[itemIndex]);
-                        }
+                        // Open modal immediately for any tapped tile.
+                        // (No focusedIndex guard — the snap is async so state
+                        // hasn't updated yet when this fires.)
+                        setExpandedItem(items[itemIndex]);
                       }}
                     />
                   )}
@@ -315,23 +334,25 @@ export default function GalleryHighlights({
                   />
                 </div>
 
-                {/* METADATA */}
+                {/* SPOTLIGHT METADATA — centered poster info + navigation */}
                 <div
                   aria-live="polite"
-                  className={`pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-20 transition-opacity duration-500 sm:px-8 sm:pb-20 md:px-12 md:pb-16 ${ready ? "opacity-100" : "opacity-0"
+                  className={`pointer-events-none absolute inset-x-0 bottom-0 pb-16 sm:pb-14 md:pb-10 transition-opacity duration-500 flex flex-col items-center gap-3 px-4 ${ready ? "opacity-100" : "opacity-0"
                     }`}
                 >
-                  {/* Navigation Buttons: Bottom-Right on mobile, Centered on Desktop */}
-                  <div className="relative flex items-center gap-2 sm:gap-3 md:gap-6 w-max ml-auto md:mx-auto pointer-events-auto z-20">
+
+
+                  {/* Navigation Buttons — centered */}
+                  <div className="pointer-events-auto flex items-center gap-3 sm:gap-4 md:gap-6 z-20">
                     <button
                       onClick={() => step(-1)}
-                      className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 backdrop-blur-md text-white transition-all hover:bg-white/15 hover:border-white/30 active:scale-90"
+                      className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/15 bg-black/50 backdrop-blur-md text-white transition-all hover:bg-white/15 hover:border-white/30 active:scale-90"
                       aria-label="Previous image"
                     >
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
                     </button>
 
-                    <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3 text-xs sm:text-[13px] font-bold tracking-wider sm:tracking-[0.2em] font-mono select-none">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-bold tracking-[0.2em] font-mono select-none">
                       <span className="text-white">{String(focusedIndex + 1).padStart(2, "0")}</span>
                       <span className="text-white/25">/</span>
                       <span className="text-white/45">{String(items.length).padStart(2, "0")}</span>
@@ -339,13 +360,12 @@ export default function GalleryHighlights({
 
                     <button
                       onClick={() => step(1)}
-                      className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 backdrop-blur-md text-white transition-all hover:bg-white/15 hover:border-white/30 active:scale-90"
+                      className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/15 bg-black/50 backdrop-blur-md text-white transition-all hover:bg-white/15 hover:border-white/30 active:scale-90"
                       aria-label="Next image"
                     >
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
                     </button>
                   </div>
-
                 </div>
               </div>
             </div>
