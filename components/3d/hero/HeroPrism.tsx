@@ -242,7 +242,7 @@ export default function HeroPrism({ mobile = false, q }: { mobile?: boolean; q: 
       clearcoat: 0.4,
       clearcoatRoughness: 0.05,
       envMapIntensity: heroConfig.reflectionIntensity,
-      transparent: false
+      transparent: true
     })
     patchMaterial(m)
     return m

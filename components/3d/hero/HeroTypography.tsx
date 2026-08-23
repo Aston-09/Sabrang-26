@@ -101,6 +101,7 @@ const FX_FRAG = /* glsl */ `
 export default function HeroTypography({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
   const { size } = useThree()
   const [maskFrames, setMaskFrames] = useState(Infinity)
+  const textRef = useRef<any>(null)
   const materialRef = useRef<THREE.MeshBasicMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
   const innerRef = useRef<THREE.Group>(null)
@@ -200,6 +201,17 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
       m.y = THREE.MathUtils.damp(m.y, hit.y + 0.5, 12, delta)
     }
 
+    if (materialRef.current) {
+      materialRef.current.transparent = false
+      materialRef.current.depthWrite = true
+      materialRef.current.alphaTest = 0.01
+    }
+
+    if (textRef.current && textRef.current.material) {
+      textRef.current.material.transparent = false
+      textRef.current.material.depthWrite = true
+    }
+
     u.uIntensity.value = heroConfig.textGlow * materialRef.current.opacity
     u.uBlur.value = heroConfig.textBlur
   })
@@ -243,7 +255,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
                   anchorY="middle"
                   onSync={() => setMaskFrames(3)}
                 >
-                  SABRANG
+                  SABRANG'26
                   <meshBasicMaterial color="#ffffff" toneMapped={false} />
                 </Text>
               </RenderTexture>
@@ -252,7 +264,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
         )}
 
         <Text
-          renderOrder={10}
+          ref={textRef}
           font={FONT}
           fontSize={fontSize}
           letterSpacing={0.1}
@@ -260,14 +272,15 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
           anchorX="center"
           anchorY="middle"
         >
-          SABRANG
+          SABRANG'26
           <meshBasicMaterial
             ref={materialRef}
             color="#ffffff"
-            transparent={true}
+            transparent={false}
+            alphaTest={0.01}
+            depthWrite={true}
+            depthTest={true}
             opacity={1}
-            depthTest={false}
-            depthWrite={false}
             toneMapped={false}
           />
         </Text>

@@ -17,6 +17,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'FlorasDisplay';
+  src: url('/fonts/FlorasDisplay.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Material Design 3 Inspired Palette */
   --color-primary: #004ac6;

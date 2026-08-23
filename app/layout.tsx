@@ -135,7 +135,7 @@ export default function RootLayout({
         )}
         <JsonLd data={organizationSchema} />
         <PreloaderGate>
-          <AudioPlayerProvider>
+          {/* <AudioPlayerProvider> */}
             <ReCaptchaProvider>
               <InteractionProvider>
                 <AuthProvider>
@@ -151,7 +151,7 @@ export default function RootLayout({
                 </AuthProvider>
               </InteractionProvider>
             </ReCaptchaProvider>
-          </AudioPlayerProvider>
+          {/* </AudioPlayerProvider> */}
         </PreloaderGate>
         <Suspense fallback={null}>
           <TrafficTracker />

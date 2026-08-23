@@ -147,9 +147,9 @@ export default function Navbar() {
         </div>
 
         <div className="pointer-events-auto flex items-center gap-2.5 md:gap-4">
-          <div className={`transition-opacity duration-300 ${isOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+          {/* <div className={`transition-opacity duration-300 ${isOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             <MusicToggleButton />
-          </div>
+          </div> */}
 
           <a
             href="https://jklu.edu.in"

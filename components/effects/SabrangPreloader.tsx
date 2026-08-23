@@ -122,9 +122,9 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
       gElements.forEach((el) => initStroke(el, 0));
     }
 
-    // Position S-Group at dead center (offset +720px from X=240 anchor to X=960 center)
+    // Position S-Group at dead center (offset +680px from X=280 anchor to X=960 center)
     if (sGroupRef.current) {
-      gsap.set(sGroupRef.current, { x: 720 });
+      gsap.set(sGroupRef.current, { x: 680 });
     }
 
     // ── Build Main Animation Timeline ──
@@ -298,8 +298,8 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
   const midY = 540;
   const bslnY = 670;
 
-  // 7 evenly spaced letter centers: 240px step across 1920px (Centers: 240 → 1680)
-  const letterPositions = [240, 480, 720, 960, 1200, 1440, 1680];
+  // 7 letter centers, tightened for serif font proportions
+  const letterPositions = [280, 500, 720, 960, 1180, 1420, 1640];
 
   // Helper to record per-letter guides
   const addLetterGuide = (letterIdx: number, el: SVGElement | null) => {
@@ -345,12 +345,12 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
         aria-hidden="true"
         style={{ overflow: "visible" }}
       >
-        {/* ── 1. GLOBAL BLUEPRINT GUIDES (Cartesian & Typographic Full-Screen Axes) ── */}
+        {/* ── 1. GLOBAL OPTICAL GUIDES ── */}
         <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.22)" strokeWidth="1">
           {/* Cap-Height Line */}
           <line ref={addGlobalGuide} x1="0" y1={capY} x2={vpW} y2={capY} strokeDasharray="12 8" />
-          {/* Midline / X-Height */}
-          <line ref={addGlobalGuide} x1="0" y1={midY} x2={vpW} y2={midY} strokeDasharray="6 6" />
+          {/* Midline */}
+          <line ref={addGlobalGuide} x1="0" y1={midY} x2={vpW} y2={midY} strokeDasharray="6 6" opacity="0.5" />
           {/* Baseline */}
           <line ref={addGlobalGuide} x1="0" y1={bslnY} x2={vpW} y2={bslnY} strokeDasharray="12 8" />
           {/* Center Vertical Axis */}
@@ -358,254 +358,101 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
         </g>
 
         {/* ── 2. ARCHITECTURAL INTERSECTING RAYS & LETTERFORMS ── */}
+        {['S', 'A', 'B', 'R', 'A', 'N', 'G'].map((char, i) => {
+          const posX = letterPositions[i];
 
-        {/* ── S CLUSTER (Index 0: In sGroupRef for Center → Left translation) ── */}
-        <g ref={sGroupRef}>
-          {/* S Architectural Construction Guides */}
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1">
-            {/* Vertical column bounds */}
-            <line ref={(el) => addLetterGuide(0, el)} x1="150" y1="0" x2="150" y2={vpH} strokeDasharray="6 6" />
-            <line ref={(el) => addLetterGuide(0, el)} x1="330" y1="0" x2="330" y2={vpH} strokeDasharray="6 6" />
-            <line ref={(el) => addLetterGuide(0, el)} x1="240" y1="0" x2="240" y2={vpH} strokeDasharray="4 6" opacity="0.5" />
-            {/* Upper and Lower Compass Circles */}
-            <circle ref={(el) => addLetterGuide(0, el)} cx="240" cy={capY + 65} r="65" fill="none" strokeDasharray="4 4" />
-            <circle ref={(el) => addLetterGuide(0, el)} cx="240" cy={bslnY - 65} r="65" fill="none" strokeDasharray="4 4" />
-            {/* Tangent Projections */}
-            <line ref={(el) => addLetterGuide(0, el)} x1="0" y1={capY} x2="400" y2={capY} />
-            <line ref={(el) => addLetterGuide(0, el)} x1="80" y1={bslnY} x2="440" y2={bslnY} />
-            <line ref={(el) => addLetterGuide(0, el)} x1="100" y1={midY} x2="380" y2={midY} strokeDasharray="4 4" />
-            {/* Crosshairs */}
-            <path ref={(el) => addLetterGuide(0, el)} d="M 225 540 H 255 M 240 525 V 555" strokeWidth="1.2" />
-          </g>
+          return (
+            <g key={i} ref={i === 0 ? sGroupRef : undefined}>
+              {/* Complex Architectural Construction Guides */}
+              <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1">
+                {i === 0 && ( // S
+                  <>
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 90} y1="0" x2={posX - 90} y2={vpH} strokeDasharray="6 6" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 90} y1="0" x2={posX + 90} y2={vpH} strokeDasharray="6 6" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX} y1="0" x2={posX} y2={vpH} strokeDasharray="4 6" opacity="0.5" />
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX} cy={capY + 65} r="65" fill="none" strokeDasharray="4 4" />
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX} cy={bslnY - 65} r="65" fill="none" strokeDasharray="4 4" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 240} y1={capY} x2={posX + 160} y2={capY} />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={bslnY} x2={posX + 200} y2={bslnY} />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 140} y1={midY} x2={posX + 140} y2={midY} strokeDasharray="4 4" />
+                    <path ref={(el) => addLetterGuide(i, el)} d={`M ${posX - 15} ${midY} H ${posX + 15} M ${posX} ${midY - 15} V ${midY + 15}`} strokeWidth="1.2" />
+                  </>
+                )}
+                {(i === 1 || i === 4) && ( // A
+                  <>
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 270} y1="0" x2={posX + 440} y2={vpH} strokeWidth="1.2" stroke="rgba(255, 255, 255, 0.55)" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 270} y1="0" x2={posX - 440} y2={vpH} strokeWidth="1.2" stroke="rgba(255, 255, 255, 0.55)" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX} y1="0" x2={posX} y2={vpH} strokeDasharray="6 6" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 90} y1="0" x2={posX - 90} y2={vpH} strokeDasharray="4 6" opacity="0.6" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 90} y1="0" x2={posX + 90} y2={vpH} strokeDasharray="4 6" opacity="0.6" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 180} y1="570" x2={posX + 180} y2="570" strokeDasharray="4 4" />
+                    <path ref={(el) => addLetterGuide(i, el)} d={`M ${posX - 15} 410 H ${posX + 15} M ${posX} 395 V 425`} strokeWidth="1.4" />
+                  </>
+                )}
+                {i === 2 && ( // B
+                  <>
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 85} y1="0" x2={posX - 85} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 85} y1="0" x2={posX + 85} y2={vpH} strokeDasharray="6 6" />
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX} cy={capY + 65} r="65" fill="none" strokeDasharray="4 4" />
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX + 5} cy={bslnY - 65} r="65" fill="none" strokeDasharray="4 4" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={midY} x2={posX + 160} y2={midY} strokeDasharray="6 6" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={capY} x2={posX + 160} y2={capY} />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={bslnY} x2={posX + 160} y2={bslnY} />
+                    <path ref={(el) => addLetterGuide(i, el)} d={`M ${posX - 100} 410 H ${posX - 70} M ${posX - 85} 395 V 425 M ${posX - 100} 670 H ${posX - 70} M ${posX - 85} 655 V 685`} strokeWidth="1.2" />
+                  </>
+                )}
+                {i === 3 && ( // R
+                  <>
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 85} y1="0" x2={posX - 85} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 85} y1="0" x2={posX + 85} y2={vpH} strokeDasharray="6 6" />
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX} cy={capY + 65} r="65" fill="none" strokeDasharray="4 4" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 280} y1="0" x2={posX + 180} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={midY} x2={posX + 160} y2={midY} strokeDasharray="4 4" />
+                    <path ref={(el) => addLetterGuide(i, el)} d={`M ${posX - 100} 540 H ${posX - 70} M ${posX - 85} 525 V 555`} strokeWidth="1.2" />
+                  </>
+                )}
+                {i === 5 && ( // N
+                  <>
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 85} y1="0" x2={posX - 85} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 85} y1="0" x2={posX + 85} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX} y1="0" x2={posX} y2={vpH} strokeDasharray="4 6" opacity="0.5" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 270} y1="0" x2={posX + 270} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={capY} x2={posX + 160} y2={capY} />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 160} y1={bslnY} x2={posX + 160} y2={bslnY} />
+                    <path ref={(el) => addLetterGuide(i, el)} d={`M ${posX - 100} 410 H ${posX - 70} M ${posX - 85} 395 V 425 M ${posX + 70} 670 H ${posX + 100} M ${posX + 85} 655 V 685`} strokeWidth="1.2" />
+                  </>
+                )}
+                {i === 6 && ( // G
+                  <>
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX} cy={midY} r="130" fill="none" strokeDasharray="6 6" />
+                    <circle ref={(el) => addLetterGuide(i, el)} cx={posX} cy={midY} r="85" fill="none" strokeDasharray="4 4" opacity="0.5" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 170} y1={midY} x2={posX + 240} y2={midY} />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX + 120} y1="0" x2={posX + 120} y2={vpH} strokeWidth="1.2" />
+                    <line ref={(el) => addLetterGuide(i, el)} x1={posX - 130} y1="0" x2={posX - 130} y2={vpH} strokeDasharray="4 6" opacity="0.6" />
+                    <path ref={(el) => addLetterGuide(i, el)} d={`M ${posX - 15} 540 H ${posX + 15} M ${posX} 525 V 555`} strokeWidth="1.2" />
+                  </>
+                )}
+              </g>
 
-          {/* S Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[0] = el; }}
-            x={letterPositions[0]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            S
-          </text>
-        </g>
-
-        {/* ── A (Index 1, CX = 480) ── Intersecting Diagonal 'X' Rays, Plumb Line & Column Guides ── */}
-        <g>
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.55)" strokeWidth="1.2">
-            {/* Colossal Intersecting Diagonal 'X' Rays crossing at Apex (480, 410) */}
-            <line ref={(el) => addLetterGuide(1, el)} x1="210" y1="0" x2="920" y2={vpH} />
-            <line ref={(el) => addLetterGuide(1, el)} x1="750" y1="0" x2="40" y2={vpH} />
-            {/* Vertical plumb line through apex */}
-            <line ref={(el) => addLetterGuide(1, el)} x1="480" y1="0" x2="480" y2={vpH} strokeDasharray="6 6" />
-            {/* Column boundary lines */}
-            <line ref={(el) => addLetterGuide(1, el)} x1="390" y1="0" x2="390" y2={vpH} strokeDasharray="4 6" opacity="0.6" />
-            <line ref={(el) => addLetterGuide(1, el)} x1="570" y1="0" x2="570" y2={vpH} strokeDasharray="4 6" opacity="0.6" />
-            {/* Crossbar projection */}
-            <line ref={(el) => addLetterGuide(1, el)} x1="300" y1="570" x2="660" y2="570" strokeDasharray="4 4" />
-            {/* Apex Crosshair */}
-            <path ref={(el) => addLetterGuide(1, el)} d="M 465 410 H 495 M 480 395 V 425" strokeWidth="1.4" />
-          </g>
-
-          {/* A Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[1] = el; }}
-            x={letterPositions[1]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            A
-          </text>
-        </g>
-
-        {/* ── B (Index 2, CX = 720) ── Vertical Spine, Column Guides & Dual Compass Arcs ── */}
-        <g>
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1">
-            {/* Vertical spine ray & right bound */}
-            <line ref={(el) => addLetterGuide(2, el)} x1="635" y1="0" x2="635" y2={vpH} strokeWidth="1.2" />
-            <line ref={(el) => addLetterGuide(2, el)} x1="805" y1="0" x2="805" y2={vpH} strokeDasharray="6 6" />
-            {/* Upper and Lower Compass Arcs */}
-            <circle ref={(el) => addLetterGuide(2, el)} cx="720" cy={capY + 65} r="65" fill="none" strokeDasharray="4 4" />
-            <circle ref={(el) => addLetterGuide(2, el)} cx="725" cy={bslnY - 65} r="65" fill="none" strokeDasharray="4 4" />
-            {/* Horizontal tangent projections */}
-            <line ref={(el) => addLetterGuide(2, el)} x1="560" y1={midY} x2="880" y2={midY} strokeDasharray="6 6" />
-            <line ref={(el) => addLetterGuide(2, el)} x1="560" y1={capY} x2="880" y2={capY} />
-            <line ref={(el) => addLetterGuide(2, el)} x1="560" y1={bslnY} x2="880" y2={bslnY} />
-            {/* Spine Crosshairs */}
-            <path ref={(el) => addLetterGuide(2, el)} d="M 620 410 H 650 M 635 395 V 425 M 620 670 H 650 M 635 655 V 685" strokeWidth="1.2" />
-          </g>
-
-          {/* B Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[2] = el; }}
-            x={letterPositions[2]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            B
-          </text>
-        </g>
-
-        {/* ── R (Index 3, CX = 960) ── Spine, Upper Arc & Diagonal Leg Ray ── */}
-        <g>
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1">
-            {/* Vertical spine & right column line */}
-            <line ref={(el) => addLetterGuide(3, el)} x1="875" y1="0" x2="875" y2={vpH} strokeWidth="1.2" />
-            <line ref={(el) => addLetterGuide(3, el)} x1="1045" y1="0" x2="1045" y2={vpH} strokeDasharray="6 6" />
-            {/* Upper Lobe Compass Circle */}
-            <circle ref={(el) => addLetterGuide(3, el)} cx="960" cy={capY + 65} r="65" fill="none" strokeDasharray="4 4" />
-            {/* Diagonal Leg Ray passing through midline intersection */}
-            <line ref={(el) => addLetterGuide(3, el)} x1="680" y1="0" x2="1140" y2={vpH} strokeWidth="1.2" />
-            <line ref={(el) => addLetterGuide(3, el)} x1="800" y1={midY} x2="1120" y2={midY} strokeDasharray="4 4" />
-            {/* Waist Crosshair */}
-            <path ref={(el) => addLetterGuide(3, el)} d="M 860 540 H 890 M 875 525 V 555" strokeWidth="1.2" />
-          </g>
-
-          {/* R Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[3] = el; }}
-            x={letterPositions[3]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            R
-          </text>
-        </g>
-
-        {/* ── A (Index 4, CX = 1200) ── Intersecting Diagonal 'X' Rays & Plumb Line ── */}
-        <g>
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.55)" strokeWidth="1.2">
-            {/* Diagonal 'X' Rays */}
-            <line ref={(el) => addLetterGuide(4, el)} x1="930" y1="0" x2="1640" y2={vpH} />
-            <line ref={(el) => addLetterGuide(4, el)} x1="1470" y1="0" x2="760" y2={vpH} />
-            {/* Vertical plumb line */}
-            <line ref={(el) => addLetterGuide(4, el)} x1="1200" y1="0" x2="1200" y2={vpH} strokeDasharray="6 6" />
-            {/* Column lines */}
-            <line ref={(el) => addLetterGuide(4, el)} x1="1110" y1="0" x2="1110" y2={vpH} strokeDasharray="4 6" opacity="0.6" />
-            <line ref={(el) => addLetterGuide(4, el)} x1="1290" y1="0" x2="1290" y2={vpH} strokeDasharray="4 6" opacity="0.6" />
-            {/* Crossbar projection */}
-            <line ref={(el) => addLetterGuide(4, el)} x1="1020" y1="570" x2="1380" y2="570" strokeDasharray="4 4" />
-            {/* Apex Crosshair */}
-            <path ref={(el) => addLetterGuide(4, el)} d="M 1185 410 H 1215 M 1200 395 V 425" strokeWidth="1.4" />
-          </g>
-
-          {/* A Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[4] = el; }}
-            x={letterPositions[4]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            A
-          </text>
-        </g>
-
-        {/* ── N (Index 5, CX = 1440) ── Dual Vertical Spines & Diagonal Slash Ray ── */}
-        <g>
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1">
-            {/* Left and Right Vertical Spines */}
-            <line ref={(el) => addLetterGuide(5, el)} x1="1355" y1="0" x2="1355" y2={vpH} strokeWidth="1.2" />
-            <line ref={(el) => addLetterGuide(5, el)} x1="1525" y1="0" x2="1525" y2={vpH} strokeWidth="1.2" />
-            <line ref={(el) => addLetterGuide(5, el)} x1="1440" y1="0" x2="1440" y2={vpH} strokeDasharray="4 6" opacity="0.5" />
-            {/* Infinite Diagonal Ray connecting Top-Left to Bottom-Right */}
-            <line ref={(el) => addLetterGuide(5, el)} x1="1170" y1="0" x2="1710" y2={vpH} strokeWidth="1.2" />
-            {/* Cap and Baseline horizontal guides */}
-            <line ref={(el) => addLetterGuide(5, el)} x1="1280" y1={capY} x2="1600" y2={capY} />
-            <line ref={(el) => addLetterGuide(5, el)} x1="1280" y1={bslnY} x2="1600" y2={bslnY} />
-            {/* Vertex Crosshairs */}
-            <path ref={(el) => addLetterGuide(5, el)} d="M 1340 410 H 1370 M 1355 395 V 425 M 1510 670 H 1540 M 1525 655 V 685" strokeWidth="1.2" />
-          </g>
-
-          {/* N Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[5] = el; }}
-            x={letterPositions[5]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            N
-          </text>
-        </g>
-
-        {/* ── G (Index 6, CX = 1680) ── Compass Arc, Vertical Stop & Inward Crossbar ── */}
-        <g>
-          <g className="preloader-guide-line" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1">
-            {/* Dual Concentric Compass Circles */}
-            <circle ref={(el) => addLetterGuide(6, el)} cx="1680" cy={midY} r="130" fill="none" strokeDasharray="6 6" />
-            <circle ref={(el) => addLetterGuide(6, el)} cx="1680" cy={midY} r="85" fill="none" strokeDasharray="4 4" opacity="0.5" />
-            {/* Horizontal crossbar & vertical stop stem */}
-            <line ref={(el) => addLetterGuide(6, el)} x1="1510" y1={midY} x2={vpW} y2={midY} />
-            <line ref={(el) => addLetterGuide(6, el)} x1="1800" y1="0" x2="1800" y2={vpH} strokeWidth="1.2" />
-            <line ref={(el) => addLetterGuide(6, el)} x1="1550" y1="0" x2="1550" y2={vpH} strokeDasharray="4 6" opacity="0.6" />
-            {/* Center Crosshair */}
-            <path ref={(el) => addLetterGuide(6, el)} d="M 1665 540 H 1695 M 1680 525 V 555" strokeWidth="1.2" />
-          </g>
-
-          {/* G Letterform */}
-          <text
-            ref={(el) => { letterRefs.current[6] = el; }}
-            x={letterPositions[6]}
-            y={cy}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="280"
-            fontWeight="900"
-            letterSpacing="2px"
-            fill="#ffffff"
-            style={{
-              fontFamily: "'Syne', 'Unbounded', sans-serif",
-            }}
-          >
-            G
-          </text>
-        </g>
+              {/* Letterform */}
+              <text
+                ref={(el) => { letterRefs.current[i] = el; }}
+                x={posX}
+                y={cy}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize="280"
+                fontWeight="normal"
+                fill="#ffffff"
+                style={{
+                  fontFamily: "'FlorasDisplay', 'Syne', serif",
+                }}
+              >
+                {char}
+              </text>
+            </g>
+          );
+        })}
       </svg>
 
       {/* ── Top-Left Minimal Progress Indicator ── */}

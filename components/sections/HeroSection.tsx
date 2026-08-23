@@ -101,14 +101,10 @@ export default function HeroSection() {
       
       <div className="hero-footer">
         <div className="hero-info hero-anim">
-          <p>THE CULTURAL FESTIVAL OF JKLU</p>
+          <p className="hidden">THE CULTURAL FESTIVAL OF JKLU</p>
           <p className="hero-date">23 - 25 OCTOBER</p>
         </div>
         
-        <div className="hero-scroll hero-anim">
-          <span className="scroll-text">SCROLL TO EXPLORE</span>
-          <div className="scroll-arrow">&darr;</div>
-        </div>
       </div>
     </div>
   )
