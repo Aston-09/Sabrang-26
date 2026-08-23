@@ -18,7 +18,7 @@ export const heroConfig = {
   noiseScale: 3.4,
   noiseAmount: 0.16,
   materialColor: '#ffffff',
-  reflectionIntensity: 1.45,
+  reflectionIntensity: 2.4,
   screenDistortion: 0.42, // transmission thickness -> refraction strength
   rotationX: 0,
   rotationY: 0,
@@ -35,8 +35,14 @@ export const heroConfig = {
   envTint: 0.5,     // 0 = teal chamber, 1 = violet chamber
   envDrift: 0.02,
 
+  // --- outer fluid backdrop (outer shell only) ---
+  fluidScale: 3.0,      // field frequency across the shell
+  fluidBands: 7.0,      // terrace levels per unit of field
+  fluidIntensity: 1.05,
+  fluidContrast: 0.82,  // how black the gaps between terraces go
+
   // --- typography ---
-  textGlow: 0.42, // cursor light / shadow pass behind SABRANG
+  textGlow: 0.21, // cursor light / shadow pass behind SABRANG
   textBlur: 2.6   // mip bias on the occlusion mask; higher = softer shafts
 }
 
@@ -61,6 +67,10 @@ const RANGES: Record<string, [number, number, number]> = {
   gridOpacity: [0, 1.5, 0.01],
   envTint: [0, 1, 0.01],
   envDrift: [0, 0.2, 0.001],
+  fluidScale: [1, 20, 0.1],
+  fluidBands: [2, 24, 0.25],
+  fluidIntensity: [0, 2.5, 0.01],
+  fluidContrast: [0, 1, 0.01],
   textGlow: [0, 2.5, 0.01],
   textBlur: [0, 6, 0.1]
 }

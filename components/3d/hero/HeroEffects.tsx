@@ -3,6 +3,7 @@
 import React from 'react'
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
+import type { HeroQuality } from './heroTier'
 
 /**
  * Restrained. The reference chamber is dark and clean — the chromatic
@@ -12,8 +13,10 @@ import { BlendFunction } from 'postprocessing'
  * multisampling={0}: the library defaults to 8x MSAA on its HDR target, which the
  * canvas already opted out of with antialias:false.
  */
-export default function HeroEffects({ mobile = false }: { mobile?: boolean }) {
-  if (mobile) {
+export default function HeroEffects({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
+  // The grain pass is a full-screen read/write for a 4.5% overlay -- the first
+  // thing to go when there is no GPU doing the work.
+  if (mobile || !q.grain) {
     return (
       <EffectComposer multisampling={0}>
         <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.85} intensity={0.55} mipmapBlur />

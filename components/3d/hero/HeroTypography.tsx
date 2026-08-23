@@ -6,6 +6,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroConfig } from '@/components/3d/hero/heroConfig'
 import { heroInput, heroScrollState } from '@/components/3d/hero/heroScrollState'
+import type { HeroQuality } from '@/components/3d/hero/heroTier'
 
 const FONT = '/fonts/FlorasDisplay.ttf'
 
@@ -97,7 +98,7 @@ const FX_FRAG = /* glsl */ `
   }
 `
 
-export default function HeroTypography({ mobile = false }: { mobile?: boolean }) {
+export default function HeroTypography({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
   const { size } = useThree()
   const [maskFrames, setMaskFrames] = useState(Infinity)
   const materialRef = useRef<THREE.MeshBasicMaterial>(null)
@@ -206,8 +207,9 @@ export default function HeroTypography({ mobile = false }: { mobile?: boolean })
   return (
     <group ref={groupRef} position={[0, 0, -2]}>
       <group ref={innerRef}>
-        {/* ponytail: hover-only effect, so it is skipped entirely on coarse pointers */}
-        {!mobile && (
+        {/* ponytail: hover-only effect, so it is skipped on coarse pointers -- and
+            its 32-tap march per pixel is dropped entirely on the low tier. */}
+        {!mobile && q.textGlow && (
           <mesh ref={fxRef} renderOrder={9}>
             <planeGeometry args={[1, 1]} />
             <shaderMaterial

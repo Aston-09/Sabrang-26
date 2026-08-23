@@ -6,6 +6,31 @@ export const heroScrollState = {
   progress: 0
 }
 
+/**
+ * How far the hero sequence is pinned, and how hard it is scrubbed.
+ *
+ * A FUNCTION returning pixels, never a string like '+=200vh'. GSAP's end parser
+ * (_offsetToPx) understands keywords, `%` and bare numbers only -- any other unit
+ * is dropped by parseFloat, so '+=200vh' silently means 200 PIXELS. That pinned
+ * the hero for 200px instead of ~1136px and let a single wheel notch skip the
+ * whole sequence.
+ *
+ * Function form also re-evaluates on every ScrollTrigger.refresh(), so the range
+ * follows a resized viewport instead of freezing at first paint.
+ *
+ * All three triggers on #scroll-trigger (the pin in HeroSection, the phase
+ * readout in HomeClient, the card timeline in AboutSection) must share this exact
+ * range, or they desync and the cards play against a different clock than the hero.
+ */
+/** Viewport heights of scroll the whole pinned hero sequence spans. Raise to slow
+ * every phase down, lower to speed them up -- it is the only pacing knob. */
+export const HERO_PIN_VH = 4
+
+export const HERO_PIN_END = () => '+=' + window.innerHeight * HERO_PIN_VH
+
+/** One scrub value everywhere, so nothing lags anything else while scrubbing. */
+export const HERO_SCRUB = 0.8
+
 /** Normalised pointer, -1..1, written by a window listener (canvas is pointer-events:none). */
 export const heroInput = {
   x: 0,

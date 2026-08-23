@@ -7,6 +7,7 @@ import * as THREE from 'three'
 
 import { heroConfig } from './heroConfig'
 import { heroInput, heroScrollState } from './heroScrollState'
+import type { HeroQuality } from './heroTier'
 
 const MODEL_PATH = '/models/SABRANG_TRANSPARENT_STRIP_PRISM.glb'
 
@@ -192,7 +193,7 @@ function LightBeams({ prismGroupRef }: { prismGroupRef: React.RefObject<THREE.Gr
 
 /* ================================================================== */
 
-export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
+export default function HeroPrism({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
   const { scene } = useGLTF(MODEL_PATH)
   const { size } = useThree()
 
@@ -231,9 +232,11 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
       transmission: 1,
       thickness: 0.55,
       ior: 1.52,
-      // dispersion is the physical chromatic split; too costly on mobile
-      dispersion: mobile ? 0 : 1.6,
-      iridescence: 0.45,
+      // dispersion is the physical chromatic split -- extra samples per pixel
+      // through an already full-screen transmission pass, so only the top tier
+      // pays for it.
+      dispersion: q.dispersion,
+      iridescence: q.iridescence,
       iridescenceIOR: 1.32,
       iridescenceThicknessRange: [120, 520],
       clearcoat: 0.4,
@@ -243,7 +246,7 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
     })
     patchMaterial(m)
     return m
-  }, [mobile])
+  }, [q])
 
   /* ----------------------------------------------------------------
    * RESPONSIVE SIZE
@@ -340,7 +343,8 @@ export default function HeroPrism({ mobile = false }: { mobile?: boolean }) {
       <group ref={prismRef}>
         <mesh geometry={geometry} material={material} />
       </group>
-      <LightBeams prismGroupRef={prismRef} />
+      {/* Disabled: white beam → rainbow refraction effect. Re-enable by uncommenting. */}
+      {/* <LightBeams prismGroupRef={prismRef} /> */}
     </group>
   )
 }

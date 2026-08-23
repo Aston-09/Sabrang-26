@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { HERO_PIN_END, HERO_SCRUB } from '@/components/3d/hero/heroScrollState'
 import './AboutSection.css'
 
 if (typeof window !== 'undefined') {
@@ -27,8 +28,9 @@ export default function AboutSection() {
         scrollTrigger: {
           trigger: "#scroll-trigger",
           start: "top top",
-          end: "bottom bottom",
-          scrub: true,
+          // identical range to the hero pin -- see HERO_PIN_END
+          end: HERO_PIN_END,
+          scrub: HERO_SCRUB,
         }
       });
 
@@ -41,12 +43,11 @@ export default function AboutSection() {
       tl.fromTo(step2Ref.current, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 8 }, 50)
         .to(step2Ref.current, { autoAlpha: 0, y: -60, duration: 8 }, 62)
 
-      // PHASE 03: SPACE (70 - 90)
+      // PHASE 03: SPACE (70 -> end). No fade-out: the page ends on this card,
+      // so it has to still be on screen at progress 1.
       tl.fromTo(step3Ref.current, 
         { autoAlpha: 0, y: 60 }, 
         { autoAlpha: 1, y: 0, duration: 8 }, 70)
-        .to(step3Ref.current, 
-        { autoAlpha: 0, y: -60, duration: 8 }, 82)
 
       // Background glow sync (delay until hero atmosphere is fading)
       tl.to(glowRef.current, { left: "0%", duration: 5, top: '40%' }, 20)
