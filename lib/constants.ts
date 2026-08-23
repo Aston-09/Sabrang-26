@@ -499,7 +499,7 @@ export const DEV_TEAM: DevTeamMember[] = [
   },
   {
     name: "Aditya Singh Nayal",
-    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787083775/sabrang-2026/tech-team-credit/Aditya.jpg",
+    avatar: "https://res.cloudinary.com/eprhemvt/image/upload/v1787494619/Aditya.jpg.jpg",
     linkedin: "https://www.linkedin.com/in/aditya-singh-nayal-5678b3378",
     github: "https://github.com/Aston-09",
     email: "adityasinghnayal@jklu.edu.in",

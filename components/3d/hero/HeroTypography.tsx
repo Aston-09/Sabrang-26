@@ -88,7 +88,7 @@ const FX_FRAG = /* glsl */ `
     c += vec4(spectrum(cos(acc * 3.5)), 1) * acc * 2.5;    // rainbow
 
     // The quad is finite; fade its border so it has no visible edge.
-    vec2 e = smoothstep(vec2(0.0), vec2(0.08), uv) * smoothstep(vec2(1.0), vec2(0.92), uv);
+    vec2 e = smoothstep(vec2(0.0), vec2(0.02), uv) * smoothstep(vec2(1.0), vec2(0.98), uv);
 
     // Written straight into the linear HDR buffer, so undo the sRGB the
     // original shader assumed it was writing to.
@@ -112,8 +112,9 @@ export default function HeroTypography({ mobile = false }: { mobile?: boolean })
   const baseWidth = baseHeight * (size.width / size.height)
 
   const fontSize = Math.min(baseWidth * 0.13, 10.5)
-  const fxW = fontSize * 7.2
-  const fxH = fontSize * 3.6
+  const M = 4 // Multiplier to expand the bleed area
+  const fxW = fontSize * 7.2 * M
+  const fxH = fontSize * 3.6 * M
 
   const fxUniforms = useMemo(
     () => ({
@@ -218,16 +219,16 @@ export default function HeroTypography({ mobile = false }: { mobile?: boolean })
               depthWrite={false}
               blending={THREE.AdditiveBlending}
             >
-              <RenderTexture attach="uniforms-src-value" width={512} height={256} samples={0} generateMipmaps
+              <RenderTexture attach="uniforms-src-value" width={2048} height={1024} samples={0} generateMipmaps
                 frames={maskFrames} minFilter={THREE.LinearMipmapLinearFilter}>
                 <color attach="background" args={['#000000']} />
                 {/* Unit framing, not fxW/fxH: identical image, never invalidated by a resize. */}
                 <OrthographicCamera
                   makeDefault
-                  left={-3.6}
-                  right={3.6}
-                  top={1.8}
-                  bottom={-1.8}
+                  left={-3.6 * M}
+                  right={3.6 * M}
+                  top={1.8 * M}
+                  bottom={-1.8 * M}
                   near={0.1}
                   far={10}
                   position={[0, 0, 5]}
