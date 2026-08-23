@@ -9,15 +9,15 @@ export const NAV_PROJECTS: Project[] = [
     title: 'Home', 
     category: 'Festival Hub', 
     description: 'The Sabrang 2026 landing experience.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060182/sabrang-2026/about/fest-crowd-lights.jpg", 
-    href: '/' 
+    image: "/menu-scroll-covers/home.png",
+    href: '/'
   },
   { 
     id: 'about', 
     title: 'About', 
     category: 'Our Story', 
     description: 'What Sabrang is and why it exists.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060356/sabrang-2026/menu-scroll-covers/echos-of-noor.png", 
+    image: "/menu-scroll-covers/about.png", 
     href: '/about' 
   },
   { 
@@ -25,16 +25,16 @@ export const NAV_PROJECTS: Project[] = [
     title: 'Events', 
     category: 'Compete', 
     description: 'Every competition and showcase.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060355/sabrang-2026/menu-scroll-covers/dance-battle.png", 
-    href: '/events' 
+    image: "/menu-scroll-covers/events.png",
+    href: '/events'
   },
   { 
     id: 'gallery', 
     title: 'Gallery', 
     category: 'Memories', 
     description: 'Highlights from past editions.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060269/sabrang-2026/gallery/43.webp", 
-    href: '/gallery' 
+    image: "/menu-scroll-covers/gallery.png",
+    href: '/gallery'
   },
   { 
     id: 'schedule', 
@@ -65,7 +65,7 @@ export const NAV_PROJECTS: Project[] = [
     title: 'Team', 
     category: 'The Crew', 
     description: 'The people behind the festival.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084250/sabrang-2026/team/kartik-sharma.jpg", 
+    image: "/menu-scroll-covers/team.png", 
     href: '/team' 
   },
   { 
@@ -73,7 +73,7 @@ export const NAV_PROJECTS: Project[] = [
     title: 'Contact Us', 
     category: 'Say Hello', 
     description: 'Reach the organising team.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060359/sabrang-2026/menu-scroll-covers/sabrang-live.png", 
+    image: "/menu-scroll-covers/contactus.png", 
     href: '/contact' 
   },
   { 
@@ -81,7 +81,7 @@ export const NAV_PROJECTS: Project[] = [
     title: 'FAQ', 
     category: 'Answers', 
     description: 'Everything commonly asked.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060360/sabrang-2026/menu-scroll-covers/versevaad.jpg", 
+    image: "/menu-scroll-covers/faq.png", 
     href: '/faq' 
   },
 ];
