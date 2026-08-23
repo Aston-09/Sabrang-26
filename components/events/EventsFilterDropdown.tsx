@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { GalleryItem } from "@/lib/highlights-data";
 import "@/components/ui/StaggeredMenu.css";
@@ -79,7 +79,6 @@ function DropdownItem({
 }: {
   item: GalleryItem; index: number; isFocused: boolean; onSelect: (index: number) => void;
 }) {
-  const accent = categoryColor(item.category);
   return (
     <motion.li variants={ITEM_VARIANTS} role="option" aria-selected={isFocused} id={`events-filter-option-${item.id}`}>
       <button
@@ -89,18 +88,15 @@ function DropdownItem({
         <div
           className="efd-row"
           data-active={isFocused || undefined}
-          style={{ "--accent": accent } as React.CSSProperties}
         >
           <span className="efd-index">{String(index + 1).padStart(2, "0")}</span>
           <span className="efd-label-group">
             <span className="efd-title">{item.title}</span>
-            <span className="efd-category" style={{ color: accent }}>{item.category}</span>
           </span>
           {isFocused && (
-            <span
-              className="efd-dot"
-              style={{ background: accent, boxShadow: `0 0 6px 2px ${accent}55` }}
-            />
+            <svg className="efd-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
           )}
         </div>
       </button>
@@ -143,13 +139,26 @@ export default function EventsFilterDropdown({ items, focusedIndex, onSelect }: 
 
   const handleSelect = useCallback((index: number) => { onSelect(index); setIsOpen(false); }, [onSelect]);
 
+  const groupedItems = useMemo(() => {
+    const groups: { category: string; items: { item: GalleryItem; originalIndex: number }[] }[] = [];
+    items.forEach((item, index) => {
+      let group = groups.find((g) => g.category === item.category);
+      if (!group) {
+        group = { category: item.category, items: [] };
+        groups.push(group);
+      }
+      group.items.push({ item, originalIndex: index });
+    });
+    return groups;
+  }, [items]);
+
   const css = `
     /* ── Trigger button ── */
     .efd-trigger-btn {
       position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
       background: transparent;
       border: none;
       color: #ffffff;
@@ -158,29 +167,19 @@ export default function EventsFilterDropdown({ items, focusedIndex, onSelect }: 
       line-height: 1;
     }
 
-    /* Title-matching label: Space Grotesk, black weight, responsive size, neon glitch */
+    /* Title-matching label: Clean sans-serif, medium weight */
     .efd-trigger-label {
-      font-family: var(--font-space-grotesk, 'Space Grotesk', sans-serif);
-      font-weight: 900;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: -0.02em;
-      /* Shrunk 2 sizes: 1.875rem/2.25rem/3rem -> 1.25rem/1.5rem/1.875rem */
-      font-size: 1.25rem;
-      /* Neon-RGB glitch: identical to .text-neon-rgb in globals.css */
-      text-shadow:
-        -2px 0px 0px rgba(255,0,0,0.65),
-         2px 0px 0px rgba(0,255,0,0.6),
-         3.5px 0px 0px rgba(0,0,255,0.7);
-      transition: text-shadow 0.3s ease;
+      letter-spacing: 0.05em;
+      font-size: 1rem;
+      transition: opacity 0.2s ease;
     }
-    @media (min-width: 640px)  { .efd-trigger-label { font-size: 1.5rem; } }
-    @media (min-width: 768px)  { .efd-trigger-label { font-size: 1.875rem; } }
+    @media (min-width: 640px)  { .efd-trigger-label { font-size: 1.125rem; } }
+    @media (min-width: 768px)  { .efd-trigger-label { font-size: 1.25rem; } }
 
     .efd-trigger-btn:hover .efd-trigger-label {
-      text-shadow:
-        -3px 0px 0px rgba(255,0,0,0.85),
-         3px 0px 0px rgba(0,255,0,0.8),
-         5px 0px 0px rgba(0,0,255,0.9);
+      opacity: 0.8;
     }
 
     /* Chevron arrow */
@@ -188,77 +187,85 @@ export default function EventsFilterDropdown({ items, focusedIndex, onSelect }: 
       width: 1rem;
       height: 1rem;
       color: #ffffff;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
     }
     @media (min-width: 640px) { .efd-chevron { width: 1.15rem; height: 1.15rem; } }
-    @media (min-width: 768px) { .efd-chevron { width: 1.3rem; height: 1.3rem; } }
 
     .efd-chevron-open {
       transform: rotate(180deg);
-      color: var(--sm-accent, #f967fb);
     }
 
     .efd-trigger-btn:hover .efd-chevron {
-      color: var(--sm-accent, #f967fb);
+      opacity: 0.8;
     }
 
     /* ── Wrapper + dropdown shell ── */
-    .efd-wrapper { position: relative; z-index: 30; pointer-events: auto; }
+    .efd-wrapper { position: relative; z-index: 30; pointer-events: auto; font-family: var(--font-sans, system-ui, sans-serif); }
 
-    /* Outer shell: clip-path + shadow only — NOT the scroll container */
+    /* Outer shell: clean glassy background with subtle radius */
     .efd-shell {
-      position: absolute; top: calc(100% + 8px); right: 0; width: 260px;
-      background: #070707; border: 1.5px solid rgba(255,255,255,0.13);
-      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(249,103,251,0.06) inset;
+      position: absolute; top: calc(100% + 12px); right: 0; width: 280px;
+      background: rgba(10, 10, 10, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
       overflow: hidden;
     }
 
-    /* Spectrum stripe — sits outside the scroll container so it never scrolls away */
-    .efd-stripe {
-      height: 2px; width: 100%; flex-shrink: 0;
-      background: linear-gradient(90deg,#ff2d55,#ff8a00,#ffd400,#53bc28,#00b3ff,#4b3bff,#f967fb,#ff2d55);
-      background-size: 300% 100%;
-      animation: efd-spectrum 7s linear infinite;
-    }
-    @keyframes efd-spectrum { to { background-position: -300% 0; } }
-    @media (prefers-reduced-motion: reduce) { .efd-stripe { animation: none; } }
-
-    /* Scrollable list — independent of the shell */
+    /* Scrollable list */
     .efd-panel {
       max-height: min(400px, 55vh);
       overflow-y: scroll;
       overscroll-behavior: contain;
-      list-style: none; margin: 0; padding: 4px 0;
+      list-style: none; margin: 0; padding: 6px;
     }
     .efd-panel::-webkit-scrollbar { display: none; }
 
-    /* ── Rows ── */
-    .efd-row {
-      display: flex; align-items: center; gap: 10px; padding: 9px 14px;
-      transition: background 0.18s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
-      border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; width: 100%; text-align: left;
+    /* ── Groups & Rows ── */
+    .efd-group-header {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      padding: 12px 12px 4px 12px;
+      margin-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .efd-row:hover { background: rgba(255,255,255,0.06); transform: translateX(3px); }
-    .efd-row[data-active] { background: rgba(249,103,251,0.08); }
+    .efd-group:first-child .efd-group-header {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 4px;
+    }
+
+    .efd-row {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      transition: all 0.2s ease;
+      border-radius: 6px; cursor: pointer; width: 100%; text-align: left;
+    }
+    .efd-row:hover { background: rgba(255, 255, 255, 0.08); }
+    .efd-row[data-active] { background: rgba(255, 255, 255, 0.12); }
 
     .efd-index {
-      font-family: 'Space Mono', monospace; font-size: 0.62rem; font-weight: 700;
-      color: rgba(255,255,255,0.22); letter-spacing: 0.06em; flex-shrink: 0; width: 20px; text-align: right;
+      font-size: 0.75rem; font-weight: 500;
+      color: rgba(255, 255, 255, 0.3); flex-shrink: 0; width: 20px; text-align: right;
     }
-    .efd-label-group { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+    .efd-label-group { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; justify-content: center; }
+    
     .efd-title {
-      font-family: 'Space Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; color: #ffffff; white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis; line-height: 1.2; transition: color 0.2s ease;
+      font-size: 0.875rem; font-weight: 500;
+      color: #ffffff; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; line-height: 1.2;
     }
-    .efd-row:hover .efd-title { color: var(--accent, #f967fb); }
-    .efd-category {
-      font-family: 'Space Mono', monospace; font-size: 0.58rem; font-weight: 400;
-      letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; line-height: 1;
+    
+    .efd-active-icon {
+      width: 14px;
+      height: 14px;
+      color: #ffffff;
+      opacity: 0.9;
+      flex-shrink: 0;
     }
-    .efd-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
     @media (max-width: 400px) { .efd-shell { width: calc(100vw - 32px); right: -8px; } }
   `;
@@ -278,9 +285,6 @@ export default function EventsFilterDropdown({ items, focusedIndex, onSelect }: 
               animate="visible"
               exit="exit"
             >
-              {/* Spectrum stripe pinned above the scroll area */}
-              <div className="efd-stripe" aria-hidden />
-
               {/* Scrollable list — wheel events stopped here so gallery doesn't react */}
               <motion.ul
                 ref={listRef}
@@ -291,14 +295,19 @@ export default function EventsFilterDropdown({ items, focusedIndex, onSelect }: 
                 onWheel={(e) => e.stopPropagation()}
                 onTouchMove={(e) => e.stopPropagation()}
               >
-                {items.map((item, index) => (
-                  <DropdownItem
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    isFocused={index === focusedIndex}
-                    onSelect={handleSelect}
-                  />
+                {groupedItems.map((group) => (
+                  <div key={group.category} className="efd-group">
+                    <div className="efd-group-header">{group.category}</div>
+                    {group.items.map(({ item, originalIndex }) => (
+                      <DropdownItem
+                        key={item.id}
+                        item={item}
+                        index={originalIndex}
+                        isFocused={originalIndex === focusedIndex}
+                        onSelect={handleSelect}
+                      />
+                    ))}
+                  </div>
                 ))}
               </motion.ul>
             </motion.div>

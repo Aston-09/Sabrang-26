@@ -32,7 +32,7 @@ export const heroConfig = {
   // --- environment ---
   environmentIntensity: 1.0,
   gridOpacity: 0.62,
-  envTint: 0.5,     // 0 = teal chamber, 1 = violet chamber
+  envTint: 1.0,     // 0 = teal chamber, 1 = violet chamber
   envDrift: 0.02,
 
   // --- outer fluid backdrop (outer shell only) ---

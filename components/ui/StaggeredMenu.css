@@ -233,36 +233,7 @@
   user-select: none;
 }
 
-.cyber-menu-btn::after {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: 10%;
-  width: 80%;
-  height: 8px;
-  background-color: #06020e;
-  transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: center;
-  pointer-events: none;
-}
 
-.cyber-menu-btn::before {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  left: 10%;
-  width: 80%;
-  height: 8px;
-  background-color: #06020e;
-  transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: center;
-  pointer-events: none;
-}
-
-.cyber-menu-btn:hover::before,
-.cyber-menu-btn:hover::after {
-  transform: scaleX(0);
-}
 
 .cyber-menu-btn:hover {
   box-shadow: inset 0px 0px 18px rgba(168, 85, 247, 0.65), 0px 0px 15px rgba(168, 85, 247, 0.4);

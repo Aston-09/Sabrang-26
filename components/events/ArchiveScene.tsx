@@ -606,7 +606,7 @@ export default function ArchiveScene({
       if (!isDraggingRef.current) {
         pointerRef.current = {
           x: (e.clientX / window.innerWidth) * 2 - 1,
-          y: -(e.clientY / window.innerHeight) * 2 - 1,
+          y: -(e.clientY / window.innerHeight) * 2 + 1,
         };
       }
     };
@@ -618,7 +618,7 @@ export default function ArchiveScene({
     (event: React.PointerEvent<HTMLDivElement>) => {
       pointerRef.current = {
         x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: -(event.clientY / window.innerHeight) * 2 - 1,
+        y: -(event.clientY / window.innerHeight) * 2 + 1,
       };
 
       if (

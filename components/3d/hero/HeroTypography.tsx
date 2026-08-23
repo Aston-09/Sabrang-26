@@ -233,7 +233,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
               depthWrite={false}
               blending={THREE.AdditiveBlending}
             >
-              <RenderTexture attach="uniforms-src-value" width={2048} height={1024} samples={0} generateMipmaps
+              <RenderTexture attach="uniforms-src-value" width={1024} height={512} samples={0} generateMipmaps
                 frames={maskFrames} minFilter={THREE.LinearMipmapLinearFilter}>
                 <color attach="background" args={['#000000']} />
                 {/* Unit framing, not fxW/fxH: identical image, never invalidated by a resize. */}

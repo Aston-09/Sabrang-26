@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 import { heroConfig, heroDebugEnabled, mountHeroDebugPanel } from './heroConfig'
@@ -27,10 +27,63 @@ function SceneContents({ mobile, q }: { mobile: boolean; q: HeroQuality }) {
 }
 
 /**
+ * Demand-mode frame throttle: runs at full speed while the hero is in the viewport,
+ * drops to ~20fps when below the fold. This saves ~66% GPU when the user is reading
+ * the About section while the canvas is still the visible backdrop.
+ */
+function FrameThrottle() {
+  const { invalidate } = useThree()
+  const lastTick = useRef(0)
+  const inHero = useRef(true)
+
+  useEffect(() => {
+    // The hero viewport is roughly the first 30% of scroll progress
+    const check = () => {
+      inHero.current = heroScrollState.progress < 0.35
+    }
+    // Poll at 10Hz — cheaper than a scroll listener
+    const id = setInterval(check, 100)
+    check()
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    let raf: number
+    let lastTime = performance.now()
+    
+    const tick = (time: number) => {
+      // 1. If loading screen is active, pause WebGL entirely
+      if (document.body.classList.contains('loader-active')) {
+        raf = requestAnimationFrame(tick)
+        return
+      }
+
+      // 2. If in hero viewport, render at full 60fps
+      if (inHero.current) {
+        invalidate()
+        lastTime = time
+      } 
+      // 3. If below fold, throttle to ~20fps (50ms)
+      else if (time - lastTime > 50) {
+        invalidate()
+        lastTime = time
+      }
+      
+      raf = requestAnimationFrame(tick)
+    }
+    
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [invalidate])
+
+  return null
+}
+
+/**
  * Past the hero the canvas is still the page's visible backdrop -- AboutSection and
  * everything after it are transparent fixed overlays -- so it cannot simply stop.
- * Demand mode plus a 20Hz tick keeps the drift and the float alive at a third of the
- * cost, for the majority of a session that is spent below the fold.
+ * Demand mode plus the FrameThrottle above keeps the drift and the float alive at a
+ * fraction of the cost.
  */
 function CameraController() {
   const current = useRef(new THREE.Vector3(0, 0, heroConfig.cameraDistance))
@@ -89,7 +142,7 @@ export default function HeroScene() {
       style={{ touchAction: 'none', background: '#000' }}
     >
       <Canvas
-        frameloop="always"
+        frameloop="demand"
         camera={{ position: [0, 0, heroConfig.cameraDistance], fov: heroConfig.cameraFOV, near: 0.1, far: 200 }}
         dpr={q.dpr}
         // opaque: the wrapper is already #000, so blending against the page buys nothing
@@ -102,6 +155,7 @@ export default function HeroScene() {
           gl.transmissionResolutionScale = q.transmissionScale
         }}
       >
+        <FrameThrottle />
         <CameraController />
         <Suspense fallback={null}>
           <SceneContents mobile={mobile} q={q} />

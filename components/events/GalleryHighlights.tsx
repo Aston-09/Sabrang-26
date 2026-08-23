@@ -104,7 +104,7 @@ function ArchiveHeading({
 }) {
   return (
     <header
-      className={`mx-auto max-w-6xl px-6 flex items-center justify-between gap-4 ${className}`}
+      className={`mx-auto w-full max-w-[1440px] px-6 sm:px-10 md:px-14 flex items-center justify-between gap-4 ${className}`}
     >
       <h1
         id="gallery-highlights-heading"
@@ -252,7 +252,7 @@ export default function GalleryHighlights({
         aria-labelledby="gallery-highlights-heading"
         className="fixed inset-0 z-0 overflow-y-auto bg-[#07080f] text-white"
       >
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden flex items-center justify-center mix-blend-screen">
           {/* Cube video background - scaled down and softened so it stays an accent instead of dominating */}
           <video
             autoPlay

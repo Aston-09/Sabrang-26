@@ -108,28 +108,28 @@ void main() {
   vec3 colorSparks   = getSabrangColor(timeCycle + 0.28);
 
   // Rich base ambient glow (ensures background is luminous and not very dark)
-  vec3 ambientBase = colorDominant * 0.22 + colorUnder * 0.12;
+  vec3 ambientBase = colorDominant * 0.10 + colorUnder * 0.05;
 
   // Interweave fluid currents: Dominant morphs into Next along turbulence streams
   float flowMix = clamp(q.x * 1.3 + r.y * 0.8 + 0.35, 0.0, 1.0);
-  vec3 fluidBody = mix(colorDominant, colorNext, flowMix);
+  vec3 fluidBody = mix(colorDominant, colorNext, flowMix) * 0.5;
 
   // Secondary dynamic wave ribbons
   float wave = smoothstep(0.25, 0.75, sin(f * 4.2 + q.y * 2.0 + t * 0.8) * 0.5 + 0.5);
-  vec3 col = mix(ambientBase, fluidBody, wave * 0.85 + 0.15);
+  vec3 col = mix(ambientBase, fluidBody, wave * 0.6 + 0.1);
 
   // Radiant ripple crests & luminous surface sparks
   float crest = smoothstep(0.35, 0.72, sin(f * 5.8 + uTime * 0.20 + r.x * 2.6));
-  col = mix(col, colorSparks, crest * 0.55);
+  col = mix(col, colorSparks * 0.4, crest * 0.4);
 
   // Subtle center radial brilliance so center is luminous
   float centerDist = length(uv * vec2(0.9, 1.1));
   float centerGlow = smoothstep(1.2, 0.0, centerDist);
-  col += colorDominant * (centerGlow * 0.18);
+  col += colorDominant * (centerGlow * 0.08);
 
   // Fluid density mask with generous brightness floor (never pitch-black)
   float cloudDensity = smoothstep(0.06, 0.65, f);
-  vec3 finalColor = mix(ambientBase * 0.7, col, clamp(cloudDensity * 1.25 + 0.20, 0.0, 1.0));
+  vec3 finalColor = mix(ambientBase * 0.3, col, clamp(cloudDensity * 1.25, 0.0, 1.0));
 
   // Soft atmospheric edge vignette
   float vignette = smoothstep(1.35, 0.25, centerDist);

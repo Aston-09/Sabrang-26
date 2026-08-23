@@ -236,7 +236,7 @@ export default function WebGLCarousel({
       {isMounted && hasDimensions && (
         <Canvas
           style={{ touchAction: "none" }}
-          dpr={[1, 2]}
+          dpr={[1, 1.25]}
           gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
