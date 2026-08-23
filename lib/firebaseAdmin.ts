@@ -1,6 +1,7 @@
 import { getApps, initializeApp, cert, applicationDefault, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { getAuth, type Auth } from 'firebase-admin/auth';
+import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -11,6 +12,9 @@ function initFirebaseAdmin(): App | null {
   }
 
   try {
+    dotenv.config({ path: path.join(process.cwd(), '.env.local') });
+    dotenv.config();
+
     // 1. Check for Base64 or JSON FIREBASE_SERVICE_ACCOUNT
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       let serviceAccount;

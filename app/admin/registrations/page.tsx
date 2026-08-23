@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, serverTimestamp, getDoc, setDoc, addDoc } from 'firebase/firestore';
 import { db, auth } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
@@ -45,26 +46,6 @@ const CustomDownloadIcon = ({ className = '', size = 18 }: { className?: string;
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <polyline points="7 10 12 15 17 10" />
     <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-);
-
-const CustomSheetIcon = ({ className = '', size = 16 }: { className?: string; size?: number }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2.5" 
-    strokeLinecap="square" 
-    strokeLinejoin="miter" 
-    className={className}
-  >
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <polyline points="10 9 9 9 8 9" />
   </svg>
 );
 
@@ -149,8 +130,6 @@ export default function Registrations() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'entered' | 'pending' | 'declined'>('all');
   const [emailFilter, setEmailFilter] = useState<'all' | 'sent' | 'unsent'>('all');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
-  const [syncMessage, setSyncMessage] = useState('');
   const [emailSendingState, setEmailSendingState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [emailSendingMessage, setEmailSendingMessage] = useState('');
   const [serviceEnabled, setServiceEnabled] = useState(true);
@@ -198,41 +177,49 @@ export default function Registrations() {
 
   useEffect(() => {
     let active = true;
+    let unsubSnapshot = () => {};
+
     const safetyTimeout = setTimeout(() => {
       if (active) setLoading(false);
     }, 2500);
 
-    const unsub = onSnapshot(
-      query(collection(db, 'registrations'), orderBy('registeredAt', 'desc')),
-      (snap) => {
-        if (!active) return;
-        clearTimeout(safetyTimeout);
-        const allRegs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const validRegs = allRegs.filter((reg: any) => reg.name && reg.name.trim() !== '');
-        setRegistrations(validRegs);
-        setLoading(false);
-      },
-      (err) => {
-        console.warn("Registrations ordered query fallback:", err.message);
-        onSnapshot(
-          collection(db, 'registrations'),
-          (snap) => {
-            if (!active) return;
-            clearTimeout(safetyTimeout);
-            const allRegs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setRegistrations(allRegs.filter((reg: any) => reg.name && reg.name.trim() !== ''));
-            setLoading(false);
-          },
-          () => {
-            if (active) setLoading(false);
-          }
-        );
-      }
-    );
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (!user || !active) return;
+
+      unsubSnapshot = onSnapshot(
+        query(collection(db, 'registrations'), orderBy('registeredAt', 'desc')),
+        (snap) => {
+          if (!active) return;
+          clearTimeout(safetyTimeout);
+          const allRegs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          const validRegs = allRegs.filter((reg: any) => reg.name && reg.name.trim() !== '');
+          setRegistrations(validRegs);
+          setLoading(false);
+        },
+        (err) => {
+          console.warn("Registrations ordered query fallback:", err.message);
+          unsubSnapshot = onSnapshot(
+            collection(db, 'registrations'),
+            (snap) => {
+              if (!active) return;
+              clearTimeout(safetyTimeout);
+              const allRegs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+              setRegistrations(allRegs.filter((reg: any) => reg.name && reg.name.trim() !== ''));
+              setLoading(false);
+            },
+            () => {
+              if (active) setLoading(false);
+            }
+          );
+        }
+      );
+    });
+
     return () => {
       active = false;
       clearTimeout(safetyTimeout);
-      unsub();
+      unsubAuth();
+      unsubSnapshot();
     };
   }, []);
 
@@ -393,42 +380,6 @@ export default function Registrations() {
     await logAdminAction('EXPORT_REGISTRATIONS_EXCEL', 'registrations', `Exported ${registrations.length} registrations to Excel (.xlsx)`);
   };
 
-  const handleSyncSheet = async () => {
-    setSyncState('syncing');
-    setSyncMessage('Starting Google Sheet sync...');
-    
-    let totalSynced = 0;
-    let totalFailed = 0;
-    let hasMore = true;
-
-    try {
-      while (hasMore) {
-        const res = await fetch('/api/admin/sync-sheet', { method: 'POST' });
-        const result = await res.json();
-        if (!res.ok) {
-          setSyncState('error');
-          setSyncMessage(result.error || 'Sync failed');
-          return;
-        }
-        totalSynced += result.synced || 0;
-        totalFailed += result.failed || 0;
-        hasMore = !!result.hasMore;
-
-        if (hasMore) {
-          setSyncMessage(`Synced ${totalSynced} registrations. Continuing sync...`);
-        } else {
-          setSyncState('done');
-          setSyncMessage(`Sheet sync completed: ${totalSynced} synced successfully${totalFailed > 0 ? `, ${totalFailed} failed` : ''}.`);
-        }
-      }
-    } catch (err: any) {
-      setSyncState('error');
-      setSyncMessage(err.message || 'Network error');
-    } finally {
-      setTimeout(() => { setSyncState('idle'); setSyncMessage(''); }, 6000);
-    }
-  };
-
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -542,7 +493,6 @@ export default function Registrations() {
           <p className="text-3xl font-bold tracking-tight text-blue-600">
             {loading ? '-' : todaysRegistrationsCount.toLocaleString('en-IN')}
           </p>
-          <p className="text-[11px] text-slate-400 mt-2">New signups recorded today</p>
         </div>
       </div>
 
@@ -550,7 +500,6 @@ export default function Registrations() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Registration Directory</h1>
-          <p className="text-sm text-slate-500 mt-1">Verified festival participant passes and settlement records</p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           {unsentCount > 0 && (
@@ -567,28 +516,6 @@ export default function Registrations() {
               <span>Send Unsent ({unsentCount})</span>
             </button>
           )}
-          <a 
-            href="https://docs.google.com/spreadsheets/d/1Pfh7eZaknrvPEqcTjwgK1ludGjsT_OOA-KUnubzYxMc/edit?usp=sharing"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-          >
-            <CustomSheetIcon size={14} /> <span>Google Sheet</span>
-          </a>
-          {unsyncedCount > 0 && (
-            <button
-              onClick={handleSyncSheet}
-              disabled={loading || syncState === 'syncing'}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40"
-            >
-              {syncState === 'syncing' ? (
-                <svg className="animate-spin" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-              ) : (
-                <CustomSheetIcon size={14} />
-              )}
-              <span>Sync Sheet ({unsyncedCount})</span>
-            </button>
-          )}
           <button 
             onClick={exportExcel}
             disabled={loading || registrations.length === 0}
@@ -598,17 +525,6 @@ export default function Registrations() {
           </button>
         </div>
       </div>
-
-      {/* Sync status feedback banner */}
-      {syncState !== 'idle' && (
-        <div className={`border rounded-xl px-4 py-3 text-xs font-semibold shadow-xs ${
-          syncState === 'syncing' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-          syncState === 'done' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-          'bg-rose-50 text-rose-800 border-rose-200'
-        }`}>
-          {syncMessage}
-        </div>
-      )}
 
       {/* Email sending status feedback banner */}
       {emailSendingState !== 'idle' && (

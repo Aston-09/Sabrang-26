@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { normalizeReferralCode } from '../../../lib/referralClientHelper';
 import { 
@@ -42,22 +43,32 @@ export default function ReferralsAdminPage() {
 
   // 1. Fetch live referrals stream from Firestore
   useEffect(() => {
-    const unsub = onSnapshot(
-      query(collection(db, 'referrals'), orderBy('createdAt', 'desc'), limit(1500)),
-      (snap) => {
-        const fetched = snap.docs.map(d => ({
-          id: d.id,
-          ...d.data()
-        })) as ReferralRecord[];
-        setReferrals(fetched);
-        setLoading(false);
-      },
-      () => {
-        setLoading(false);
-      }
-    );
+    let unsubSnapshot = () => {};
 
-    return () => unsub();
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+
+      unsubSnapshot = onSnapshot(
+        query(collection(db, 'referrals'), orderBy('createdAt', 'desc'), limit(1500)),
+        (snap) => {
+          const fetched = snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+          })) as ReferralRecord[];
+          setReferrals(fetched);
+          setLoading(false);
+        },
+        (err) => {
+          console.warn("Referrals query notice:", err?.message);
+          setLoading(false);
+        }
+      );
+    });
+
+    return () => {
+      unsubAuth();
+      unsubSnapshot();
+    };
   }, []);
 
   // Compute Aggregates & Leaderboard
@@ -168,9 +179,6 @@ export default function ReferralsAdminPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Referral Tracking</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Monitor participant referral codes, successful student invites, and top referrers.
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <button

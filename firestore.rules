@@ -15,23 +15,19 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isSignedIn() && getRole(request.auth.uid) == 'admin';
-    }
-    
-    function isScanner() {
-      return isSignedIn() && (getRole(request.auth.uid) == 'scanner' || getRole(request.auth.uid) == 'admin');
-    }
-    
-    function isVolunteerOrTL() {
       return isSignedIn() && (
-        getRole(request.auth.uid) == 'volunteer' || 
-        getRole(request.auth.uid) == 'team_leader' ||
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin' ||
         getRole(request.auth.uid) == 'admin'
       );
     }
     
-    function isWarden() {
-      return isSignedIn() && (getRole(request.auth.uid) == 'warden' || getRole(request.auth.uid) == 'admin');
+    function isScanner() {
+      return isSignedIn() && (
+        isAdmin() ||
+        request.auth.token.role == 'scanner' ||
+        getRole(request.auth.uid) == 'scanner'
+      );
     }
 
     // Users collection (Sabrang user profiles)
@@ -48,10 +44,10 @@ service cloud.firestore {
 
     // Registrations collection
     match /registrations/{id} {
-      allow read: if isAdmin() || isScanner() || (isWarden() && resource.data.hasEntered == true) || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow read: if isAdmin() || isScanner() || (isSignedIn() && resource.data.userId == request.auth.uid);
       // Registrations are created server-side via Admin SDK (bypasses rules)
       allow create: if false;
-      allow update: if isAdmin() || isWarden() || isScanner();
+      allow update: if isAdmin() || isScanner();
       allow delete: if isAdmin();
     }
 
@@ -60,26 +56,10 @@ service cloud.firestore {
       allow read, write: if false; // Only Admin SDK can read/write
     }
 
-    // Volunteers collection
-    match /volunteers/{id} {
-      allow read: if isSignedIn() && (
-        request.auth.uid == id || 
-        isAdmin() || 
-        getRole(request.auth.uid) == 'team_leader'
-      );
-      allow write: if isAdmin() || isVolunteerOrTL();
-    }
-
-    // Duty Assignments collection
-    match /dutyAssignments/{id} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
     // Notifications/Announcements collections
     match /notifications/{id} {
       allow read, update, delete: if isSignedIn();
-      allow create: if isSignedIn() && (isAdmin() || isVolunteerOrTL());
+      allow create: if isSignedIn() && isAdmin();
     }
     
     match /announcements/{id} {
@@ -89,8 +69,24 @@ service cloud.firestore {
 
     // Scan logs collection
     match /scanLogs/{id} {
-      allow read: if isAdmin() || isScanner() || isWarden();
-      allow write: if isAdmin() || isScanner() || isWarden();
+      allow read: if isAdmin() || isScanner();
+      allow write: if isAdmin() || isScanner();
+    }
+
+    // Entry logs collection
+    match /entryLogs/{id} {
+      allow read, write: if isAdmin() || isScanner();
+    }
+
+    // System Errors collection
+    match /systemErrors/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // Referrals collection
+    match /referrals/{id} {
+      allow read: if isAdmin() || isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Events (public schedule)
@@ -108,40 +104,30 @@ service cloud.firestore {
     // Feedback collection
     match /feedback/{id} {
       allow create: if true;
-      allow read: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
+      allow read: if isAdmin();
       allow update, delete: if isAdmin();
     }
 
     // Complaints collection
     match /complaints/{id} {
       allow create: if true;
-      allow read: if isAdmin() || (isSignedIn() && (getRole(request.auth.uid) == 'feedback' || getRole(request.auth.uid) == 'volunteer' || getRole(request.auth.uid) == 'team_leader'));
-      allow update: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
-      allow delete: if isAdmin();
+      allow read, update, delete: if isAdmin();
     }
 
     // Suggestions collection
     match /suggestions/{id} {
       allow create: if true;
-      allow read: if isAdmin() || (isSignedIn() && (getRole(request.auth.uid) == 'feedback' || getRole(request.auth.uid) == 'volunteer' || getRole(request.auth.uid) == 'team_leader'));
-      allow update: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
-      allow delete: if isAdmin();
+      allow read, update, delete: if isAdmin();
     }
 
-    // Settings (e.g. active feedback day settings)
+    // Settings (e.g. active day settings)
     match /settings/{id} {
       allow read: if true;
-      allow write: if isAdmin() || (isSignedIn() && getRole(request.auth.uid) == 'feedback');
+      allow write: if isAdmin();
     }
 
     // Scanner Accounts collection
     match /scannerAccounts/{id} {
-      allow read: if isSignedIn() && (request.auth.uid == id || isAdmin());
-      allow write: if isAdmin();
-    }
-
-    // Warden Accounts collection
-    match /wardenAccounts/{id} {
       allow read: if isSignedIn() && (request.auth.uid == id || isAdmin());
       allow write: if isAdmin();
     }

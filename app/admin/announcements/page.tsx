@@ -108,7 +108,6 @@ export default function Announcements() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Broadcasts & Announcements</h1>
-          <p className="text-sm text-slate-500 mt-1">Publish updates, stage schedules, and live alerts to attendees</p>
         </div>
         <button 
           onClick={() => { setFormData({ title: '', body: '' }); setIsModalOpen(true); }}

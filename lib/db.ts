@@ -34,12 +34,6 @@ export const checkInUser = async (userId: string, eventId: string) => {
   });
 };
 
-// Volunteer Assignments
-export const getVolunteerAssignments = async (userId: string) => {
-  const q = query(collection(requireDb(), 'volunteers'), where('userId', '==', userId));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-};
 
 // Feedback
 export { isFirebaseConfigured, FIREBASE_SETUP_MESSAGE };

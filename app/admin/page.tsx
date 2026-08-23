@@ -1,19 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import { SkeletonCard } from '../../components/admin/SkeletonLoader';
 import Link from 'next/link';
-import { 
-  Users, 
-  UserCheck, 
-  QrCode, 
-  ShieldCheck, 
-  ArrowUpRight, 
-  TrendingUp,
-  CreditCard
-} from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -49,11 +42,13 @@ export default function AdminDashboard() {
         setStats(s => ({ ...s, loading: false }));
       });
 
-    // 2. Client-side Firestore listener for realtime sync
+    // 2. Client-side Firestore listener for realtime sync attached when Auth is confirmed
     let unsubRegs = () => {};
     let unsubScans = () => {};
 
-    if (auth && auth.currentUser) {
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+
       try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -93,7 +88,9 @@ export default function AdminDashboard() {
               loading: false,
             }));
           },
-          () => {}
+          (err) => {
+            console.warn("Realtime registrations listener warning:", err.message);
+          }
         );
 
         unsubScans = onSnapshot(
@@ -101,14 +98,17 @@ export default function AdminDashboard() {
           (snap) => {
             setStats(s => ({ ...s, totalEntriesToday: snap.size }));
           },
-          () => {}
+          (err) => {
+            console.warn("Realtime scan logs listener warning:", err.message);
+          }
         );
-      } catch {
-        // Fallback handled via API
+      } catch (err) {
+        console.warn("Firestore listeners error:", err);
       }
-    }
+    });
 
     return () => {
+      unsubAuth();
       unsubRegs();
       unsubScans();
     };
@@ -126,16 +126,12 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard Overview</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Real-time status of festival registrations, entrance check-ins, and financial metrics.
-          </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/admin/scanner"
             className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            <QrCode size={14} />
             <span>Open Scanner</span>
           </Link>
           <Link
@@ -154,9 +150,6 @@ export default function AdminDashboard() {
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Registration & Attendance
           </h2>
-          <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Live Sync
-          </span>
         </div>
 
         {stats.loading ? (
@@ -170,52 +163,26 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total Registrations */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-slate-500">Total Registrations</span>
-                <div className="p-2 bg-slate-100 text-slate-700 rounded-lg">
-                  <Users size={16} />
-                </div>
-              </div>
+              <span className="text-xs font-medium text-slate-500 block mb-2">Total Registrations</span>
               <p className="text-2xl font-bold text-slate-900">{stats.totalRegistrations.toLocaleString('en-IN')}</p>
-              <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center gap-1">
-                <span>●</span> All verified passes
-              </p>
             </div>
             
             {/* Today's Registrations */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-slate-500">Registrations Today</span>
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                  <UserCheck size={16} />
-                </div>
-              </div>
+              <span className="text-xs font-medium text-slate-500 block mb-2">Registrations Today</span>
               <p className="text-2xl font-bold text-slate-900">{stats.todayRegistrations.toLocaleString('en-IN')}</p>
-              <p className="text-xs text-slate-500 mt-2">New signups today</p>
             </div>
 
             {/* Total Check-Ins */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-slate-500">Total Check-Ins</span>
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                  <ShieldCheck size={16} />
-                </div>
-              </div>
+              <span className="text-xs font-medium text-slate-500 block mb-2">Total Check-Ins</span>
               <p className="text-2xl font-bold text-slate-900">{stats.totalEntries.toLocaleString('en-IN')}</p>
-              <p className="text-xs text-slate-500 mt-2">Verified festival attendees</p>
             </div>
 
             {/* Entries Today */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-slate-500">Gate Entries Today</span>
-                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                  <QrCode size={16} />
-                </div>
-              </div>
+              <span className="text-xs font-medium text-slate-500 block mb-2">Gate Entries Today</span>
               <p className="text-2xl font-bold text-slate-900">{stats.totalEntriesToday.toLocaleString('en-IN')}</p>
-              <p className="text-xs text-purple-600 mt-2 font-medium">Scans recorded today</p>
             </div>
           </div>
         )}
@@ -239,51 +206,35 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Total Collection */}
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Total Collection
+              <div>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Total Collection
+                </span>
+                <div className="flex items-baseline gap-1.5 mt-2">
+                  <span className="text-xl font-bold text-slate-500">₹</span>
+                  <span className="text-3xl font-bold tracking-tight text-slate-900">
+                    {stats.totalRevenue.toLocaleString('en-IN')}
                   </span>
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="text-xl font-bold text-slate-500">₹</span>
-                    <span className="text-3xl font-bold tracking-tight text-slate-900">
-                      {stats.totalRevenue.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">
-                    Gross cumulative revenue collected from festival registrations.
-                  </p>
-                </div>
-                <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl">
-                  <TrendingUp size={22} />
                 </div>
               </div>
             </div>
 
             {/* Today's Collection */}
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Today's Collection
-                    </span>
-                    <span className="text-[11px] font-medium px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md">
-                      {todayFormatted}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="text-xl font-bold text-slate-500">₹</span>
-                    <span className="text-3xl font-bold tracking-tight text-slate-900">
-                      {stats.todayRevenue.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">
-                    Payments successfully processed during today's window.
-                  </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Today's Collection
+                  </span>
+                  <span className="text-[11px] font-medium px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md">
+                    {todayFormatted}
+                  </span>
                 </div>
-                <div className="p-3 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl">
-                  <CreditCard size={22} />
+                <div className="flex items-baseline gap-1.5 mt-2">
+                  <span className="text-xl font-bold text-slate-500">₹</span>
+                  <span className="text-3xl font-bold tracking-tight text-slate-900">
+                    {stats.todayRevenue.toLocaleString('en-IN')}
+                  </span>
                 </div>
               </div>
             </div>
@@ -293,3 +244,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

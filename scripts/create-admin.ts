@@ -1,3 +1,7 @@
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+dotenv.config();
+
 import { adminAuth, adminDb } from '../lib/firebaseAdmin';
 
 const email = process.argv[2] || 'admin@sabrang.com';

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Italiana&family=Syne:wght@500;700;800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&family=Cinzel:wght@400;600;700;800;900&family=Italiana&family=Syne:wght@500;700;800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -59,6 +59,7 @@
   --font-body: "Inter", sans-serif;
   --font-space-grotesk: var(--font-space-grotesk), "Space Grotesk", sans-serif;
   --font-darknexis: "DarkNexis", sans-serif;
+  --font-admin-body: "Open Sans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 @layer base {
@@ -137,6 +138,30 @@
 .rounded-2xl,
 .rounded-3xl {
   border-radius: 8px !important;
+}
+
+/* ── Google Sites Modern Typography for Internal Team Pages ── */
+.admin-portal-scope,
+.admin-portal-scope *,
+.admin-portal-scope h1,
+.admin-portal-scope h2,
+.admin-portal-scope h3,
+.admin-portal-scope h4,
+.admin-portal-scope h5,
+.admin-portal-scope h6,
+.admin-portal-scope p,
+.admin-portal-scope span,
+.admin-portal-scope label,
+.admin-portal-scope input,
+.admin-portal-scope select,
+.admin-portal-scope textarea,
+.admin-portal-scope button,
+.admin-portal-scope table,
+.admin-portal-scope th,
+.admin-portal-scope td,
+.admin-portal-scope a,
+.admin-portal-scope div {
+  font-family: 'Open Sans', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
 }
 
 /* Hide default browser system cursor globally on desktop (pointer: fine), except on admin portal */

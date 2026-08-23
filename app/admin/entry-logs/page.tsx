@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { normalizeEventKey } from '../../../lib/couponHelper';
 import { 
@@ -65,44 +66,54 @@ export default function EventEntryLogsPage() {
 
   // 1. Fetch live Entry Logs from Firestore
   useEffect(() => {
-    const unsubLogs = onSnapshot(
-      query(collection(db, 'entryLogs'), orderBy('entryTime', 'desc'), limit(2000)),
-      (snap) => {
-        const fetched = snap.docs.map(docSnap => ({
-          id: docSnap.id,
-          ...docSnap.data()
-        })) as EntryLogItem[];
-        setEntryLogs(fetched);
-        setLoading(false);
-      },
-      () => {
-        setLoading(false);
-      }
-    );
+    let unsubLogs = () => {};
+    let unsubRegs = () => {};
 
-    return () => unsubLogs();
-  }, []);
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) return;
 
-  // 2. Fetch live Registrations for accurate Registered / Entered / Not Entered stats
-  useEffect(() => {
-    const unsubRegs = onSnapshot(collection(db, 'registrations'), (snap) => {
-      const regs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setAllRegistrations(regs);
-
-      // Dynamically extract any event names from registrations
-      const foundEvents = new Set<string>(DEFAULT_EVENTS);
-      regs.forEach((r: any) => {
-        const evt = r.eventName || r.eventTitle || r.event;
-        if (evt && typeof evt === 'string' && evt.trim()) {
-          foundEvents.add(evt.trim().toUpperCase());
+      unsubLogs = onSnapshot(
+        query(collection(db, 'entryLogs'), orderBy('entryTime', 'desc'), limit(2000)),
+        (snap) => {
+          const fetched = snap.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          })) as EntryLogItem[];
+          setEntryLogs(fetched);
+          setLoading(false);
+        },
+        (err) => {
+          console.warn("Entry logs query notice:", err?.message);
+          setLoading(false);
         }
-      });
-      setAvailableEvents(Array.from(foundEvents));
-    }, (err) => {
-      console.warn("Entry logs registrations listener notice:", err?.message);
+      );
+
+      unsubRegs = onSnapshot(
+        collection(db, 'registrations'),
+        (snap) => {
+          const regs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          setAllRegistrations(regs);
+
+          const foundEvents = new Set<string>(DEFAULT_EVENTS);
+          regs.forEach((r: any) => {
+            const evt = r.eventName || r.eventTitle || r.event;
+            if (evt && typeof evt === 'string' && evt.trim()) {
+              foundEvents.add(evt.trim().toUpperCase());
+            }
+          });
+          setAvailableEvents(Array.from(foundEvents));
+        },
+        (err) => {
+          console.warn("Entry logs registrations listener notice:", err?.message);
+        }
+      );
     });
 
-    return () => unsubRegs();
+    return () => {
+      unsubAuth();
+      unsubLogs();
+      unsubRegs();
+    };
   }, []);
 
   // Compute Event Entry Statistics
@@ -230,12 +241,9 @@ export default function EventEntryLogsPage() {
   return (
     <div className="space-y-8 font-sans text-slate-900">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900">Event Entry Logs</h1>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">
-            Real-time feed of attendees who have entered each event
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <button

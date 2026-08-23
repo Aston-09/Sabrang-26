@@ -279,12 +279,9 @@ export default function CouponsPage() {
   return (
     <div className="space-y-8 font-sans text-slate-900">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900">Coupons & Promotional Discounts</h1>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">
-            Configure percentage discounts, fixed prices, and multi-event applicability
-          </p>
         </div>
         <button 
           onClick={openAddModal}

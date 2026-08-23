@@ -130,7 +130,6 @@ export default function ScannerAccounts() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Scanner Accounts</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage volunteer ticket validation credentials</p>
         </div>
         <button 
           onClick={() => setIsCreateOpen(true)}
@@ -148,7 +147,7 @@ export default function ScannerAccounts() {
       {scanners.length >= 5 && (
         <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl flex items-center gap-3 text-xs font-medium">
           <AlertCircle size={18} className="text-amber-700 shrink-0" />
-          <p>Scanner account quota reached (5/5 accounts). Remove an inactive account to provision a new volunteer access pass.</p>
+          <p>Scanner account quota reached (5/5 accounts). Remove an inactive account to provision a new operator pass.</p>
         </div>
       )}
 
@@ -162,7 +161,7 @@ export default function ScannerAccounts() {
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
                   <th className="p-4 w-14 text-center">#</th>
                   <th className="p-4">Scanner ID</th>
-                  <th className="p-4">Volunteer Name</th>
+                  <th className="p-4">Operator Name</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Last Active</th>
                   <th className="p-4 text-right">Actions</th>
@@ -175,7 +174,7 @@ export default function ScannerAccounts() {
                       {idx + 1}
                     </td>
                     <td className="p-4 font-mono font-semibold text-slate-900">{scanner.scannerId}</td>
-                    <td className="p-4 font-medium text-slate-800">{scanner.volunteerName}</td>
+                    <td className="p-4 font-medium text-slate-800">{scanner.volunteerName || 'Operator'}</td>
                     <td className="p-4">
                       <span className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${
                         scanner.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'
@@ -207,7 +206,7 @@ export default function ScannerAccounts() {
                 {scanners.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-12 text-center text-slate-400 font-medium">
-                      No volunteer scanner accounts registered yet.
+                      No scanner accounts registered yet.
                     </td>
                   </tr>
                 )}
@@ -221,7 +220,7 @@ export default function ScannerAccounts() {
       <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Provision Scanner Account">
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5 text-slate-700">Assigned Volunteer Name</label>
+            <label className="block text-xs font-medium mb-1.5 text-slate-700">Assigned Operator Name</label>
             <input 
               type="text" 
               required
@@ -245,7 +244,7 @@ export default function ScannerAccounts() {
         <div className="space-y-4">
           <div className="flex items-center gap-3 text-rose-800 bg-rose-50 p-4 rounded-xl border border-rose-200">
             <ShieldAlert size={20} className="text-rose-600 shrink-0" />
-            <p className="text-xs">Are you sure you want to delete the scanner account for <strong>{selectedScanner?.volunteerName}</strong>? This volunteer will immediately lose scan authorization.</p>
+            <p className="text-xs">Are you sure you want to delete the scanner account for <strong>{selectedScanner?.volunteerName}</strong>? This operator will immediately lose scan authorization.</p>
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
             <button onClick={() => setIsDeleteOpen(false)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">Cancel</button>

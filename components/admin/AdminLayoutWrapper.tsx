@@ -17,25 +17,9 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
   useEffect(() => {
     setMounted(true);
 
-    // 1. Instant check from sessionStorage
-    const stored = typeof window !== 'undefined' ? sessionStorage.getItem('sabrang_auth') : null;
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.role === 'admin' || parsed.role === 'scanner') {
-          setIsAuthenticated(true);
-          return;
-        }
-      } catch {}
-    }
-
-    // 2. Firebase Auth fallback
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        if (typeof window !== 'undefined' && sessionStorage.getItem('sabrang_auth')) {
-          setIsAuthenticated(true);
-          return;
-        }
+        setIsAuthenticated(false);
         router.push('/login');
         return;
       }
@@ -95,10 +79,6 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
             Sabrang 2026 Management System
           </span>
-          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-semibold">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>System Online</span>
-          </div>
         </header>
 
         <div className="p-6 md:p-10 max-w-7xl mx-auto">{children}</div>

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "@/lib/firebase/client";
+import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ export default function LoginPage() {
     try {
       const cleanEmail = email.trim().toLowerCase();
 
-      // Secure Firebase Client Authentication (no hardcoded passwords)
+      // Secure Firebase Client Authentication
       const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
       const user = userCredential.user;
 
@@ -61,8 +62,7 @@ export default function LoginPage() {
       } else {
         router.push("/admin");
       }
-    } catch (err: any) {
-      console.error("Authentication failed:", err?.code || err?.message);
+    } catch {
       setError("Invalid email or password. Please verify your credentials.");
     } finally {
       setLoading(false);
@@ -70,62 +70,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="admin-portal-scope min-h-screen bg-[#07070a] text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#12121a] border border-white/10 rounded-2xl p-8 shadow-2xl">
+    <div className="admin-portal-scope min-h-screen bg-[#f8fafc] text-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Sabrang Portal
           </h1>
-          <p className="text-sm text-neutral-400 mt-1">Authorized Access Only</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed">
+          <div className="mb-6 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs leading-relaxed font-medium">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Email Address
             </label>
             <input
               type="email"
               required
+              autoComplete="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-[#1a1a26] border border-white/10 rounded-xl text-white text-sm outline-none focus:border-purple-500 transition-colors"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 text-sm outline-none focus:bg-white focus:border-slate-400 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Password
             </label>
             <input
               type="password"
               required
+              autoComplete="current-password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-[#1a1a26] border border-white/10 rounded-xl text-white text-sm outline-none focus:border-purple-500 transition-colors"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 text-sm outline-none focus:bg-white focus:border-slate-400 transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 font-semibold rounded-xl text-sm transition-all shadow-lg shadow-purple-900/30 disabled:opacity-50 cursor-pointer"
+            className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs tracking-wider uppercase transition-colors shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
           >
-            {loading ? "Verifying..." : "Sign In"}
+            {loading ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>Verifying...</span>
+              </>
+            ) : (
+              <span>Sign In</span>
+            )}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-white/5 text-center">
-          <Link href="/" className="text-xs text-neutral-400 hover:text-white transition-colors">
-            ← Return to Sabrang 2026 Home
+        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+          <Link href="/" className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
+            Return to Sabrang 2026 Home
           </Link>
         </div>
       </div>

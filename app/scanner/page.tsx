@@ -334,7 +334,7 @@ export default function ScannerView() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] select-none font-adminBody animate-in fade-in duration-200">
+    <div className="admin-portal-scope flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] select-none font-adminBody animate-in fade-in duration-200">
       
       {/* Centered Work Container */}
       <div className="w-full max-w-lg">

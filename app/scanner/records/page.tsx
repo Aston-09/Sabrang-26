@@ -72,7 +72,7 @@ export default function ScanRecordsView() {
   };
 
   return (
-    <div className="space-y-6 select-none font-adminBody animate-in fade-in duration-200">
+    <div className="admin-portal-scope space-y-6 select-none font-adminBody animate-in fade-in duration-200">
       
       {/* Quick Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

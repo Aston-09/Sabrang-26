@@ -627,9 +627,9 @@ export const FAQS: FAQItem[] = [
       "Outside food and drinks are not permitted inside the venue. However, we have plenty of food options available at affordable prices.",
   },
   {
-    question: "How can I volunteer for Sabrang?",
+    question: "How can I contact the organizing team?",
     answer:
-      "We're always looking for enthusiastic volunteers! Fill out the contact form on our website or email us at sabrang@jklu.edu.in with your details.",
+      "You can reach out to the organizing team through our contact page or email us at sabrang@jklu.edu.in.",
   },
   {
     question: "Can I sponsor Sabrang?",
