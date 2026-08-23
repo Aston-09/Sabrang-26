@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { heroScrollState } from '@/components/3d/hero/heroScrollState'
+import { heroScrollState, HERO_PIN_END, HERO_SCRUB } from '@/components/3d/hero/heroScrollState'
 import './HeroSection.css'
 
 if (typeof window !== 'undefined') {
@@ -49,9 +49,9 @@ export default function HeroSection() {
         ScrollTrigger.create({
           trigger: triggerEl,
           start: 'top top',
-          end: '+=200vh',
+          end: HERO_PIN_END,
           pin: true,
-          scrub: 0.8, // Smooth GSAP scrubbing
+          scrub: HERO_SCRUB,
           onUpdate: (self) => {
             heroScrollState.progress = self.progress
           }

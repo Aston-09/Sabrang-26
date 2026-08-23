@@ -109,34 +109,12 @@ const breadcrumbSchema = {
   ],
 };
 
-const summitImages = [
-  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060183/sabrang-2026/about/panache-runway.png",
-  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060184/sabrang-2026/about/sabrang-live.png",
-  "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060185/sabrang-2026/about/step-up.jpg"
-];
-
-const summitNames = [
-  "PANACHE",
-  "BANDJAM",
-  "STEP-UP"
-];
-
-const summitBriefs = [
-  "The ultimate fashion showdown. Assert dominance on the runway with style that speaks volumes.",
-  "Pure sonic warfare under the open sky. The battle of the bands: raw, unfiltered, electric.",
-  "Premier solo dance showdown. Technical mastery, freestyle finesse, and electric expression."
-];
-
 export default function Home() {
   return (
     <>
       <JsonLd data={festivalEventSchema} />
       <JsonLd data={breadcrumbSchema} />
-      <HomeClient 
-        summitImages={summitImages}
-        summitNames={summitNames}
-        summitBriefs={summitBriefs}
-      />
+      <HomeClient />
     </>
   );
 }
