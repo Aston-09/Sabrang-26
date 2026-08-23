@@ -2,7 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import "@/lib/suppress-three-logs";
-import { CURSOR_TRAIL_COLORS } from "@/lib/constants";
+import {
+  CURSOR_TRAIL_COLORS,
+  CURSOR_TRAIL_MAX_SEGMENTS,
+  CURSOR_TRAIL_MIN_SEGMENTS,
+} from "@/lib/constants";
 
 export default function TubesCursor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -36,6 +40,8 @@ export default function TubesCursor() {
             minRadius: 0.005,
             maxRadius: 0.02,
             noise: 0.03,
+            minTubularSegments: CURSOR_TRAIL_MIN_SEGMENTS,
+            maxTubularSegments: CURSOR_TRAIL_MAX_SEGMENTS,
             lights: {
               intensity: 120,
               colors: FIXED_LIGHT_COLORS,

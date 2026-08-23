@@ -140,6 +140,8 @@ export default function RootLayout({
               <InteractionProvider>
                 <AuthProvider>
                   <SmoothScroll>
+                    <TubesCursor />
+                    <CursorFollower />
                     <div className="min-h-screen flex flex-col text-white overflow-x-clip">
                       <Navbar />
                       <main className="flex-grow w-full">{children}</main>
@@ -151,8 +153,6 @@ export default function RootLayout({
             </ReCaptchaProvider>
           </AudioPlayerProvider>
         </PreloaderGate>
-        <TubesCursor />
-        <CursorFollower />
         <Suspense fallback={null}>
           <TrafficTracker />
         </Suspense>
