@@ -113,6 +113,7 @@ export default function HeroScene() {
         dpr={mobile ? [1, 1.25] : [1, 1.75]}
         // opaque: the wrapper is already #000, so blending against the page buys nothing
         gl={{ antialias: false, alpha: false, stencil: false, powerPreference: 'high-performance' }}
+        style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => {
           // The prism's transmission:1 makes three re-render the whole scene into an
           // offscreen target every frame. Refraction through 0.55 thickness is blurry,

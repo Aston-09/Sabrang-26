@@ -6,6 +6,7 @@ import {
   CURSOR_TRAIL_COLORS,
   CURSOR_TRAIL_MAX_SEGMENTS,
   CURSOR_TRAIL_MIN_SEGMENTS,
+  CURSOR_TRAIL_IDLE_MS,
 } from "@/lib/constants";
 
 export default function TubesCursor() {
@@ -105,19 +106,23 @@ export default function TubesCursor() {
           angle = -angle;
         }
 
-        const targetEl =
-          document.elementFromPoint(currentPos.x, currentPos.y) || window;
-        const eventInit = {
-          clientX: currentPos.x,
-          clientY: currentPos.y,
-          pageX: currentPos.x,
-          pageY: currentPos.y,
-          bubbles: true,
-          cancelable: true,
-        };
+        // Always dispatch to our own canvas so the threejs-components library
+        // receives every idle-wander tick. Using elementFromPoint() breaks when
+        // HeroScene's full-screen WebGL canvas is on top — that canvas swallows
+        // the untrusted synthetic events before they can reach the tubes renderer.
+        if (canvas) {
+          const eventInit = {
+            clientX: currentPos.x,
+            clientY: currentPos.y,
+            pageX: currentPos.x,
+            pageY: currentPos.y,
+            bubbles: true,
+            cancelable: true,
+          };
 
-        targetEl.dispatchEvent(new PointerEvent("pointermove", eventInit));
-        targetEl.dispatchEvent(new MouseEvent("mousemove", eventInit));
+          canvas.dispatchEvent(new PointerEvent("pointermove", eventInit));
+          canvas.dispatchEvent(new MouseEvent("mousemove", eventInit));
+        }
 
         animFrameId = requestAnimationFrame(wander);
       };
@@ -138,23 +143,35 @@ export default function TubesCursor() {
       if (idleTimer) clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
         startRandomWander();
-      }, 1200);
+      }, CURSOR_TRAIL_IDLE_MS);
     };
 
-    const handleUserMouseMove = (e: MouseEvent | PointerEvent) => {
-      if (!e.isTrusted) return;
-      currentPos.x = e.clientX;
-      currentPos.y = e.clientY;
+    const handleUserPointer = (e: MouseEvent | PointerEvent | TouchEvent) => {
+      let cx = 0;
+      let cy = 0;
+      if ("clientX" in e && typeof e.clientX === "number") {
+        if (!e.isTrusted) return;
+        cx = e.clientX;
+        cy = e.clientY;
+      } else if ("touches" in e && e.touches.length > 0) {
+        cx = e.touches[0].clientX;
+        cy = e.touches[0].clientY;
+      } else {
+        return;
+      }
+
+      currentPos.x = cx;
+      currentPos.y = cy;
       resetIdleTimer();
 
       if (canvas) {
         const eventInit: any = {
-          clientX: e.clientX,
-          clientY: e.clientY,
-          pageX: e.pageX,
-          pageY: e.pageY,
-          screenX: e.screenX,
-          screenY: e.screenY,
+          clientX: cx,
+          clientY: cy,
+          pageX: cx,
+          pageY: cy,
+          screenX: cx,
+          screenY: cy,
           pointerType: "mouse",
           isPrimary: true,
           bubbles: true,
@@ -181,8 +198,9 @@ export default function TubesCursor() {
       resetIdleTimer();
     };
 
-    window.addEventListener("pointermove", handleUserMouseMove, { passive: true });
-    window.addEventListener("mousemove", handleUserMouseMove, { passive: true });
+    window.addEventListener("pointermove", handleUserPointer, { passive: true });
+    window.addEventListener("mousemove", handleUserPointer, { passive: true });
+    window.addEventListener("touchmove", handleUserPointer, { passive: true });
     window.addEventListener("mouseleave", handleMouseLeave);
     document.addEventListener("mouseleave", handleMouseLeave);
     window.addEventListener("blur", handleWindowBlur);
@@ -194,8 +212,9 @@ export default function TubesCursor() {
       isMounted = false;
       stopRandomWander();
       if (idleTimer) clearTimeout(idleTimer);
-      window.removeEventListener("pointermove", handleUserMouseMove);
-      window.removeEventListener("mousemove", handleUserMouseMove);
+      window.removeEventListener("pointermove", handleUserPointer);
+      window.removeEventListener("mousemove", handleUserPointer);
+      window.removeEventListener("touchmove", handleUserPointer);
       window.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("blur", handleWindowBlur);
@@ -217,7 +236,7 @@ export default function TubesCursor() {
         height: "100vh",
         overflow: "hidden",
         pointerEvents: "none",
-        zIndex: 9990,
+        zIndex: 9999,
         mixBlendMode: "screen",
       }}
     >
