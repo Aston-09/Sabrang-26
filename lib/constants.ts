@@ -968,7 +968,8 @@ export const DEV_TEAM: DevTeamMember[] = [
   },
   {
     name: "Saurav Tank",
-    avatar: "/saurav.jpg",
+    avatar:
+      "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787593525/sabrang-2026/tech-team-credit/g79no6lridril8s3ao6x.jpg",
     linkedin: "https://www.linkedin.com/in/saurav-tank/",
     github: "https://github.com/sauravtank1507",
     email: "sauravtank@jklu.edu.in",
