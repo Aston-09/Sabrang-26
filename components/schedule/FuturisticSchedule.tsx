@@ -350,7 +350,7 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
       <main className="relative z-10 w-full max-w-[1200px] mx-auto flex flex-col items-center justify-center text-center">
         
         {/* Editorial Title */}
-        <div className="text-center mb-8 relative z-20">
+        <div className="text-center mb-8 relative z-20 mt-24 sm:mt-0">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -14,6 +14,9 @@ export default function TubesCursor() {
 
   useEffect(() => {
     if (!canvasRef.current) return;
+    // Skip entirely on touch/coarse-pointer devices — the trail is invisible
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     const canvas = canvasRef.current;
 
     let app: {
@@ -69,12 +72,20 @@ export default function TubesCursor() {
     let angle = Math.random() * Math.PI * 2;
     let speed = 3;
 
+    const MAX_IDLE_WANDER_MS = 10000;
+
     const startRandomWander = () => {
       if (isIdle) return;
       isIdle = true;
+      const wanderStart = performance.now();
 
       const wander = () => {
         if (!isIdle) return;
+        // Stop wandering after the max duration to save GPU
+        if (performance.now() - wanderStart > MAX_IDLE_WANDER_MS) {
+          isIdle = false;
+          return;
+        }
 
         angle += (Math.random() - 0.5) * 0.2;
         speed += (Math.random() - 0.5) * 0.2;

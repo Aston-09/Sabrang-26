@@ -226,10 +226,10 @@ export default function WebGLCarousel({
         className={`team-page-heading absolute top-10 left-0 w-full z-20 text-center pointer-events-none transition-all duration-500 ease-in-out ${activeItem ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
       >
         <h1 
-          className="text-white font-bold text-3xl md:text-4xl uppercase tracking-[0.25em]"
-          style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
+          className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-black tracking-tight text-white mb-3 uppercase leading-none" 
+          style={{ fontFamily: 'var(--font-space-grotesk), "Syne", sans-serif' }}
         >
-          Team
+          TEAM
         </h1>
       </div>
 

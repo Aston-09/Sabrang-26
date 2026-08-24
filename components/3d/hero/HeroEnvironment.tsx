@@ -388,7 +388,7 @@ export default function HeroEnvironment({ mobile = false, q }: { mobile?: boolea
   const { scene, gl } = useThree()
   const outerRef = useRef<THREE.Mesh>(null)
   const innerRef = useRef<THREE.Mesh>(null)
-  const nextCapture = useRef(0)
+  const nextCapture = useRef(2) // defer first capture to avoid stacking with initial loads
   const flow = useRef(0)
   const reduced = useRef(false)
 
@@ -495,7 +495,7 @@ export default function HeroEnvironment({ mobile = false, q }: { mobile?: boolea
 
     scene.environmentIntensity = heroConfig.environmentIntensity
 
-    if (t >= nextCapture.current) {
+    if (t >= nextCapture.current && !document.hidden) {
       nextCapture.current = t + captureInterval
       cubeCam.update(gl, scene)
       cubeRT.texture.needsPMREMUpdate = true

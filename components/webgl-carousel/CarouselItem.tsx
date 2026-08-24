@@ -144,10 +144,10 @@ const CarouselItem = ({
             writingMode: "vertical-rl",
             transform: "rotate(180deg)",
             color: "#ffffff",
-            fontSize: isMobile ? "12px" : "14px",
+            fontSize: isMobile ? "9px" : "14px",
             fontWeight: "900",
             textTransform: "uppercase",
-            letterSpacing: isMobile ? "0.16em" : "0.22em",
+            letterSpacing: isMobile ? "0.1em" : "0.22em",
             fontFamily: "system-ui, -apple-system, sans-serif",
             whiteSpace: "nowrap",
             textShadow:

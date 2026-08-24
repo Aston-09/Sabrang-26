@@ -37,6 +37,7 @@ const teamSchema = {
     url: "https://jklu.edu.in",
   },
   member: [
+    { "@type": "Person", name: "Vaibhav Topiwala", jobTitle: "Student Affairs" },
     { "@type": "Person", name: "Anushka Pathak", jobTitle: "Student Affairs" },
     { "@type": "Person", name: "Richa Sharma", jobTitle: "Student Affairs" },
     { "@type": "Person", name: "Rattan Gangadhar", jobTitle: "Student Affairs" },

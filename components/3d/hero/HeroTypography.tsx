@@ -146,13 +146,13 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
     const p = THREE.MathUtils.clamp(rawProgress, 0, 0.3) / 0.3
 
     // PHASE 3 & 4: Map scroll progress to targets
-    let targetZ = -2
-    let targetScale = 1
+    let targetZ = 3.5
+    let targetScale = 0.45
     let targetOpacity = 1
 
     if (p <= 0.88) {
-      targetZ = THREE.MathUtils.mapLinear(p, 0, 0.88, -2, -21)
-      targetScale = THREE.MathUtils.mapLinear(p, 0, 0.88, 1, 0.7)
+      targetZ = THREE.MathUtils.mapLinear(p, 0, 0.88, 3.5, -21)
+      targetScale = THREE.MathUtils.mapLinear(p, 0, 0.88, 0.45, 0.7)
     } else {
       targetZ = -21
       targetScale = 0.7
@@ -225,7 +225,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
   })
 
   return (
-    <group ref={groupRef} position={[0, 0, -2]}>
+    <group ref={groupRef} position={[0, 0, 3.5]}>
       <group ref={innerRef}>
         {/* ponytail: hover-only effect, so it is skipped on coarse pointers -- and
             its 32-tap march per pixel is dropped entirely on the low tier. */}

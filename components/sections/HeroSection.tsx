@@ -93,7 +93,7 @@ export default function HeroSection() {
       
       {/* .hero-countdown carries the scroll transform, .hero-anim the entrance
           one -- separate elements so the two timelines don't fight over `y`. */}
-      <div className="hero-countdown absolute inset-0 flex flex-col items-center justify-center mt-[28vh] pointer-events-none z-10">
+      <div className="hero-countdown absolute inset-0 flex flex-col items-center justify-center mt-[35vh] pointer-events-none z-10">
         <div className="hero-anim pointer-events-auto">
           <HeroCountdown />
         </div>

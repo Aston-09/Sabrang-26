@@ -124,6 +124,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preload" href="/models/SABRANG_TRANSPARENT_STRIP_PRISM.glb" as="fetch" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/FlorasDisplay.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+      </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${inter.className}`}>
         {process.env.NODE_ENV === "production" && (
           <Script
