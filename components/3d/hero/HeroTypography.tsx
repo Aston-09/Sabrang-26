@@ -173,7 +173,11 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
     // Damped interpolation for physical feel
     groupRef.current.position.z = THREE.MathUtils.damp(groupRef.current.position.z, targetZ, 4, delta)
     innerRef.current.scale.setScalar(THREE.MathUtils.damp(innerRef.current.scale.x, targetScale, 4, delta))
-    materialRef.current.opacity = THREE.MathUtils.damp(materialRef.current.opacity, targetOpacity, 6, delta)
+    
+    // Calculate new opacity
+    const currentOpacity = materialRef.current.opacity || 1
+    const newOpacity = THREE.MathUtils.damp(currentOpacity, targetOpacity, 6, delta)
+    materialRef.current.opacity = newOpacity
 
     // Very subtle idle float. Lives on the shared group so the glow quad tracks
     // the letters exactly — otherwise the shadows drift off the glyphs.
@@ -201,18 +205,22 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
       m.y = THREE.MathUtils.damp(m.y, hit.y + 0.5, 12, delta)
     }
 
-    if (materialRef.current) {
-      materialRef.current.transparent = false
-      materialRef.current.depthWrite = true
-      materialRef.current.alphaTest = 0.01
-    }
-
     if (textRef.current && textRef.current.material) {
-      textRef.current.material.transparent = false
-      textRef.current.material.depthWrite = true
+      const mat = textRef.current.material
+      if (mat.transparent) {
+        mat.transparent = false
+        mat.depthWrite = true
+        mat.alphaTest = 0.05
+        mat.needsUpdate = true
+      }
+      
+      // Since it's opaque, fade the color to black to simulate fading out
+      if (mat.color) {
+        mat.color.setScalar(newOpacity)
+      }
     }
 
-    u.uIntensity.value = heroConfig.textGlow * materialRef.current.opacity
+    u.uIntensity.value = heroConfig.textGlow * newOpacity
     u.uBlur.value = heroConfig.textBlur
   })
 
