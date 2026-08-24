@@ -964,16 +964,15 @@ export const DEV_TEAM: DevTeamMember[] = [
     linkedin: "https://www.linkedin.com/in/lakshya-gupta-b87616370/",
     github: "https://github.com/Metamorpho-1",
     email: "lakshyagupta@jklu.edu.in",
-    instagram: "https://instagram.com/lakshyagupta",
+    instagram: "",
   },
   {
     name: "Saurav Tank",
-    avatar:
-      "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787083776/sabrang-2026/tech-team-credit/Saurav.png",
+    avatar: "/saurav.jpg",
     linkedin: "https://www.linkedin.com/in/saurav-tank/",
     github: "https://github.com/sauravtank1507",
     email: "sauravtank@jklu.edu.in",
-    instagram: "https://instagram.com/sauravtank",
+    instagram: "",
   },
   {
     name: "Arihant Jain",
