@@ -87,7 +87,7 @@ export default function HeroScene() {
   return (
     <div
       className="hero-scene-wrapper fixed inset-0 z-0 pointer-events-none"
-      style={{ touchAction: 'none', background: '#000' }}
+      style={{ touchAction: 'none', background: '#000', minWidth: '100vw', minHeight: '100vh' }}
     >
       <Canvas
         camera={{ position: [0, 0, heroConfig.cameraDistance], fov: heroConfig.cameraFOV, near: 0.1, far: 200 }}
