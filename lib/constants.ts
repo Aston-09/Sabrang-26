@@ -33,7 +33,7 @@ export const ORGANIZING_HEADS: OrganizingHead[] = [
     phone: "+918769329369",
     displayPhone: "+91 87693 29369",
     image:
-      "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787591801/sabrang-2026/team/id8btwvln1ewncyarhqz.png",
+      "https://res.cloudinary.com/eprhemvt/image/upload/v1787651025/66917207478_1.png",
   },
   {
     name: "Rishika Singh",
@@ -679,7 +679,7 @@ export const TEAM_IMAGES: Record<string, string> = {
   "Kartik Singh":
     "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787331503/sabrang-2026/team/kartik-singh.png",
   "Kartik Sharma":
-    "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787591801/sabrang-2026/team/id8btwvln1ewncyarhqz.png",
+    "https://res.cloudinary.com/eprhemvt/image/upload/v1787651025/66917207478_1.png",
   "Khushi Soni":
     "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084251/sabrang-2026/team/khushi-soni.png",
   "Kunal Kasliwal":
@@ -716,9 +716,17 @@ export const TEAM_MEMBERS: TeamMember[] = [
   { name: "Richa Sharma", role: "Student Affairs" },
   { name: "Rattan Gangadhar", role: "Student Affairs" },
   { name: "Vice Chancellor", role: "Vice Chancellor" },
-  { name: "Name", role: " Role" },
-  { name: "Kartik Sharma", role: "Organizing Head" },
-  { name: "Gurseerat Kaur", role: "Organizing Head" },
+  {
+    name: "Kartik Sharma",
+    role: "Organizing Head",
+    links: {
+      email: "mailto:kartiksharma2024@jklu.edu.in",
+      instagram: "https://www.instagram.com/idk_idc.06",
+      linkedin: "https://www.linkedin.com/in/kartik-sharma-ks12",
+      github: "https://github.com/KK-code001",
+    },
+  },
+  { name: "Rishika Singh", role: "Organizing Head" },
   {
     name: "Pratigya Bomb",
     role: "Organizing Head",
@@ -728,7 +736,17 @@ export const TEAM_MEMBERS: TeamMember[] = [
         "https://www.linkedin.com/in/pratigya-bomb-295857349?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
     },
   },
-  { name: "Rishika Singh", role: "Organizing Head" },
+  { name: "Gurseerat Kaur", role: "Organizing Head" },
+  {
+    name: "Devam Gupta",
+    role: "Tech & Support Core",
+    links: {
+      email: "mailto:devamgupta@jklu.edu.in",
+      instagram: "https://www.instagram.com/who.is.devam/?hl=en",
+      linkedin: "https://www.linkedin.com/in/devam-gupta/",
+      github: "https://github.com/Devam759",
+    },
+  },
   {
     name: "Satvik Agrawal",
     role: "Internal Arrangements Core",
@@ -797,16 +815,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
         "https://www.instagram.com/lksh.jpeg?igsh=MXB3MXh6MWg1bHB0aw==",
       linkedin:
         "https://www.linkedin.com/in/laksh-sharma25?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    },
-  },
-  {
-    name: "Devam Gupta",
-    role: "Tech & Support Core",
-    links: {
-      email: "mailto:devamgupta@jklu.edu.in",
-      instagram: "https://www.instagram.com/who.is.devam/?hl=en",
-      linkedin: "https://www.linkedin.com/in/devam-gupta/",
-      github: "https://github.com/Devam759",
     },
   },
   {
