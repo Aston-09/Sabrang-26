@@ -1,10 +1,35 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebaseAdmin';
+import { adminDb, adminAuth } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { normalizeEventKey } from '@/lib/couponHelper';
 
 export async function POST(req: Request) {
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (authErr) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Role check
+    const userDoc = await adminDb.collection("users").doc(decodedToken.uid).get();
+    let userRole = userDoc.data()?.role;
+    if (!userRole) {
+      const roleDoc = await adminDb.collection("roles").doc(decodedToken.uid).get();
+      userRole = roleDoc.data()?.role;
+    }
+    
+    if (userRole !== "admin" && userRole !== "scanner" && decodedToken.admin !== true && decodedToken.role !== "admin" && decodedToken.role !== "scanner") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { 
       ticketId, 

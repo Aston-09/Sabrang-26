@@ -103,8 +103,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Too many coupon attempts. Please wait a moment.' }, { status: 429 });
       }
       const code = (data.coupon || '').trim().toUpperCase();
-      const basePrice = Number(data.amount || data.price || data.originalPrice || 500);
       const eventTarget = data.eventId || data.event || data.eventName || data.eventTitle || '';
+      // Server-side calculated base price. Ignore client-provided amount to prevent price tampering.
+      const basePrice = 500;
       const couponStatus = await checkCoupon(code, basePrice, eventTarget);
       return NextResponse.json(couponStatus);
     }
@@ -165,8 +166,11 @@ export async function POST(req: Request) {
 
         const orderId = `order_${crypto.randomUUID()}`;
         const couponCode = (data.coupon || '').trim().toUpperCase();
-        const basePrice = Number(data.amount || data.price || data.originalPrice || 500);
         const eventTarget = data.eventId || data.event || data.eventName || data.eventTitle || '';
+        
+        // Server-side calculated base price. Ignore client-provided amount to prevent price tampering.
+        const basePrice = 500;
+        
         const couponStatus = await checkCoupon(couponCode, basePrice, eventTarget);
         const orderAmount = couponStatus.valid ? couponStatus.finalPrice : basePrice;
 

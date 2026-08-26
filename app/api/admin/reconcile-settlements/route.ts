@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebaseAdmin';
+import { adminDb, adminAuth } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { finalizeRegistration } from '@/lib/registrationHelper';
 import nodemailer from 'nodemailer';
@@ -685,6 +685,31 @@ export async function GET(req: Request) {
 // POST method for manual triggers from the Admin Dashboard
 export async function POST(req: Request) {
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (authErr) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Role check
+    const userDoc = await adminDb.collection("users").doc(decodedToken.uid).get();
+    let userRole = userDoc.data()?.role;
+    if (!userRole) {
+      const roleDoc = await adminDb.collection("roles").doc(decodedToken.uid).get();
+      userRole = roleDoc.data()?.role;
+    }
+    
+    if (userRole !== "admin" && decodedToken.admin !== true && decodedToken.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const isManual = body.manual !== false; // defaults to manual true
     

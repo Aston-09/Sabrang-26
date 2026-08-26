@@ -325,12 +325,8 @@ export default function HeroPrism({ mobile = false, q }: { mobile?: boolean; q: 
     material.thickness = 0.25 + cfg.screenDistortion * 0.8
     material.envMapIntensity = cfg.reflectionIntensity
 
-    // Freeze the transmission pass when the prism is scrolled out of view.
-    // transmission:1 re-renders the entire scene into an offscreen target every
-    // frame — disabling it past the hero area eliminates the single most
-    // expensive per-frame GPU cost for the entire second half of the page.
-    const shouldTransmit = progress < 0.35
-    material.transmission = shouldTransmit ? 1 : 0
+    // Keep the transmission active regardless of scroll position to maintain prism effects
+    material.transmission = 1
 
     // .set() parses a CSS string; only the debug panel ever changes this value
     if (cfg.materialColor !== lastColor.current) {

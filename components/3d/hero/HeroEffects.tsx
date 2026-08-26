@@ -26,10 +26,8 @@ function BloomFader({ baseIntensity }: { baseIntensity: number }) {
 
   useFrame(() => {
     if (!bloomRef.current) return
-    const p = THREE.MathUtils.clamp(heroScrollState.progress, 0, 0.3) / 0.3
-    // Fade bloom intensity: full below 0.3 progress, zero by 0.5
-    const fade = 1 - THREE.MathUtils.smoothstep(p, 0.3, 0.5)
-    bloomRef.current.intensity = baseIntensity * fade
+    // Keep bloom active always
+    bloomRef.current.intensity = baseIntensity
   })
 
   return (
