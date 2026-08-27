@@ -13,7 +13,7 @@
       "type": "image/x-icon"
     },
     {
-      "src": "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060370/sabrang-2026/sabrang-logo/sabrang-logo.png",
+      "src": "/sabrang-logo/sabrang-logo.png",
       "type": "image/png",
       "sizes": "512x512"
     }

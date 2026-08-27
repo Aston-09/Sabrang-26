@@ -12,7 +12,7 @@ export const SITE_CONFIG = {
   },
   logos: {
     sabrang:
-      "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060370/sabrang-2026/sabrang-logo/sabrang-logo.png",
+      "/sabrang-logo/sabrang-logo.png",
     jkTyre:
       "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060362/sabrang-2026/past-sponsors/JK-Tyre.png",
   },
