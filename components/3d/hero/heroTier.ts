@@ -42,12 +42,12 @@ export interface HeroQuality {
 const QUALITY: Record<HeroTier, Omit<HeroQuality, 'tier'>> = {
   low: {
     dpr: [1, 1],
-    transmissionScale: 0.15,
-    segments: 32,
+    transmissionScale: 0.25,
+    segments: 48,
     fbmOctaves: 2,
     warpLevels: 1,
     envSize: 32,
-    envInterval: 10,
+    envInterval: 4,
     dispersion: 0,
     iridescence: 0,
     bloom: true,
@@ -55,13 +55,13 @@ const QUALITY: Record<HeroTier, Omit<HeroQuality, 'tier'>> = {
     textGlow: false
   },
   mid: {
-    dpr: [1, 1],
-    transmissionScale: 0.2,
-    segments: 48,
+    dpr: [1, 1.25],
+    transmissionScale: 0.35,
+    segments: 64,
     fbmOctaves: 2,
-    warpLevels: 1,
-    envSize: 48,
-    envInterval: 6,
+    warpLevels: 2,
+    envSize: 64,
+    envInterval: 2,
     dispersion: 0,
     iridescence: 0.45,
     bloom: true,
@@ -69,17 +69,17 @@ const QUALITY: Record<HeroTier, Omit<HeroQuality, 'tier'>> = {
     textGlow: true
   },
   high: {
-    dpr: [1, 1],
-    transmissionScale: 0.2,
-    segments: 64,
-    fbmOctaves: 2,
-    warpLevels: 1,
-    envSize: 64,
-    envInterval: 3,
+    dpr: [1, 1.75],
+    transmissionScale: 0.5,
+    segments: 128,
+    fbmOctaves: 3,
+    warpLevels: 2,
+    envSize: 128,
+    envInterval: 1,
     dispersion: 1.6,
     iridescence: 0.45,
     bloom: true,
-    grain: false,
+    grain: true,
     textGlow: true
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 import { heroConfig, heroDebugEnabled, mountHeroDebugPanel } from './heroConfig'
@@ -26,12 +26,11 @@ function SceneContents({ mobile, q }: { mobile: boolean; q: HeroQuality }) {
   )
 }
 
-
 /**
  * Past the hero the canvas is still the page's visible backdrop -- AboutSection and
  * everything after it are transparent fixed overlays -- so it cannot simply stop.
- * Demand mode plus the FrameThrottle above keeps the drift and the float alive at a
- * fraction of the cost.
+ * Demand mode plus a 20Hz tick keeps the drift and the float alive at a third of the
+ * cost, for the majority of a session that is spent below the fold.
  */
 function CameraController() {
   const current = useRef(new THREE.Vector3(0, 0, heroConfig.cameraDistance))
@@ -87,9 +86,10 @@ export default function HeroScene() {
   return (
     <div
       className="hero-scene-wrapper fixed inset-0 z-0 pointer-events-none"
-      style={{ touchAction: 'none', background: '#000', minWidth: '100vw', minHeight: '100vh' }}
+      style={{ touchAction: 'none', background: '#000' }}
     >
       <Canvas
+        frameloop="always"
         camera={{ position: [0, 0, heroConfig.cameraDistance], fov: heroConfig.cameraFOV, near: 0.1, far: 200 }}
         dpr={q.dpr}
         // opaque: the wrapper is already #000, so blending against the page buys nothing

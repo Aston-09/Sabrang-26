@@ -268,9 +268,13 @@ const fragmentShader = /* glsl */ `
     // yellow are excluded structurally rather than by tuning.
     float hBase = 0.76 + 0.24 * sin(t * 0.075);                          // 0.52 .. 1.00
     float hx = hBase + 0.16 * smoothstep(-0.55, 0.55, du);               // .. 1.16
-    // Colour is on immediately so the page opens in full purple/violet
-    // instead of starting in the monochrome silver phase.
-    float sat = (0.95 - 0.30 * smoothstep(0.55, 1.0, 0.5 + 0.5 * sin(t * 0.031)));
+    // Opens black-and-white: at sat 0 the terraces are pure silver, which is the
+    // monochrome state of the reference. Colour then blooms in on a smoothstep --
+    // no moment where it switches on -- and the hue rotation takes over. The hue
+    // is already turning underneath during the mono phase, so the first colour to
+    // appear is wherever the cycle has reached rather than a fixed one.
+    float intro = smoothstep(4.0, 15.0, t);
+    float sat = intro * (0.95 - 0.30 * smoothstep(0.55, 1.0, 0.5 + 0.5 * sin(t * 0.031)));
 
     vec3 hue = hsv2rgb(vec3(fract(hx), sat, 1.0)) * 0.78;
     hue = mix(hue, C_PALE, smoothstep(0.66, 0.99, glow));    // pale hot centre
@@ -388,7 +392,7 @@ export default function HeroEnvironment({ mobile = false, q }: { mobile?: boolea
   const { scene, gl } = useThree()
   const outerRef = useRef<THREE.Mesh>(null)
   const innerRef = useRef<THREE.Mesh>(null)
-  const nextCapture = useRef(2) // defer first capture to avoid stacking with initial loads
+  const nextCapture = useRef(0)
   const flow = useRef(0)
   const reduced = useRef(false)
 
@@ -495,7 +499,7 @@ export default function HeroEnvironment({ mobile = false, q }: { mobile?: boolea
 
     scene.environmentIntensity = heroConfig.environmentIntensity
 
-    if (t >= nextCapture.current && !document.hidden) {
+    if (t >= nextCapture.current) {
       nextCapture.current = t + captureInterval
       cubeCam.update(gl, scene)
       cubeRT.texture.needsPMREMUpdate = true
