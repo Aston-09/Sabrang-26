@@ -101,7 +101,6 @@ const FX_FRAG = /* glsl */ `
 export default function HeroTypography({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
   const { size } = useThree()
   const [maskFrames, setMaskFrames] = useState(Infinity)
-  const textRef = useRef<any>(null)
   const materialRef = useRef<THREE.MeshBasicMaterial>(null)
   const groupRef = useRef<THREE.Group>(null)
   const innerRef = useRef<THREE.Group>(null)
@@ -113,7 +112,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
   const baseHeight = 2 * Math.tan(vFov / 2) * heroConfig.cameraDistance
   const baseWidth = baseHeight * (size.width / size.height)
 
-  const fontSize = Math.min(baseWidth * 0.13, 10.5)
+  const fontSize = Math.min(baseWidth * 0.15, 12.1)
   const M = 4 // Multiplier to expand the bleed area
   const fxW = fontSize * 7.2 * M
   const fxH = fontSize * 3.6 * M
@@ -146,13 +145,13 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
     const p = THREE.MathUtils.clamp(rawProgress, 0, 0.3) / 0.3
 
     // PHASE 3 & 4: Map scroll progress to targets
-    let targetZ = 3.5
-    let targetScale = 0.45
+    let targetZ = -2
+    let targetScale = 1
     let targetOpacity = 1
 
     if (p <= 0.88) {
-      targetZ = THREE.MathUtils.mapLinear(p, 0, 0.88, 3.5, -21)
-      targetScale = THREE.MathUtils.mapLinear(p, 0, 0.88, 0.45, 0.7)
+      targetZ = THREE.MathUtils.mapLinear(p, 0, 0.88, -2, -21)
+      targetScale = THREE.MathUtils.mapLinear(p, 0, 0.88, 1, 0.7)
     } else {
       targetZ = -21
       targetScale = 0.7
@@ -173,11 +172,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
     // Damped interpolation for physical feel
     groupRef.current.position.z = THREE.MathUtils.damp(groupRef.current.position.z, targetZ, 4, delta)
     innerRef.current.scale.setScalar(THREE.MathUtils.damp(innerRef.current.scale.x, targetScale, 4, delta))
-    
-    // Calculate new opacity
-    const currentOpacity = materialRef.current.opacity || 1
-    const newOpacity = THREE.MathUtils.damp(currentOpacity, targetOpacity, 6, delta)
-    materialRef.current.opacity = newOpacity
+    materialRef.current.opacity = THREE.MathUtils.damp(materialRef.current.opacity, targetOpacity, 6, delta)
 
     // Very subtle idle float. Lives on the shared group so the glow quad tracks
     // the letters exactly — otherwise the shadows drift off the glyphs.
@@ -205,27 +200,12 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
       m.y = THREE.MathUtils.damp(m.y, hit.y + 0.5, 12, delta)
     }
 
-    if (textRef.current && textRef.current.material) {
-      const mat = textRef.current.material
-      if (mat.transparent) {
-        mat.transparent = false
-        mat.depthWrite = true
-        mat.alphaTest = 0.05
-        mat.needsUpdate = true
-      }
-      
-      // Since it's opaque, fade the color to black to simulate fading out
-      if (mat.color) {
-        mat.color.setScalar(newOpacity)
-      }
-    }
-
-    u.uIntensity.value = heroConfig.textGlow * newOpacity
+    u.uIntensity.value = heroConfig.textGlow * materialRef.current.opacity
     u.uBlur.value = heroConfig.textBlur
   })
 
   return (
-    <group ref={groupRef} position={[0, 0, 3.5]}>
+    <group ref={groupRef} position={[0, 0, -2]}>
       <group ref={innerRef}>
         {/* ponytail: hover-only effect, so it is skipped on coarse pointers -- and
             its 32-tap march per pixel is dropped entirely on the low tier. */}
@@ -241,7 +221,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
               depthWrite={false}
               blending={THREE.AdditiveBlending}
             >
-              <RenderTexture attach="uniforms-src-value" width={1024} height={512} samples={0} generateMipmaps
+              <RenderTexture attach="uniforms-src-value" width={2048} height={1024} samples={0} generateMipmaps
                 frames={maskFrames} minFilter={THREE.LinearMipmapLinearFilter}>
                 <color attach="background" args={['#000000']} />
                 {/* Unit framing, not fxW/fxH: identical image, never invalidated by a resize. */}
@@ -263,7 +243,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
                   anchorY="middle"
                   onSync={() => setMaskFrames(3)}
                 >
-                  SABRANG'26
+                  {"SABRANG'26"}
                   <meshBasicMaterial color="#ffffff" toneMapped={false} />
                 </Text>
               </RenderTexture>
@@ -272,7 +252,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
         )}
 
         <Text
-          ref={textRef}
+          renderOrder={10}
           font={FONT}
           fontSize={fontSize}
           letterSpacing={0.1}
@@ -280,15 +260,14 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
           anchorX="center"
           anchorY="middle"
         >
-          SABRANG'26
+          {"SABRANG'26"}
           <meshBasicMaterial
             ref={materialRef}
             color="#ffffff"
-            transparent={false}
-            alphaTest={0.01}
-            depthWrite={true}
-            depthTest={true}
+            transparent={true}
             opacity={1}
+            depthTest={false}
+            depthWrite={false}
             toneMapped={false}
           />
         </Text>

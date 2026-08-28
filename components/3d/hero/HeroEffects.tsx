@@ -1,12 +1,9 @@
 'use client'
 
-import React, { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import React from 'react'
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import type { HeroQuality } from './heroTier'
-import { heroScrollState } from './heroScrollState'
-import * as THREE from 'three'
 
 /**
  * Restrained. The reference chamber is dark and clean — the chromatic
@@ -15,32 +12,24 @@ import * as THREE from 'three'
  *
  * multisampling={0}: the library defaults to 8x MSAA on its HDR target, which the
  * canvas already opted out of with antialias:false.
- *
- * Bloom intensity is faded to near-zero when the hero text scrolls away
- * (progress > 0.4). This effectively short-circuits the full-screen mipmap
- * blur chain that otherwise runs every frame.
  */
-
-function BloomFader({ baseIntensity }: { baseIntensity: number }) {
-  const bloomRef = useRef<any>(null)
-
-  useFrame(() => {
-    if (!bloomRef.current) return
-    // Keep bloom active always
-    bloomRef.current.intensity = baseIntensity
-  })
-
-  return (
-    <Bloom ref={bloomRef} luminanceThreshold={0.75} luminanceSmoothing={0.85} intensity={baseIntensity} mipmapBlur />
-  )
-}
-
 export default function HeroEffects({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
+  // The grain pass is a full-screen read/write for a 4.5% overlay -- the first
+  // thing to go when there is no GPU doing the work.
+  if (mobile || !q.grain) {
+    return (
+      <EffectComposer multisampling={0}>
+        <Bloom luminanceThreshold={0.75} luminanceSmoothing={0.85} intensity={0.55} mipmapBlur />
+        <Vignette eskil={false} offset={0.18} darkness={0.75} blendFunction={BlendFunction.MULTIPLY} />
+      </EffectComposer>
+    )
+  }
+
   return (
     <EffectComposer multisampling={0}>
-      <BloomFader baseIntensity={mobile || !q.grain ? 0.55 : 0.7} />
-      <Vignette eskil={false} offset={0.18} darkness={0.75} blendFunction={BlendFunction.MULTIPLY} />
+      <Bloom luminanceThreshold={0.72} luminanceSmoothing={0.9} intensity={0.7} mipmapBlur />
+      <Noise premultiply blendFunction={BlendFunction.OVERLAY} opacity={0.045} />
+      <Vignette eskil={false} offset={0.16} darkness={0.8} blendFunction={BlendFunction.MULTIPLY} />
     </EffectComposer>
   )
 }
-

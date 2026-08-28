@@ -123,3 +123,7 @@ pids
 # Excluded folders
 AGENTS.md
 CLAUDE.md
+
+# hero protection: local-only notes and backup copy
+HERO-PERF-NOTES.md
+Sabrang-26-HERO-BACKUP/

@@ -324,10 +324,6 @@ export default function HeroPrism({ mobile = false, q }: { mobile?: boolean; q: 
     material.roughness = cfg.roughness
     material.thickness = 0.25 + cfg.screenDistortion * 0.8
     material.envMapIntensity = cfg.reflectionIntensity
-
-    // Keep the transmission active regardless of scroll position to maintain prism effects
-    material.transmission = 1
-
     // .set() parses a CSS string; only the debug panel ever changes this value
     if (cfg.materialColor !== lastColor.current) {
       lastColor.current = cfg.materialColor
