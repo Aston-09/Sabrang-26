@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const country = headersList.get('x-vercel-ip-country') || 'India';
     const city = headersList.get('x-vercel-ip-city') || 'Jaipur';
 
-    if (adminDb) {
+    if (adminDb && process.env.NODE_ENV === 'production') {
       await adminDb.collection('websiteLogs').add({
         path: body.path || '/',
         fullUrl: body.fullUrl || '/',
@@ -34,6 +34,11 @@ export async function POST(req: Request) {
         country,
         timestamp: FieldValue.serverTimestamp(),
         createdAt: new Date().toISOString(),
+      }).catch((err: any) => {
+        // Silently ignore lack of credentials in dev environments
+        if (process.env.NODE_ENV !== 'production' || !err.message.includes('default credentials')) {
+          console.warn('Track entry warning:', err.message);
+        }
       });
     }
 
