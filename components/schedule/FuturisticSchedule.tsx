@@ -315,12 +315,18 @@ function DayColumn({
 ────────────────────────────────────────────────────────────── */
 
 export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleData }) {
-  const [activeCategory, setActiveCategory] = useState("ALL");
-  const [hoveredCol, setHoveredCol] = useState<number | null>(null);
-
   // Parallax Mouse tracking for subtle background movement
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+
+  useEffect(() => {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const x = (e.clientX / window.innerWidth) - 0.5;
@@ -331,7 +337,7 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
 
   return (
     <div 
-      className="relative min-h-screen w-screen text-white font-sans selection:bg-violet-500/30 flex flex-col p-4 sm:p-6 pb-20"
+      className="fixed inset-0 w-screen h-screen overflow-hidden text-white font-sans selection:bg-violet-500/30 flex items-center justify-center p-4 sm:p-6"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
     >
@@ -341,17 +347,17 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
 
 
       {/* ── MAIN CONTENT ── */}
-      <main className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col pt-24 sm:pt-32">
+      <main className="relative z-10 w-full max-w-[1200px] mx-auto flex flex-col items-center justify-center text-center">
         
-        {/* Header Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-16 gap-6">
+        {/* Editorial Title */}
+        <div className="text-center mb-8 relative z-20 mt-24 sm:mt-0">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
             <h1 
-              className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white mb-3 uppercase leading-none" 
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-black tracking-tight text-white mb-3 uppercase leading-none" 
               style={{ fontFamily: 'var(--font-space-grotesk), "Syne", sans-serif' }}
             >
               SCHEDULE
@@ -360,59 +366,26 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
               23 - 25 OCTOBER 2026
             </p>
           </motion.div>
-          
-          {/* Category Filters */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-2 max-w-2xl"
-          >
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 text-[10px] sm:text-xs font-bold tracking-widest uppercase rounded-full border transition-all duration-300 ${
-                  activeCategory === cat 
-                    ? "bg-violet-500/20 border-violet-500/50 text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]" 
-                    : "bg-transparent border-white/10 text-white/50 hover:text-white/80 hover:border-white/30 hover:bg-white/5"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </motion.div>
         </div>
 
-        {/* Schedule Grid */}
-        {schedule && schedule.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {schedule.map((day, colIndex) => {
-              // Filter events for this day
-              const filteredEvents = activeCategory === "ALL" 
-                ? day.events 
-                : day.events.filter(e => e.category.toUpperCase() === activeCategory);
-              
-              return (
-                <DayColumn
-                  key={colIndex}
-                  day={day}
-                  filteredEvents={filteredEvents}
-                  isHovered={hoveredCol === colIndex}
-                  onHover={() => setHoveredCol(colIndex)}
-                  onLeave={() => setHoveredCol(null)}
-                  mouseX={mouseX}
-                  mouseY={mouseY}
-                  colIndex={colIndex}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-20 text-white/50 font-mono text-sm tracking-widest">
-            SCHEDULE NOT AVAILABLE YET
-          </div>
-        )}
+        {/* Revealing Soon Presentation Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative w-full max-w-xl text-center p-10 sm:p-16"
+        >
+          {/* Main Statement */}
+          <h2
+            className="relative z-10 text-3xl sm:text-5xl md:text-6xl font-black uppercase text-white tracking-tight leading-none"
+            style={{
+              fontFamily: '"Syne", var(--font-space-grotesk), sans-serif',
+              textShadow: "0 0 30px rgba(255,255,255,0.7), 0 0 50px rgba(168,85,247,0.4)",
+            }}
+          >
+            REVEALING SOON
+          </h2>
+        </motion.div>
 
       </main>
 
