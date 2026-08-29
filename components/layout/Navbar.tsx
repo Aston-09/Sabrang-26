@@ -135,13 +135,13 @@ export default function Navbar() {
             className="flex flex-col items-start outline-none transition-transform hover:scale-105 active:scale-95"
           >
             <Image
-              src="https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060370/sabrang-2026/sabrang-logo/sabrang-logo.png"
+              src="/sabrang-logo/sabrang-logo.png"
               alt="Sabrang Logo"
-              width={70}
-              height={56}
+              width={200}
+              height={80}
               loading="eager"
               fetchPriority="high"
-              className="h-10 md:h-14 w-auto object-contain drop-shadow-2xl"
+              className="-mt-8 h-20 md:h-24 w-auto object-contain drop-shadow-2xl"
             />
           </Link>
         </div>
