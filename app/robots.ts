@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = "https://sabrang.jklu.edu.in";
-  const disallow = ["/admin/", "/api/", "/dashboard/", "/login/"];
+  const disallow = ["/admin/", "/api/", "/dashboard/", "/login/", "/scanner/", "/check-in/"];
 
   return {
     rules: [
