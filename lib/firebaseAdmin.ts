@@ -87,15 +87,12 @@ function initFirebaseAdmin(): App | null {
       }
     }
 
-    // Default fast initialization without hanging on GCP metadata server
-    return initializeApp({ projectId }, 'client-admin-fallback');
+    // If no credentials found and not in GCP env, return null to avoid throwing credential errors locally
+    console.warn("⚠️ Firebase Admin SDK: No credentials found. Admin DB will be disabled locally.");
+    return null;
   } catch (error: any) {
     console.warn("Firebase Admin SDK initialization warning:", error.message || error);
-    try {
-      return initializeApp({ projectId: 'sabrang-26' }, 'build-fallback');
-    } catch {
-      return (getApps()[0] as App) || null;
-    }
+    return (getApps()[0] as App) || null;
   }
 }
 
