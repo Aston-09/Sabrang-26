@@ -5,7 +5,6 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { heroScrollState, HERO_PIN_END, HERO_SCRUB } from '@/components/3d/hero/heroScrollState'
 import './HeroSection.css'
-import Link from 'next/link'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -100,15 +99,10 @@ export default function HeroSection() {
         </div>
       </div>
       
-      <div className="hero-footer">
-        <div className="hero-info hero-anim">
+      <div className="hero-footer pointer-events-none">
+        <div className="hero-info hero-anim pointer-events-none">
           <p className="hero-date">23 - 25 OCTOBER</p>
         </div>
-        
-        <Link href="/register" className="hero-anim group flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md px-6 py-3 rounded-full text-white text-xs font-bold tracking-widest uppercase transition-all duration-300 pointer-events-auto shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-          REGISTER NOW
-          <span className="text-[10px] group-hover:translate-x-1 transition-transform">➔</span>
-        </Link>
       </div>
     </div>
   )

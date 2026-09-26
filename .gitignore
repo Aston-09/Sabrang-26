@@ -23,6 +23,7 @@ next-env.d.ts
 # Environment Variables & Secrets
 .env
 .env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
@@ -127,3 +128,7 @@ CLAUDE.md
 # hero protection: local-only notes and backup copy
 HERO-PERF-NOTES.md
 Sabrang-26-HERO-BACKUP/
+
+# Search Console and Analytics Exports
+*-Coverage-*/
+

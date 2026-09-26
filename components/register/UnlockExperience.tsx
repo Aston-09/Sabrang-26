@@ -55,8 +55,8 @@ export default function UnlockExperience({
     // Create ticket bodies
     // Reduced size and increased count
     const ticketCount = window.innerWidth < 768 ? 9 : 11;
-    const ticketWidth = window.innerWidth < 768 ? 200 : 260;
-    const ticketHeight = window.innerWidth < 768 ? 100 : 130;
+    const ticketWidth = window.innerWidth < 768 ? 150 : 200;
+    const ticketHeight = window.innerWidth < 768 ? 75 : 100;
 
     const ticketBodies = TICKET_DATA.slice(0, ticketCount).map((t, i) => {
       // Start randomly off-screen top
@@ -160,7 +160,7 @@ export default function UnlockExperience({
       {/* Main Content (Pointer Events None to allow clicking tickets behind text) */}
       <div className="relative z-20 flex flex-col items-center mt-[-10vh] sm:mt-[-5vh] pointer-events-none">
         {/* Typography */}
-        <div className="relative text-center uppercase tracking-tight leading-[0.85] text-[4rem] sm:text-[6rem] md:text-[8rem] lg:text-[10rem] text-white">
+        <div className="relative text-center uppercase tracking-tight leading-[0.85] text-[3rem] sm:text-[4.5rem] md:text-[6rem] lg:text-[8rem] text-white">
           <div
             className="relative z-10 drop-shadow-2xl"
             style={{ fontFamily: "'FlorasDisplay', sans-serif" }}
@@ -169,7 +169,7 @@ export default function UnlockExperience({
           </div>
 
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[45%] z-20 text-[5rem] sm:text-[8rem] md:text-[11rem] lg:text-[14rem] text-[#5e239d] lowercase tracking-normal"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[45%] z-20 text-[3.75rem] sm:text-[6rem] md:text-[8.5rem] lg:text-[11rem] text-[#5e239d] lowercase tracking-normal"
             style={{
               fontFamily: "'FlorasDisplay', sans-serif",
               textShadow:
@@ -188,28 +188,72 @@ export default function UnlockExperience({
         </div>
 
         {/* Small box */}
-        <div className="mt-16 md:mt-24 mb-12 bg-[#2d0f4d] text-white px-4 py-1.5 font-black text-sm md:text-base tracking-[0.2em] uppercase relative z-30 shadow-[4px_4px_0_rgba(0,0,0,1)]">
-          EXPLORE AT YOUR OWN PACE
+        <div className="mt-16 md:mt-24 mb-12 text-white px-4 py-1.5 font-black text-sm md:text-base tracking-[0.2em] uppercase relative z-30">
+          LIMITED PASSES · OCT 23–25 · JKLU
         </div>
 
-        {/* Button (Pointer Events Auto to allow clicking) */}
+        {/* Ticket Stub Pass Button (Pointer Events Auto to allow clicking) */}
         <button
           onClick={onBagIt}
-          className="group pointer-events-auto relative z-40 bg-[#2d0f4d] w-64 h-20 md:w-72 md:h-24 flex flex-col items-center justify-center overflow-hidden transition-transform active:scale-95 shadow-[0_15px_30px_rgba(45,15,77,0.4)] hover:shadow-[0_20px_40px_rgba(45,15,77,0.6)] cursor-pointer"
+          className="group pointer-events-auto relative z-40 w-72 sm:w-80 h-20 bg-[#2d0f4d] hover:bg-[#381360] text-white border-2 border-white/80 shadow-[6px_6px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#ffffff] transition-all duration-200 cursor-pointer select-none flex items-stretch text-left overflow-visible"
         >
-          {/* Top Edge Detail */}
-          <div className="absolute top-0 w-full flex justify-between px-4 py-1 border-b border-white/20 text-[10px] font-mono font-bold text-white/70">
-            <span className="opacity-70">#000</span>
-            <span className="tracking-[0.3em] font-black">BAG IT</span>
-            <span className="opacity-70">#000</span>
+          {/* Authentic Ticket Notches on Perforation Line (at 74%) */}
+          <div className="absolute -top-[9px] left-[74%] -translate-x-1/2 w-4 h-4 rounded-full bg-[#0a0a0a] border-b-2 border-white/80 z-20 pointer-events-none" />
+          <div className="absolute -bottom-[9px] left-[74%] -translate-x-1/2 w-4 h-4 rounded-full bg-[#0a0a0a] border-t-2 border-white/80 z-20 pointer-events-none" />
+
+          {/* Perforated Tear Line */}
+          <div className="absolute top-2 bottom-2 left-[74%] -translate-x-1/2 border-r-2 border-dashed border-white/30 pointer-events-none z-10" />
+
+          {/* Hover Effect: Line scanning from left to right */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
+            <div className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_#ffffff,0_0_20px_#ffffff] -left-4 group-hover:left-[105%] transition-[left] duration-500 ease-out" />
           </div>
-          {/* Main Button Text */}
-          <span className="relative z-10 text-white font-black text-2xl md:text-3xl tracking-widest uppercase group-hover:scale-110 transition-transform duration-300">
-            BAG IT
-          </span>
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
-          {/* Bottom Edge Detail */}
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-black/50"></div>
+
+          {/* Hover Effect: Bottom accent line extending from left to right */}
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden pointer-events-none z-20">
+            <div className="h-full w-full bg-white scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out shadow-[0_0_6px_#ffffff]" />
+          </div>
+
+          {/* Main Pass Area (Left 74%) */}
+          <div className="w-[74%] flex flex-col justify-between py-3.5 px-4 pr-3 relative z-10">
+            {/* Top metadata */}
+            <div className="flex items-center justify-between font-mono text-[9px] tracking-wider text-purple-200/70 font-semibold uppercase leading-none">
+              <span>ADM · 01</span>
+              <span>2026</span>
+            </div>
+
+            {/* Main Label */}
+            <div className="flex items-baseline">
+              <span
+                className="font-black text-xl sm:text-2xl tracking-[0.14em] uppercase text-white group-hover:text-purple-100 transition-colors leading-none whitespace-nowrap"
+                style={{ fontFamily: "'FlorasDisplay', sans-serif" }}
+              >
+                CLAIM SPOT
+              </span>
+            </div>
+          </div>
+
+          {/* Ticket Stub Area (Right 26%) */}
+          <div className="w-[26%] flex flex-col items-center justify-between p-3 pl-3 bg-black/20 relative z-10">
+            {/* Stamp / Icon */}
+            <span className="font-mono text-[8px] font-bold tracking-widest text-purple-200/60 uppercase">
+              JKLU
+            </span>
+
+            {/* Industrial Barcode */}
+            <div
+              className="w-10 h-6 opacity-75 group-hover:opacity-100 transition-opacity"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(90deg, #fff, #fff 1.5px, transparent 1.5px, transparent 3px, #fff 3px, #fff 5px, transparent 5px, transparent 6.5px, #fff 6.5px, #fff 7px, transparent 7px, transparent 9px)',
+              }}
+            />
+
+            {/* Barcode Number */}
+            <span className="font-mono text-[7px] tracking-tighter text-white/60">
+              #SBRG-26
+            </span>
+          </div>
         </button>
       </div>
 
@@ -236,8 +280,8 @@ function Ticket({
   isMobile: boolean;
 }) {
   // New dimensions
-  const width = isMobile ? "200px" : "260px";
-  const height = isMobile ? "100px" : "130px";
+  const width = isMobile ? "150px" : "200px";
+  const height = isMobile ? "75px" : "100px";
 
   return (
     <div

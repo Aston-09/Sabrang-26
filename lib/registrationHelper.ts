@@ -506,9 +506,9 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
       email: formData.email,
       phone: formData.mobile,
       rollNumber: formData.registrationNumber,
-      referralCode: ownReferralCode, // ALWAYS exists in lowercase
-      referredByCode: effectiveReferral || DEFAULT_REFERRAL_CODE, // SILENT DEFAULT: 2024btech014
-      referralSource: effectiveReferral || DEFAULT_REFERRAL_CODE,
+      referralCode: (ownReferralCode || '').toUpperCase(), // ALWAYS ALL CAPS
+      referredByCode: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(), // DEFAULT: 2024BTECH014
+      referralSource: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(),
       gender: formData.gender || 'N/A',
       course: formData.course || 'N/A',
       pincode: formData.pincode || (formData.address ? (formData.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A'),
@@ -559,9 +559,9 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
           email: formData.email,
           phone: formData.mobile,
           rollNumber: formData.registrationNumber,
-          referralCode: ownReferralCode, // ALWAYS exists in lowercase
-          referredByCode: effectiveReferral || DEFAULT_REFERRAL_CODE, // SILENT DEFAULT: 2024btech014
-          referralSource: effectiveReferral || DEFAULT_REFERRAL_CODE,
+          referralCode: (ownReferralCode || '').toUpperCase(), // ALWAYS ALL CAPS
+          referredByCode: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(), // DEFAULT: 2024BTECH014
+          referralSource: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(),
           gender: formData.gender || 'N/A',
           course: formData.course || 'N/A',
           pincode: formData.pincode || (formData.address ? (formData.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A'),

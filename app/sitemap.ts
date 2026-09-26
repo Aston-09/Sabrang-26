@@ -67,16 +67,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/menu`,
+      url: `${baseUrl}/terms`,
       lastModified: lastUpdated,
-      changeFrequency: "weekly",
-      priority: 0.8,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: lastUpdated,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/refund-policy`,
+      lastModified: lastUpdated,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/shipping-policy`,
+      lastModified: lastUpdated,
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
     {
       url: `${baseUrl}/credits`,
       lastModified: lastUpdated,
-      changeFrequency: "monthly",
-      priority: 0.5,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
   ];
 }

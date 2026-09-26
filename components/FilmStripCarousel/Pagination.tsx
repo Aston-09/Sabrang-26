@@ -3,6 +3,7 @@ interface PaginationProps {
   activeIndex: number;
   loading: boolean;
   onSelect: (index: number) => void;
+  active?: boolean;
 }
 
 // Dots centred below the strip; the active dot gains a thin white ring.
@@ -12,6 +13,7 @@ export default function Pagination({
   activeIndex,
   loading,
   onSelect,
+  active = true,
 }: PaginationProps) {
   // The dot row is replaced, not accompanied — the control strip keeps one
   // job at a time so nothing shifts position when the state flips.
@@ -32,6 +34,7 @@ export default function Pagination({
           role="tab"
           aria-selected={i === activeIndex}
           aria-label={`Go to item ${i + 1}`}
+          tabIndex={active ? 0 : -1}
           className={`fsc-dot${i === activeIndex ? ' fsc-dot-active' : ''}`}
           onClick={() => onSelect(i)}
         />

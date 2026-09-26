@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     "JKLU Events",
     "Jaipur College Fest October 2026",
   ],
-  authors: [{ name: "JKLU Student Organizing Committee" }],
+  authors: [{ name: "JKLU Student Organizing Committee & Tech Team" }],
   creator: "JK Lakshmipat University",
   publisher: "JK Lakshmipat University",
   category: "Cultural Festival",

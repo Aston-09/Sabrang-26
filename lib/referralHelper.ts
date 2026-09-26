@@ -55,41 +55,46 @@ export async function validateReferralCode(
       };
     }
 
-    // 3. Look up referrer in Firestore by referralCode (lowercase) or rollNumber
+    // 3. Look up referrer in Firestore by referralCode (case-insensitive check) or rollNumber
     let referrerDoc: any = null;
 
-    // Check by referralCode
-    const qByCode = await adminDb.collection('registrations')
+    // Check by referralCode (uppercase first, then lowercase for legacy records)
+    let qByCode = await adminDb.collection('registrations')
       .where('referralCode', '==', normalizedEntered)
       .limit(1)
       .get();
 
+    if (qByCode.empty) {
+      qByCode = await adminDb.collection('registrations')
+        .where('referralCode', '==', normalizedEntered.toLowerCase())
+        .limit(1)
+        .get();
+    }
+
     if (!qByCode.empty) {
       referrerDoc = qByCode.docs[0];
     } else {
-      // Fallback: check by rollNumber (exact or uppercase stored)
-      const qByRoll = await adminDb.collection('registrations')
+      // Fallback: check by rollNumber (uppercase or lowercase)
+      let qByRoll = await adminDb.collection('registrations')
         .where('rollNumber', '==', normalizedEntered)
         .limit(1)
         .get();
 
-      if (!qByRoll.empty) {
-        referrerDoc = qByRoll.docs[0];
-      } else {
-        const qByRollUpper = await adminDb.collection('registrations')
-          .where('rollNumber', '==', normalizedEntered.toUpperCase())
+      if (qByRoll.empty) {
+        qByRoll = await adminDb.collection('registrations')
+          .where('rollNumber', '==', normalizedEntered.toLowerCase())
           .limit(1)
           .get();
+      }
 
-        if (!qByRollUpper.empty) {
-          referrerDoc = qByRollUpper.docs[0];
-        }
+      if (!qByRoll.empty) {
+        referrerDoc = qByRoll.docs[0];
       }
     }
 
     if (!referrerDoc || !referrerDoc.exists) {
       // If it's the silent default code, allow it even if not yet in registrations
-      if (normalizedEntered === DEFAULT_REFERRAL_CODE) {
+      if (normalizedEntered === DEFAULT_REFERRAL_CODE || normalizedEntered.toLowerCase() === '2024btech014') {
         return {
           valid: true,
           code: DEFAULT_REFERRAL_CODE,
@@ -129,8 +134,8 @@ export async function validateReferralCode(
 
 /**
  * Attaches participant's own referral code and processes referral tracking relationship.
- * SILENT DEFAULT: If user did NOT enter a referral code, silently assigns DEFAULT_REFERRAL_CODE (2024btech014).
- * Never saves null, empty string, or undefined when the referral field is empty.
+ * If user did NOT enter a referral code, automatically assigns DEFAULT_REFERRAL_CODE (2024BTECH014).
+ * All referral-related texts are saved in ALL CAPS.
  */
 export async function attachReferralData(
   formData: any,
@@ -142,12 +147,12 @@ export async function attachReferralData(
   const normalizedOwn = normalizeReferralCode(ownRoll);
 
   // Determine effective referral code:
-  // If user entered nothing -> SILENTLY ASSIGN DEFAULT_REFERRAL_CODE (2024btech014)
+  // If user entered nothing -> AUTOMATICALLY ASSIGN DEFAULT_REFERRAL_CODE (2024BTECH014)
   let effectiveCode = normalizeReferralCode(rawEnteredCode);
   let isSilentDefault = false;
 
   if (!effectiveCode) {
-    // Avoid self-referral if the user registering is 2024btech014 itself
+    // Avoid self-referral if the user registering is 2024BTECH014 itself
     if (normalizedOwn !== DEFAULT_REFERRAL_CODE) {
       effectiveCode = DEFAULT_REFERRAL_CODE;
       isSilentDefault = true;
@@ -155,7 +160,7 @@ export async function attachReferralData(
   }
 
   let referredById: string | null = null;
-  let referredByCode: string = effectiveCode || DEFAULT_REFERRAL_CODE;
+  let referredByCode: string = (effectiveCode || DEFAULT_REFERRAL_CODE).toUpperCase();
 
   const { adminDb } = await import('./firebaseAdmin');
   const { FieldValue } = await import('firebase-admin/firestore');
@@ -164,19 +169,19 @@ export async function attachReferralData(
     const valRes = await validateReferralCode(effectiveCode, ownRoll);
     if (valRes.valid) {
       referredById = valRes.referrerId || (effectiveCode === DEFAULT_REFERRAL_CODE ? 'default_2024btech014' : null);
-      referredByCode = valRes.code || effectiveCode;
+      referredByCode = (valRes.code || effectiveCode).toUpperCase();
 
-      // Create record in referrals collection
+      // Create record in referrals collection with all referral fields in ALL CAPS
       if (adminDb) {
         try {
           await adminDb.collection('referrals').add({
             referrerId: referredById || 'default_2024btech014',
-            referrerRoll: valRes.referrerRoll || effectiveCode,
+            referrerRoll: (valRes.referrerRoll || effectiveCode).toUpperCase(),
             referrerName: valRes.referrerName || (effectiveCode === DEFAULT_REFERRAL_CODE ? 'Default Referrer' : 'Participant'),
             referredUserId: registrationId,
-            referredRoll: ownReferralCode,
+            referredRoll: ownReferralCode.toUpperCase(),
             referredName: formData.name || 'Participant',
-            referralCode: referredByCode, // strict lowercase (e.g. 2024btech014 or custom)
+            referralCode: referredByCode.toUpperCase(), // ALWAYS ALL CAPS
             isSilentDefault: isSilentDefault,
             createdAt: FieldValue.serverTimestamp(),
             timestamp: new Date().toISOString(),
@@ -188,15 +193,14 @@ export async function attachReferralData(
     }
   }
 
-  // Update registration record with own referral code and referredBy info
-  // NEVER save null/""/undefined for referral source when empty — always saves 2024btech014
+  // Update registration record with own referral code and referredBy info in ALL CAPS
   if (adminDb && registrationId) {
     try {
       await adminDb.collection('registrations').doc(registrationId).update({
-        referralCode: ownReferralCode, // ALWAYS exists in lowercase
+        referralCode: ownReferralCode.toUpperCase(), // ALWAYS ALL CAPS
         referredById: referredById || (referredByCode === DEFAULT_REFERRAL_CODE ? 'default_2024btech014' : null),
-        referredByCode: referredByCode, // ALWAYS lowercase (e.g. 2024btech014)
-        referralSource: referredByCode, // Guaranteed referral source string
+        referredByCode: referredByCode.toUpperCase(), // ALWAYS ALL CAPS (2024BTECH014)
+        referralSource: referredByCode.toUpperCase(), // ALWAYS ALL CAPS
       });
     } catch (updateErr) {
       console.error("Failed to update registration referralCode:", updateErr);
@@ -204,8 +208,8 @@ export async function attachReferralData(
   }
 
   return {
-    ownReferralCode,
+    ownReferralCode: ownReferralCode.toUpperCase(),
     referredById,
-    referredByCode,
+    referredByCode: referredByCode.toUpperCase(),
   };
 }

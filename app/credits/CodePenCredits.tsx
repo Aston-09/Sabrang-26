@@ -392,7 +392,8 @@ export default function CodePenCredits() {
               <Image
                 key={i}
                 src={m.avatar}
-                alt={m.name}
+                alt={`${m.name} - Sabrang 2026 Developer, JK Lakshmipat University`}
+                title={`${m.name} - Sabrang 2026 Developer`}
                 fill
                 sizes="420px"
                 loading="eager"
@@ -403,6 +404,24 @@ export default function CodePenCredits() {
                 }}
               />
             ))}
+
+            {/* Semantic Crawlable Entity Block for Search Engines (Googlebot & Google Images) */}
+            <section className="sr-only" aria-label="Sabrang 2026 Development Team">
+              <h2>Sabrang 2026 Web Architecture &amp; Development Team</h2>
+              {devTeam.map((m, i) => (
+                <figure key={i}>
+                  <img
+                    src={m.avatar}
+                    alt={`${m.name} - Sabrang 2026 Developer, JK Lakshmipat University`}
+                    width={400}
+                    height={400}
+                  />
+                  <figcaption>
+                    {m.name} - Sabrang 2026 Developer, JK Lakshmipat University
+                  </figcaption>
+                </figure>
+              ))}
+            </section>
 
             {/* Name Card Overlay */}
             <div className="cc-name-card">

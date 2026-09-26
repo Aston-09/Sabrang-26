@@ -25,6 +25,55 @@ const nextConfig: NextConfig = {
     '172.16.54.52',
     '172.16.54.52:3000',
   ],
+  trailingSlash: false,
+  async redirects() {
+    return [
+      {
+        source: '/sponsor',
+        destination: '/sponsors',
+        permanent: true,
+      },
+      {
+        source: '/highlights',
+        destination: '/gallery',
+        permanent: true,
+      },
+      {
+        source: '/passes',
+        destination: '/register',
+        permanent: true,
+      },
+      {
+        source: '/tickets',
+        destination: '/register',
+        permanent: true,
+      },
+      {
+        source: '/schedule/ode/:path*',
+        destination: '/schedule',
+        permanent: true,
+      },
+      {
+        source: '/ode/:path*',
+        destination: '/schedule',
+        permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            // Advertise HTTP/3 support over QUIC port 443 to modern browsers
+            key: "Alt-Svc",
+            value: 'h3=":443"; ma=86400, h3-29=":443"; ma=86400',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

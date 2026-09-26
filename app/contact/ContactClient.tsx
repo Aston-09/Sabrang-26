@@ -141,6 +141,25 @@ export default function ContactClient() {
             </button>
           </div>
         </section>
+
+        {/* Official Registered Entity & Address Details for Compliance & Verification */}
+        <section className="gsap-reveal max-w-2xl mx-auto text-center border-t border-white/10 pt-8 pb-4 space-y-4">
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md space-y-3 text-left">
+            <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono text-center sm:text-left">
+              Registered University Campus &amp; Helpdesk
+            </h3>
+            <div className="text-xs sm:text-sm text-white/70 space-y-1.5 font-sans leading-relaxed">
+              <p className="font-semibold text-white">{SITE_CONFIG.university.name}</p>
+              <p>Sabrang Festival Organizing Committee</p>
+              <p>Near Mahindra World City, P.O. Mahapura, Ajmer Road</p>
+              <p>Jaipur, Rajasthan - 302026, India</p>
+            </div>
+            <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row justify-between text-xs font-mono text-white/60 gap-2">
+              <span>Support Email: <a href="mailto:sabrang@jklu.edu.in" className="text-purple-300 underline">sabrang@jklu.edu.in</a></span>
+              <span>Hours: Mon–Sat, 9:00 AM – 6:00 PM IST</span>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

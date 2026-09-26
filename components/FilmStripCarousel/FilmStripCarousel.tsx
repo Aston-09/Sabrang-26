@@ -226,7 +226,7 @@ export default function FilmStripCarousel({
   }, []);
 
   return (
-    <section className="fsc-section">
+    <section className="fsc-section" style={{ pointerEvents: active ? 'auto' : 'none' }}>
       <div
         ref={wrapRef}
         className="fsc-canvas relative"
@@ -294,12 +294,13 @@ export default function FilmStripCarousel({
         sim={sim}
         expandRef={expandRef}
       />
-      <CarouselControls onPrev={prevAndCancel} onNext={nextAndCancel}>
+      <CarouselControls onPrev={prevAndCancel} onNext={nextAndCancel} active={active}>
         <Pagination
           count={projects.length}
           activeIndex={activeIndex}
           loading={loading}
           onSelect={goToAndCancel}
+          active={active}
         />
       </CarouselControls>
     </section>

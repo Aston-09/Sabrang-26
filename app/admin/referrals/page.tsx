@@ -87,7 +87,7 @@ export default function ReferralsAdminPage() {
       const existing = countsMap.get(code) || {
         referrerRoll: (ref.referrerRoll || code).toUpperCase(),
         referrerName: ref.referrerName || 'Participant',
-        referralCode: code, // strict lowercase
+        referralCode: code, // ALL CAPS
         count: 0,
       };
 
@@ -147,7 +147,7 @@ export default function ReferralsAdminPage() {
   const exportExcel = async () => {
     if (referrals.length === 0) return alert('No referral records to export.');
 
-    const headers = ['S.No', 'Referrer Roll', 'Referrer Name', 'Referred Roll', 'Referred Name', 'Referral Code (Lowercase)', 'Date'];
+    const headers = ['S.No', 'Referrer Roll', 'Referrer Name', 'Referred Roll', 'Referred Name', 'Referral Code', 'Date'];
     const rows = referrals.map((r, index) => {
       const dateStr = r.createdAt?.toDate 
         ? r.createdAt.toDate().toLocaleDateString('en-IN') 
@@ -282,7 +282,7 @@ export default function ReferralsAdminPage() {
                   <th className="p-4 w-12 text-center">#</th>
                   <th className="p-4">Referrer</th>
                   <th className="p-4">Referred Participant</th>
-                  <th className="p-4">Referral Code (Lowercase)</th>
+                  <th className="p-4">Referral Code</th>
                   <th className="p-4 text-right">Date</th>
                 </tr>
               </thead>
@@ -323,7 +323,7 @@ export default function ReferralsAdminPage() {
                         </div>
                       </td>
 
-                      {/* Referral Code (Strict Lowercase) */}
+                      {/* Referral Code (ALL CAPS) */}
                       <td className="p-4">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md font-mono text-xs font-semibold">
                           <Tag size={12} className="text-purple-600" />
@@ -384,7 +384,7 @@ export default function ReferralsAdminPage() {
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
                   <th className="p-4 w-12 text-center">Rank</th>
                   <th className="p-4">Referrer Participant</th>
-                  <th className="p-4">Own Referral Code (Lowercase)</th>
+                  <th className="p-4">Own Referral Code</th>
                   <th className="p-4 text-right">Total Referrals</th>
                 </tr>
               </thead>

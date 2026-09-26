@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { Check, ChevronRight, ArrowLeft, Upload, AlertTriangle } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Check, ChevronRight, ArrowLeft, Upload, AlertTriangle, Loader2, CheckCircle2, XCircle, ShieldCheck, Download, ExternalLink, RefreshCw } from "lucide-react";
 
 type StepId = "select" | "forms" | "review" | "payment";
 
@@ -63,6 +63,161 @@ export default function CheckoutForm() {
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
+  // Cashfree Payment states
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<"idle" | "verifying" | "success" | "error">("idle");
+  const [verifiedOrder, setVerifiedOrder] = useState<{ orderId: string; registrationId: string; email?: string } | null>(null);
+
+  const verifyOrderPayment = useCallback(async (orderId: string) => {
+    setVerificationStatus("verifying");
+    setPaymentError(null);
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "VERIFY_PAYMENT",
+          orderId,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setVerificationStatus("success");
+        setVerifiedOrder({
+          orderId,
+          registrationId: data.id,
+          email: data.email,
+        });
+      } else {
+        setVerificationStatus("error");
+        setPaymentError(data.error || "Payment verification failed or was cancelled.");
+      }
+    } catch (err: any) {
+      setVerificationStatus("error");
+      setPaymentError(err.message || "Failed to verify payment with server.");
+    }
+  }, []);
+
+  // Listen for order_id in URL search parameters
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("order_id");
+    if (orderId) {
+      setCurrentStep("payment");
+      verifyOrderPayment(orderId);
+    }
+  }, [verifyOrderPayment]);
+
+  const handleCashfreePayment = async () => {
+    if (isProcessingPayment) return;
+    setPaymentError(null);
+
+    if (selectedEvents.length === 0) {
+      setPaymentError("Please select at least one event or pass.");
+      return;
+    }
+
+    if (isNextDisabled()) {
+      setPaymentError("Please complete all required fields across your selected event categories.");
+      setCurrentStep("forms");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      const activeGroups = getActiveGroups();
+      const primaryGroup = activeGroups[0] || "visitor";
+
+      const name = getField(primaryGroup, "name");
+      const email = getField(primaryGroup, "email");
+      const mobile = getField(primaryGroup, "mobileNumber");
+      const gender = getField(primaryGroup, "gender");
+      const institutionName = getField(primaryGroup, "institutionName");
+      const address = getField(primaryGroup, "address");
+      const rawRef = getField(primaryGroup, "referralCode");
+      const referralCode = rawRef && rawRef.trim() ? rawRef.trim().toUpperCase() : "2024BTECH014";
+
+      const regNum = getField(primaryGroup, "registrationNumber") || getField(primaryGroup, "rollNumber") || `REG_${Date.now()}`;
+
+      const payload = {
+        action: "CREATE_ORDER",
+        ...formData,
+        name,
+        email,
+        mobile,
+        phone: mobile,
+        gender,
+        institutionName,
+        address,
+        registrationNumber: regNum,
+        rollNumber: regNum,
+        referralCode,
+        referredByCode: referralCode,
+        coupon: promoApplied ? promoCode.trim().toUpperCase() : "",
+        selectedEvents,
+        teamMembers,
+        amount: calculateTotal(),
+      };
+
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to initialize payment session with server.");
+      }
+
+      // If mock mode (e.g. Free pass / 100% coupon discount)
+      if (data.is_mock) {
+        await verifyOrderPayment(data.order_id);
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      if (!data.payment_session_id) {
+        throw new Error("Cashfree session ID missing from order creation response.");
+      }
+
+      // Load Cashfree JS SDK v3 dynamically
+      const loadCashfreeSdk = (): Promise<any> => {
+        return new Promise((resolve, reject) => {
+          if ((window as any).Cashfree) {
+            resolve((window as any).Cashfree);
+            return;
+          }
+          const script = document.createElement("script");
+          script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+          script.async = true;
+          script.onload = () => resolve((window as any).Cashfree);
+          script.onerror = () => reject(new Error("Unable to load Cashfree Payment SDK. Please check your network connection."));
+          document.body.appendChild(script);
+        });
+      };
+
+      const CashfreeSDK = await loadCashfreeSdk();
+      const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENV === "PRODUCTION";
+      const cashfree = CashfreeSDK({
+        mode: isProduction ? "production" : "sandbox",
+      });
+
+      cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self",
+      });
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      setPaymentError(err.message || "An unexpected error occurred while initiating payment.");
+      setIsProcessingPayment(false);
+    }
+  };
+
   const stepIndex = STEPS.findIndex((s) => s.id === currentStep);
 
   const handleNext = (e?: React.MouseEvent) => {
@@ -111,8 +266,9 @@ export default function CheckoutForm() {
   };
 
   const updateField = (group: string, field: string, value: string) => {
+    const finalValue = field === 'referralCode' ? value.toUpperCase() : value;
     setFormData((prev) => {
-      const newData = { ...prev, [`${group}_${field}`]: value };
+      const newData = { ...prev, [`${group}_${field}`]: finalValue };
       
       // Auto-sync personal details across groups for better UX
       const personalFields = ['name', 'email', 'mobileNumber', 'gender', 'age', 'institutionName', 'address', 'referralCode'];
@@ -121,7 +277,7 @@ export default function CheckoutForm() {
         const activeGroups = getActiveGroups();
         activeGroups.forEach(g => {
           if (g !== group) {
-            newData[`${g}_${field}`] = value;
+            newData[`${g}_${field}`] = finalValue;
           }
         });
       }
@@ -154,7 +310,7 @@ export default function CheckoutForm() {
       gender: "",
       age: "",
       institutionName: getField(group, 'institutionName'), // copy from leader by default
-      referralCode: getField(group, 'referralCode'),
+      referralCode: getField(group, 'referralCode').toUpperCase(),
       address: getField(group, 'address'),
       idCard: null,
     };
@@ -396,8 +552,8 @@ export default function CheckoutForm() {
             <input
               type="text"
               value={getField(group, 'referralCode')}
-              onChange={(e) => updateField(group, 'referralCode', e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500 transition-all"
+              onChange={(e) => updateField(group, 'referralCode', e.target.value.toUpperCase())}
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500 transition-all uppercase"
               placeholder="Optional"
             />
           </div>
@@ -868,28 +1024,174 @@ export default function CheckoutForm() {
 
         {/* STEP 4: PAYMENT */}
         <div style={{ display: currentStep === "payment" ? "block" : "none" }}>
-          <div className="space-y-6 text-center py-4">
-            <h3 className="text-xl font-bold uppercase tracking-wider text-white/90 border-b border-white/10 pb-2 mb-8">
-              Payment Summary
-            </h3>
-            
-            <div className="bg-[#260b3b]/30 border border-[#5e239d]/50 rounded-xl p-6 text-left mb-8 inline-block max-w-sm mx-auto">
-              <h4 className="font-bold text-violet-300 mb-2 uppercase text-sm tracking-widest">Before proceeding:</h4>
-              <ul className="text-white/70 text-sm space-y-2 list-disc list-inside">
-                <li>Ensure all details are correct</li>
-                <li>Have your payment method ready</li>
-                <li>Do not refresh the page during payment</li>
-              </ul>
+          {verificationStatus === "verifying" && (
+            <div className="py-12 px-6 text-center space-y-6 max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto">
+                <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+              </div>
+              <h3 className="text-xl font-bold uppercase tracking-wider text-white">
+                Verifying Payment
+              </h3>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Communicating securely with Cashfree payment gateway. Please keep this window open while we generate your registration pass.
+              </p>
             </div>
-            
-            <button type="button" className="px-10 py-4 w-full md:w-auto bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-lg flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(139,92,246,0.3)] mx-auto transition-all text-white">
-              Pay ₹ {calculateTotal()} via Cashfree Link
-            </button>
-            
-            <p className="text-[10px] text-white/40 font-mono mt-4 uppercase tracking-widest">
-              Alternative Payment Option:
-            </p>
-          </div>
+          )}
+
+          {verificationStatus === "success" && verifiedOrder && (
+            <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(16,185,129,0.3)]">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black uppercase tracking-tight text-white">
+                  Registration Confirmed
+                </h3>
+                <p className="text-emerald-400 font-mono text-xs uppercase tracking-widest">
+                  Payment Processed Successfully
+                </p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-mono text-xs">
+                <div className="flex justify-between border-b border-white/10 pb-2">
+                  <span className="text-white/50">Order ID:</span>
+                  <span className="text-white font-medium">{verifiedOrder.orderId}</span>
+                </div>
+                <div className="flex justify-between border-b border-white/10 pb-2">
+                  <span className="text-white/50">Registration ID:</span>
+                  <span className="text-violet-300 font-medium">{verifiedOrder.registrationId}</span>
+                </div>
+                {verifiedOrder.email && (
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Pass Delivered To:</span>
+                    <span className="text-white/90">{verifiedOrder.email}</span>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-white/60 text-xs leading-relaxed">
+                Your official festival pass with verifiable QR code has been generated. You may download it below.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                <a
+                  href={`/api/receipt?id=${encodeURIComponent(verifiedOrder.registrationId)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Pass (PDF)
+                </a>
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = "/"; }}
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
+                >
+                  Return to Home
+                </button>
+              </div>
+            </div>
+          )}
+
+          {verificationStatus === "error" && (
+            <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
+              <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(244,63,94,0.3)]">
+                <XCircle className="w-8 h-8 text-rose-400" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black uppercase tracking-tight text-white">
+                  Payment Verification Issue
+                </h3>
+                <p className="text-rose-400/90 text-sm">
+                  {paymentError || "The transaction could not be confirmed or was cancelled."}
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const params = new URLSearchParams(window.location.search);
+                    const id = params.get("order_id");
+                    if (id) {
+                      verifyOrderPayment(id);
+                    } else {
+                      setVerificationStatus("idle");
+                    }
+                  }}
+                  className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Retry Verification
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVerificationStatus("idle");
+                    setPaymentError(null);
+                    setCurrentStep("review");
+                  }}
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
+                >
+                  Back to Review
+                </button>
+              </div>
+            </div>
+          )}
+
+          {verificationStatus === "idle" && (
+            <div className="space-y-6 text-center py-4">
+              <h3 className="text-xl font-bold uppercase tracking-wider text-white/90 border-b border-white/10 pb-2 mb-8">
+                Payment Summary
+              </h3>
+              
+              <div className="bg-[#260b3b]/30 border border-[#5e239d]/50 rounded-xl p-6 text-left mb-6 inline-block max-w-sm mx-auto w-full">
+                <h4 className="font-bold text-violet-300 mb-2 uppercase text-sm tracking-widest flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4" /> Before proceeding:
+                </h4>
+                <ul className="text-white/70 text-sm space-y-2 list-disc list-inside">
+                  <li>Ensure all personal details are accurate</li>
+                  <li>Payment is processed securely by Cashfree</li>
+                  <li>Do not refresh or close the page while processing</li>
+                </ul>
+              </div>
+
+              {paymentError && (
+                <div className="max-w-md mx-auto p-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-start gap-3 text-left">
+                  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                  <span>{paymentError}</span>
+                </div>
+              )}
+              
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleCashfreePayment}
+                  disabled={isProcessingPayment}
+                  className="px-10 py-4 w-full md:w-auto bg-violet-600 hover:bg-violet-500 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg font-bold text-lg flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(139,92,246,0.3)] mx-auto transition-all text-white cursor-pointer"
+                >
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Connecting to Cashfree Gateway...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-5 h-5" />
+                      <span>Pay ₹ {calculateTotal()} via Cashfree</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              <p className="text-[11px] text-white/40 font-mono mt-4 uppercase tracking-widest">
+                Secured by Cashfree Payments India 256-bit SSL • UPI, Cards, NetBanking
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -898,9 +1200,11 @@ export default function CheckoutForm() {
         <button
           type="button"
           onClick={handleBack}
-          disabled={stepIndex === 0}
+          disabled={stepIndex === 0 || verificationStatus === "success" || verificationStatus === "verifying"}
           className={`relative z-50 px-6 py-3 rounded-lg transition-all flex items-center gap-2 text-sm font-bold ${
-            stepIndex === 0 ? "opacity-0 pointer-events-none" : "bg-white/5 border border-white/10 hover:border-violet-400/50 hover:bg-white/10 text-white cursor-pointer"
+            stepIndex === 0 || verificationStatus === "success" || verificationStatus === "verifying"
+              ? "opacity-0 pointer-events-none" 
+              : "bg-white/5 border border-white/10 hover:border-violet-400/50 hover:bg-white/10 text-white cursor-pointer"
           }`}
         >
           <ArrowLeft className="w-4 h-4" />

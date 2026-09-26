@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import "@/lib/suppress-three-logs";
 import {
   CURSOR_TRAIL_COLORS,
@@ -10,7 +11,10 @@ import {
 } from "@/lib/constants";
 
 export default function TubesCursor() {
+  const pathname = usePathname();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const hidden = pathname === "/login" || pathname?.startsWith("/admin");
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -249,6 +253,9 @@ export default function TubesCursor() {
         pointerEvents: "none",
         zIndex: 9999,
         mixBlendMode: "screen",
+        // Hide on excluded pages without unmounting — keeps the canvas ref
+        // attached so the effect always initialises successfully on first mount.
+        visibility: hidden ? "hidden" : "visible",
       }}
     >
       <canvas
@@ -257,6 +264,8 @@ export default function TubesCursor() {
           width: "100%",
           height: "100%",
           display: "block",
+          pointerEvents: "none",
+          touchAction: "none",
         }}
       />
     </div>

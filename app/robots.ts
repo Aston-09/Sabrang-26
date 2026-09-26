@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = "https://sabrang.jklu.edu.in";
-  const disallow = ["/admin/", "/api/", "/dashboard/", "/login/", "/scanner/", "/check-in/"];
+  const disallow = ["/admin", "/api", "/dashboard", "/login", "/scanner", "/check-in", "/menu"];
 
   return {
     rules: [
@@ -15,6 +15,12 @@ export default function robots(): MetadataRoute.Robots {
       // Google Search
       {
         userAgent: "Googlebot",
+        allow: "/",
+        disallow,
+      },
+      // Google Images
+      {
+        userAgent: "Googlebot-Image",
         allow: "/",
         disallow,
       },

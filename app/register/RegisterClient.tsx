@@ -25,6 +25,12 @@ export default function RegisterClient() {
     
     handleResize(); // Initial check
     window.addEventListener('resize', handleResize);
+
+    // If redirected back from Cashfree with order_id, show form immediately
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('order_id')) {
+      setShowForm(true);
+    }
     
     return () => {
       window.removeEventListener('resize', handleResize);

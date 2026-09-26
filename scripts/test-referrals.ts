@@ -152,7 +152,7 @@ async function runTestSuite() {
   }
 
   // -------------------------------------------------------------
-  // Test 1: Silent Default Referral (2024btech014) when empty
+  // Test 1: Silent Default Referral (2024BTECH014) when empty
   // -------------------------------------------------------------
   const res1 = await system.registerUser({
     name: 'Rahul Sharma',
@@ -162,11 +162,11 @@ async function runTestSuite() {
 
   assert(
     res1.success === true &&
-    res1.participant?.referralCode === '2025btech095' &&
-    res1.participant?.referredByCode === '2024btech014' &&
-    res1.participant?.referralSource === '2024btech014' &&
-    system.referralRecords.some(r => r.referralCode === '2024btech014' && r.referredRoll === '2025btech095'),
-    'Test 1 — Registration Without Referral → Silently assigned 2024btech014, own referralCode 2025btech095',
+    res1.participant?.referralCode === '2025BTECH095' &&
+    res1.participant?.referredByCode === '2024BTECH014' &&
+    res1.participant?.referralSource === '2024BTECH014' &&
+    system.referralRecords.some(r => r.referralCode === '2024BTECH014' && r.referredRoll === '2025BTECH095'),
+    'Test 1 — Registration Without Referral → Silently assigned 2024BTECH014, own referralCode 2025BTECH095',
     `Roll: 2025BTECH095 -> ownCode: "${res1.participant?.referralCode}", referredBy: "${res1.participant?.referredByCode}"`
   );
 
@@ -183,10 +183,10 @@ async function runTestSuite() {
 
   assert(
     res2.success === true &&
-    res2.participant?.referralCode === '2025btech142' &&
+    res2.participant?.referralCode === '2025BTECH142' &&
     res2.participant?.referredById === userA.id &&
-    res2.participant?.referredByCode === '2025btech095',
-    'Test 2 — Registration With Referral → Explicit code used (2025btech095) instead of default',
+    res2.participant?.referredByCode === '2025BTECH095',
+    'Test 2 — Registration With Referral → Explicit code used (2025BTECH095) instead of default',
     `User B own code: "${res2.participant?.referralCode}", referredBy: "${res2.participant?.referredByCode}"`
   );
 
@@ -197,8 +197,8 @@ async function runTestSuite() {
   const normUpper = normalizeReferralCode(upperCode);
 
   assert(
-    normUpper === '2025btech095',
-    'Test 3 — Uppercase Input Normalization → "2025BTECH095" converts to "2025btech095"',
+    normUpper === '2025BTECH095',
+    'Test 3 — Uppercase Input Normalization → "2025BTECH095" stays "2025BTECH095"',
     `Input: "${upperCode}" -> Output: "${normUpper}"`
   );
 
@@ -215,10 +215,10 @@ async function runTestSuite() {
   });
 
   assert(
-    normMixed === '2025btech095' &&
+    normMixed === '2025BTECH095' &&
     res4.success === true &&
     res4.participant?.referredById === userA.id &&
-    res4.participant?.referredByCode === '2025btech095',
+    res4.participant?.referredByCode === '2025BTECH095',
     'Test 4 — Mixed Case Input Normalization → "2025BtEcH095" resolves to User A',
     `Input: "${mixedCode}" -> Output: "${normMixed}", Linked Referrer: ${res4.participant?.referredById}`
   );
@@ -260,22 +260,22 @@ async function runTestSuite() {
   // -------------------------------------------------------------
   // Test 7: Default Referrer Referral Count Aggregation
   // -------------------------------------------------------------
-  // User 1 registered with empty referral -> assigned 2024btech014
-  const defaultCount = system.getReferralCount('2024btech014');
+  // User 1 registered with empty referral -> assigned 2024BTECH014
+  const defaultCount = system.getReferralCount('2024BTECH014');
   assert(
     defaultCount >= 1,
-    'Test 7 — Default Referrer (2024btech014) Count Aggregation',
-    `Total silent default referrals recorded for 2024btech014: ${defaultCount}`
+    'Test 7 — Default Referrer (2024BTECH014) Count Aggregation',
+    `Total silent default referrals recorded for 2024BTECH014: ${defaultCount}`
   );
 
   // -------------------------------------------------------------
-  // Test 8: User A (2025btech095) Referral Count
+  // Test 8: User A (2025BTECH095) Referral Count
   // -------------------------------------------------------------
-  const countA = system.getReferralCount('2025btech095');
+  const countA = system.getReferralCount('2025BTECH095');
   assert(
     countA === 2, // Priya and Arjun
-    'Test 8 — Custom Referrer (2025btech095) Count Aggregation',
-    `User A (2025btech095) Total Referrals: ${countA}`
+    'Test 8 — Custom Referrer (2025BTECH095) Count Aggregation',
+    `User A (2025BTECH095) Total Referrals: ${countA}`
   );
 
   console.log("\n=================================================");
