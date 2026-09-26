@@ -1,82 +1,76 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { motion, useMotionValue } from "framer-motion";
+import React, { useEffect, Suspense, useState } from "react";
+import { Canvas } from "@react-three/fiber";
 import { ShaderBackground } from "@/components/ui/neuro-noise";
+import CheckoutForm from "@/components/auth/CheckoutForm";
+import { RegistrationScene } from "@/components/3d/RegistrationScene";
+import CyberDivider from "@/components/ui/CyberDivider";
+import UnlockExperience from "@/components/register/UnlockExperience";
 
 export default function RegisterClient() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
+  const [showForm, setShowForm] = useState(false);
+  
   useEffect(() => {
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
+    // Lock body scroll only on desktop to allow native scrolling on mobile forms
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+      } else {
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+      }
+    };
+    
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    
     return () => {
+      window.removeEventListener('resize', handleResize);
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const x = e.clientX / window.innerWidth - 0.5;
-    const y = e.clientY / window.innerHeight - 0.5;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
+  if (!showForm) {
+    return <UnlockExperience onBagIt={() => setShowForm(true)} />;
+  }
 
   return (
-    <div
-      className="fixed inset-0 w-screen h-screen overflow-hidden text-white font-sans selection:bg-violet-500/30 flex items-center justify-center p-4 sm:p-6"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => {
-        mouseX.set(0);
-        mouseY.set(0);
-      }}
-    >
-      <div className="fixed inset-0 z-0 bg-[#020202]">
+    <div className="relative z-[35] min-h-screen lg:fixed lg:inset-0 lg:w-screen lg:h-screen lg:overflow-hidden bg-[#020202] text-white font-sans selection:bg-violet-500/30 flex flex-col lg:flex-row">
+      
+      {/* Background layer */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-50">
         <ShaderBackground className="absolute inset-0" />
       </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <main className="relative z-10 w-full max-w-[1200px] mx-auto flex flex-col items-center justify-center text-center">
-        {/* Editorial Title */}
-        <div className="text-center mb-8 relative z-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1
-              className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-black tracking-tight text-white mb-3 uppercase leading-none"
-              style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
-            >
-              REGISTRATIONS
-            </h1>
-            <p className="text-violet-400/80 font-mono text-xs sm:text-sm tracking-[0.3em] uppercase">
-              23 - 25 OCTOBER 2026
-            </p>
-          </motion.div>
-        </div>
+      {/* 🚀 LEFT COLUMN (40% Desktop / Bottom Section Mobile): 3D Model & Title 🚀 */}
+      <div className="relative z-10 w-full lg:w-[40%] h-[50vh] lg:h-full lg:border-r border-white/10 overflow-hidden shrink-0 order-2 lg:order-1">
+        
+        {/* Gradients to blend 3D canvas with the background */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-transparent to-[#020202] lg:bg-gradient-to-r lg:to-[#020202]/50 pointer-events-none z-10" />
 
-        {/* Revealing Soon Presentation Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative w-full max-w-xl text-center p-10 sm:p-16"
-        >
-          {/* Main Statement */}
-          <h2
-            className="relative z-10 text-3xl sm:text-5xl md:text-6xl font-black uppercase text-white tracking-tight leading-none"
-            style={{
-              fontFamily: '"Syne", var(--font-space-grotesk), sans-serif',
-              textShadow: "0 0 30px rgba(255,255,255,0.7), 0 0 50px rgba(168,85,247,0.4)",
-            }}
-          >
-            OPENING SOON
-          </h2>
-        </motion.div>
-      </main>
+        {/* The 3D Canvas */}
+        <div className="absolute inset-0 z-0">
+          <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+            <Suspense fallback={null}>
+              <RegistrationScene />
+            </Suspense>
+          </Canvas>
+        </div>
+      </div>
+
+      {/* 🚀 DIVIDER (Cyberpunk Circuit - Desktop Only) 🚀 */}
+      <div className="absolute top-0 bottom-0 left-[40%] z-[60] hidden lg:block -translate-x-1/2 pointer-events-none">
+        <CyberDivider />
+      </div>
+
+      {/* 🚀 RIGHT COLUMN (60% Desktop / Top Content Mobile): Registration Form 🚀 */}
+      <div className="relative z-50 w-full lg:w-[60%] lg:h-full lg:overflow-y-auto lg:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-[#020202]/80 backdrop-blur-md lg:backdrop-blur-sm order-1 lg:order-2">
+        <CheckoutForm />
+      </div>
+
     </div>
   );
 }
