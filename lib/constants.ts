@@ -708,6 +708,10 @@ export const TEAM_IMAGES: Record<string, string> = {
     "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787122741/sabrang-2026/team/vice-chancellor.png",
   "Vaibhav Topiwala":
     "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787591803/sabrang-2026/team/yrwtczfpxs5mcvblbsqo.png",
+  "Diya Shah":
+    "https://res.cloudinary.com/eprhemvt/image/upload/v1790502169/Diya_Shah.png",
+  "Bhavisha Sabnani":
+    "https://res.cloudinary.com/eprhemvt/image/upload/v1790502168/Bhavisha_Sabnani.png",
 };
 
 export const TEAM_MEMBERS: TeamMember[] = [
@@ -915,7 +919,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
       github: "https://github.com/ankit1439",
     },
   },
-  { name: "Deepanshu Singh Shekhawat", role: "Sponsorship & Promotions Core" },
+  { name: "Bhavisha Sabnani", role: "Sponsorship & Promotions Core" },
+  { name: "Diya Shah", role: "Sponsorship & Promotions Core" },
   { name: "Ayush Gaur", role: "Design Core" },
 ];
 
