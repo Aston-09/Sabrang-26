@@ -253,10 +253,15 @@ export default function CheckoutForm() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Fall through to error handler below
+      }
 
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to initialize payment session with server.");
+      if (!res.ok || !data || data.error) {
+        throw new Error(data?.error || `Server error (${res.status}). Please try again.`);
       }
 
       // If mock mode (e.g. Free pass / 100% coupon discount)
@@ -375,15 +380,21 @@ export default function CheckoutForm() {
         }),
       });
 
-      const data = await res.json();
-      if (res.ok && data.valid) {
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Fall through to error handling below
+      }
+
+      if (res.ok && data?.valid) {
         setCouponData(data);
         setPromoApplied(true);
         setPromoError(null);
       } else {
         setCouponData(null);
         setPromoApplied(false);
-        setPromoError(data.error || "Invalid or expired coupon code");
+        setPromoError(data?.error || (res.ok ? "Invalid or expired coupon code" : `Server error (${res.status}). Please try again.`));
       }
     } catch (err: any) {
       setCouponData(null);
