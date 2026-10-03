@@ -2,14 +2,33 @@ import { getApps, initializeApp, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
+function formatPrivateKey(rawKey: string | undefined): string | undefined {
+  if (!rawKey) return undefined;
+  let key = rawKey.trim();
+  key = key.replace(/^[`"']+|[`"']+$/g, '');
+  key = key.replace(/\\+n/g, '\n');
+  key = key.replace(/\r/g, '');
+
+  const begin = '-----BEGIN PRIVATE KEY-----';
+  const end = '-----END PRIVATE KEY-----';
+
+  if (!key.includes('\n') || !key.includes('-----END')) {
+    if (key.includes(begin) && key.includes(end)) {
+      const body = key.replace(begin, '').replace(end, '').replace(/\s+/g, '');
+      const chunked = body.match(/.{1,64}/g)?.join('\n') || body;
+      key = `${begin}\n${chunked}\n${end}\n`;
+    }
+  } else {
+    key = key.replace(begin, '').replace(end, '').trim();
+    const bodyLines = key.split('\n').map((l) => l.trim()).filter(Boolean).join('\n');
+    key = `${begin}\n${bodyLines}\n${end}\n`;
+  }
+  return key;
+}
+
 if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   try {
-    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
-    
-    // Safely format the private key
-    if (privateKey) {
-      privateKey = privateKey.replace(/"/g, "").replace(/\\n/g, "\n");
-    }
+    const privateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY);
 
     initializeApp({
       credential: cert({

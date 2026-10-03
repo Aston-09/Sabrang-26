@@ -34,10 +34,33 @@ function initFirebaseAdmin(): App | null {
 
     // 2. Check for individual FIREBASE_PRIVATE_KEY + FIREBASE_CLIENT_EMAIL + FIREBASE_PROJECT_ID
     if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-      let privateKey = process.env.FIREBASE_PRIVATE_KEY.trim();
-      privateKey = privateKey.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+      function formatPrivateKey(rawKey: string | undefined): string | undefined {
+        if (!rawKey) return undefined;
+        let key = rawKey.trim();
+        key = key.replace(/^[`"']+|[`"']+$/g, '');
+        key = key.replace(/\\+n/g, '\n');
+        key = key.replace(/\r/g, '');
+
+        const begin = '-----BEGIN PRIVATE KEY-----';
+        const end = '-----END PRIVATE KEY-----';
+
+        if (!key.includes('\n') || !key.includes('-----END')) {
+          if (key.includes(begin) && key.includes(end)) {
+            const body = key.replace(begin, '').replace(end, '').replace(/\s+/g, '');
+            const chunked = body.match(/.{1,64}/g)?.join('\n') || body;
+            key = `${begin}\n${chunked}\n${end}\n`;
+          }
+        } else {
+          key = key.replace(begin, '').replace(end, '').trim();
+          const bodyLines = key.split('\n').map((l) => l.trim()).filter(Boolean).join('\n');
+          key = `${begin}\n${bodyLines}\n${end}\n`;
+        }
+        return key;
+      }
+
+      const privateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY);
       
-      if (privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      if (privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
         try {
           const app = initializeApp({
             credential: cert({
