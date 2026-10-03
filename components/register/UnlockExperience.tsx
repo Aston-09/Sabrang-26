@@ -92,7 +92,7 @@ export default function UnlockExperience({
     }, 6000);
 
     // Sync DOM elements to Bodies
-    const runner = Runner.create({ isFixed: true } as any);
+    const runner = Runner.create();
     Runner.run(runner, engine);
 
     const updateDOM = () => {
@@ -132,7 +132,7 @@ export default function UnlockExperience({
     <div ref={sceneRef} className="relative min-h-screen bg-[#0a0a0a] text-[#f4efe6] overflow-hidden font-sans selection:bg-[#2d0f4d] selection:text-white flex flex-col items-center justify-center">
 
       {/* Grid details - Top Right */}
-      <div className="absolute top-10 right-10 md:top-20 md:right-20 pointer-events-none text-[#6d28d9] font-mono text-[10px] md:text-xs z-10 flex flex-col items-end gap-1">
+      <div className="absolute top-24 right-6 md:top-28 md:right-10 pointer-events-none text-[#6d28d9] font-mono text-[10px] md:text-xs z-10 flex flex-col items-end gap-1">
         <div className="flex items-center gap-2">
           <span>14/11</span>
           <span className="bg-[#2d0f4d] text-white px-1 font-bold">&gt;</span>

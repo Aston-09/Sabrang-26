@@ -4,30 +4,6 @@ import * as path from 'path';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { getStudentCohort, getBatchForCohort, getCohortLeaderDetails } from './cohortData';
 
-// Fallback email transport setup using environment SMTP variables
-async function getEmailTransporter() {
-  const nodemailer = await import('nodemailer');
-  
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                       (process.env.NEXT_PUBLIC_CASHFREE_ENV || '').trim().toUpperCase() === 'PRODUCTION';
-
-  // Office 365 SMTP Configuration
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.office365.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: false, // STARTTLS
-    auth: {
-      user: process.env.SMTP_USER || '',
-      pass: process.env.SMTP_PASS || '',
-    },
-    tls: isProduction ? {
-      rejectUnauthorized: true
-    } : {
-      rejectUnauthorized: false
-    }
-  });
-}
-
 /**
  * Creates a dynamic minimal PDF schedule on the fly if the physical PDF doesn't exist yet.
  * This guarantees the system is fully functional without pre-existing files on disk.
@@ -111,7 +87,7 @@ function htmlEscape(str: string): string {
 }
 
 /**
- * Sends check-in email attaching the respective batch schedule PDF.
+ * Sends check-in confirmation email via Brevo.
  */
 export async function sendCheckInEmail(
   toEmail: string,
@@ -122,33 +98,32 @@ export async function sendCheckInEmail(
   subject: string = "Sabrang '26 Check-In Confirmation — Pass Details & Schedule"
 ) {
   console.log(`Preparing to send check-in email to ${toEmail} for batch ${batchName}...`);
-  const transporter = await getEmailTransporter();
-  
+
+  const { sendBrevoEmail } = await import('./brevo');
+
   const cohort = getStudentCohort(appNumber);
   const leaderDetails = cohort ? getCohortLeaderDetails(cohort) : null;
-  
-  // 1. Inline images for branding
-  let logoAttachment: any = null;
-  let jkluAttachment: any = null;
-  try {
-    const logoPath = path.join(process.cwd(), 'public', 'sabrang logo.png');
-    const logoBytes = await fs.readFile(logoPath);
-    logoAttachment = {
-      filename: 'sabrang_logo.png',
-      content: logoBytes,
-      cid: 'sabrang_logo'
-    };
 
-    const jkluPath = path.join(process.cwd(), 'public', 'logos', 'jklu_logo.png');
-    const jkluBytes = await fs.readFile(jkluPath);
-    jkluAttachment = {
-      filename: 'jklu_logo.png',
-      content: jkluBytes,
-      cid: 'jklu_logo'
-    };
+  // Load logos as base64 for inline embedding
+  let sabrangLogoBase64: string | undefined;
+  let jkluLogoBase64: string | undefined;
+  try {
+    const sabrangPath = path.join(process.cwd(), 'public', 'sabrang-logo', 'Sabrang_Logo.png');
+    sabrangLogoBase64 = (await fs.readFile(sabrangPath)).toString('base64');
+
+    const jkluPath = path.join(process.cwd(), 'public', 'sabrang-logo', 'jklu_logo.png');
+    jkluLogoBase64 = (await fs.readFile(jkluPath)).toString('base64');
   } catch (err) {
-    console.warn("Failed to load branding logos for check-in email:", err);
+    console.warn('Failed to load branding logos for check-in email:', err);
   }
+
+  const sabrangLogoTag = sabrangLogoBase64
+    ? `<img src="data:image/png;base64,${sabrangLogoBase64}" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />`
+    : `<span style="font-size: 20px; font-weight: bold; color: #7C3AED;">SABRANG 2026</span>`;
+
+  const jkluLogoTag = jkluLogoBase64
+    ? `<img src="data:image/png;base64,${jkluLogoBase64}" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />`
+    : `<span style="font-size: 13px; font-weight: 700; color: #333;">JKLU</span>`;
 
   const safeName = htmlEscape(studentName);
   const safeAppNum = htmlEscape(appNumber);
@@ -163,8 +138,6 @@ export async function sendCheckInEmail(
         .container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
         .header { background-color: #ffffff; padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #eeeeee; }
         .content { padding: 40px 30px; background-color: #ffffff; color: #333; line-height: 1.6; }
-        .success-badge { display: inline-block; padding: 6px 12px; background-color: #dcfce7; color: #166534; border-radius: 4px; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
-        .details-box { background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #cbd5e1; }
         .footer { background-color: #f9f9f9; padding: 30px 20px; text-align: center; color: #777; font-size: 13px; border-top: 1px solid #eeeeee; }
         .social-icons { margin: 15px 0; }
         .social-icons a { display: inline-block; margin: 0 6px; color: #555; text-decoration: none; font-weight: bold; font-size: 12px; }
@@ -177,10 +150,10 @@ export async function sendCheckInEmail(
           <table align="center" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
             <tr>
               <td align="center" valign="middle" style="padding-right: 20px;">
-                <img src="cid:jklu_logo" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />
+                ${jkluLogoTag}
               </td>
               <td align="center" valign="middle" style="padding-left: 20px; border-left: 1px solid rgba(0,0,0,0.1);">
-                <img src="cid:sabrang_logo" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />
+                ${sabrangLogoTag}
               </td>
             </tr>
           </table>
@@ -188,21 +161,18 @@ export async function sendCheckInEmail(
         <div class="content">
           <h2 style="margin-top: 0;">Dear ${safeName},</h2>
           <p>Thank you for completing your Check-in.</p>
-          
           <p>Your registration details are as follows:</p>
           <ul style="line-height: 1.8;">
             <li><strong>Participant Name:</strong> ${safeName}</li>
             <li><strong>Registration Number:</strong> ${safeAppNum}</li>
             <li><strong>Category / Batch:</strong> ${safeBatch}</li>
           </ul>
-
           <p>You can view and explore the complete 3-day schedule directly on our portal.</p>
           <div style="margin: 15px 0;">
             <a href="https://sabrang.jklu.edu.in/schedule" style="display: inline-block; padding: 10px 20px; background-color: #7C3AED; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px;">
-              View Event Timeline & Schedule
+              View Event Timeline &amp; Schedule
             </a>
           </div>
-
           ${leaderDetails ? `
           <p>If you have any questions or require further assistance, please feel free to contact your Event Coordinator:</p>
           <p style="background-color: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; display: inline-block; font-size: 14px; line-height: 1.5;">
@@ -212,15 +182,14 @@ export async function sendCheckInEmail(
           ` : `
           <p>If you have any questions or require assistance, please visit the helpdesk at the venue or contact our Organizing Team.</p>
           `}
-          
           <p>We look forward to seeing you at Sabrang 2026!</p>
           <p>Best regards,<br/><strong>SABRANG Team</strong></p>
         </div>
         <div class="footer">
           <div class="social-icons">
-            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull; 
-            <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull; 
-            <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull; 
+            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull;
+            <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull;
+            <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull;
             <a href="https://www.facebook.com/share/1Hsdb57Jcf/">Facebook</a>
           </div>
           <p style="margin-bottom: 5px;">JK Lakshmipat University, Jaipur</p>
@@ -232,21 +201,15 @@ export async function sendCheckInEmail(
     </html>
   `;
 
-  const mailOptions: any = {
-    from: `"Sabrang Team" <${process.env.SMTP_FROM || ''}>`,
-    to: toEmail,
-    subject: subject,
-    html: htmlContent,
-    attachments: []
-  };
+  const result = await sendBrevoEmail({
+    to: [{ email: toEmail, name: studentName }],
+    subject,
+    htmlContent,
+    textContent: `Hi ${studentName}, your check-in for Sabrang 2026 is confirmed! Registration: ${appNumber}, Batch: ${batchName}.`,
+  });
 
-  if (logoAttachment) {
-    mailOptions.attachments.push(logoAttachment);
+  if (!result.success) {
+    throw new Error(`[Brevo] Check-in email failed for ${toEmail}: ${result.error}`);
   }
-  if (jkluAttachment) {
-    mailOptions.attachments.push(jkluAttachment);
-  }
-
-  await transporter.sendMail(mailOptions);
-  console.log(`Check-in email sent successfully to ${toEmail}.`);
+  console.log(`[Brevo] Check-in email sent successfully to ${toEmail}.`);
 }

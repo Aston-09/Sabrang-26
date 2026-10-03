@@ -30,6 +30,7 @@ const SUPPRESSED_STRINGS = [
   "APIInjectError",
   "Extent3D",
   "mipLevelCount",
+  "runner.isFixed",
 ];
 
 const filterLog = (origFn: (...args: unknown[]) => void) => {

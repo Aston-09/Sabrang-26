@@ -28,9 +28,9 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   let jkluLogoImage;
   try {
     const jkluLogoPath = path.join(
-      process.cwd(), 
-      'public', 
-      'logos',
+      process.cwd(),
+      'public',
+      'sabrang-logo',
       'jklu_logo.png'
     );
     const jkluLogoBytes = await fs.readFile(jkluLogoPath);
@@ -49,10 +49,10 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   let festLogoImage;
   try {
     const festLogoPath = path.join(
-      process.cwd(), 
-      'public', 
-      'images',
-      'logo.png'
+      process.cwd(),
+      'public',
+      'sabrang-logo',
+      'Sabrang_Logo.png'
     );
     const festLogoBytes = await fs.readFile(festLogoPath);
     festLogoImage = await pdfDoc.embedPng(festLogoBytes);
@@ -256,45 +256,35 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
 
 
 // ============================================================================
-// SMTP EMAIL NOTIFICATION helper (Nodemailer STARTTLS Client)
+// BREVO EMAIL NOTIFICATION helper (Transactional Email via REST API)
 // ============================================================================
-let cachedTransporter: any = null;
-
-async function getTransporter() {
-  if (cachedTransporter) return cachedTransporter;
-
-  const nodemailer = await import('nodemailer');
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                       (process.env.NEXT_PUBLIC_CASHFREE_ENV || '').trim().toUpperCase() === 'PRODUCTION';
-
-  // Office 365 SMTP Configuration
-  cachedTransporter = nodemailer.createTransport({
-    pool: true,             // Enable connection pooling
-    maxConnections: 3,      // Max concurrent connections
-    maxMessages: 100,       // Max messages on a single connection before closing
-    rateLimit: 1,           // Max messages per second
-    host: process.env.SMTP_HOST || 'smtp.office365.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: false,          // true for 465, false for 587 (STARTTLS)
-    auth: {
-      user: process.env.SMTP_USER || '',
-      pass: process.env.SMTP_PASS || '',
-    },
-    tls: isProduction ? {
-      rejectUnauthorized: true
-    } : {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 8000, // Timeout after 8s if connection hangs
-    greetingTimeout: 5000,   // Timeout after 5s if greeting hangs
-    socketTimeout: 10000,    // Timeout after 10s if socket is idle
-  });
-
-  return cachedTransporter;
-}
 
 export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) {
-  const transporter = await getTransporter();
+  const { sendBrevoEmail } = await import('./brevo');
+
+  // Load logos as base64 for inline embedding via Brevo attachments
+  let sabranLogoBase64: string | undefined;
+  let jkluLogoBase64: string | undefined;
+  try {
+    const fsPromises = await import('fs/promises');
+    const pathModule = await import('path');
+
+    const sabrangPath = pathModule.join(process.cwd(), 'public', 'sabrang-logo', 'Sabrang_Logo.png');
+    sabranLogoBase64 = (await fsPromises.readFile(sabrangPath)).toString('base64');
+
+    const jkluPath = pathModule.join(process.cwd(), 'public', 'sabrang-logo', 'jklu_logo.png');
+    jkluLogoBase64 = (await fsPromises.readFile(jkluPath)).toString('base64');
+  } catch {
+    // Non-fatal: email sends without inline logos
+  }
+
+  const sabrangLogoTag = sabranLogoBase64
+    ? `<img src="data:image/png;base64,${sabranLogoBase64}" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />`
+    : `<span style="color: #FACC15; font-size: 28px; font-weight: bold; letter-spacing: 2px;">SABRANG 2026</span>`;
+
+  const jkluLogoTag = jkluLogoBase64
+    ? `<img src="data:image/png;base64,${jkluLogoBase64}" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />`
+    : `<span style="font-size: 13px; font-weight: 700; color: #333;">JKLU</span>`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -304,37 +294,34 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
       <style>
         .container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
         .header { background-color: #ffffff; padding: 40px 20px 20px 20px; text-align: center; border-bottom: 1px solid #eeeeee; }
-        .logo-text { color: #FACC15; font-size: 32px; font-weight: bold; margin: 0; letter-spacing: 2px; }
         .content { padding: 40px 30px; background-color: #ffffff; color: #333; line-height: 1.6; }
         .success-badge { display: inline-block; padding: 6px 12px; background-color: #dcfce7; color: #166534; border-radius: 4px; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
         .footer { background-color: #f9f9f9; padding: 30px 20px; text-align: center; color: #777; font-size: 13px; border-top: 1px solid #eeeeee; }
         .social-icons { margin: 15px 0; }
         .social-icons a { display: inline-block; margin: 0 6px; color: #555; text-decoration: none; font-weight: bold; font-size: 12px; }
         .footer-link { color: #0D21DD; text-decoration: none; font-weight: bold; }
-        .button { display: inline-block; padding: 12px 24px; background-color: #FACC15; color: #1a1a1a; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="header" style="text-align: center;">
+        <div class="header">
           <table align="center" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
             <tr>
               <td align="center" valign="middle" style="padding-right: 20px;">
-                <img src="cid:jklu_logo" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />
+                ${jkluLogoTag}
               </td>
               <td align="center" valign="middle" style="padding-left: 20px; border-left: 1px solid rgba(0,0,0,0.1);">
-                <img src="cid:sabrang_logo" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />
+                ${sabrangLogoTag}
               </td>
             </tr>
           </table>
         </div>
         <div class="content">
-          <div class="success-badge">✓ Registration Confirmed</div>
+          <div class="success-badge">Registration Confirmed</div>
           <h2 style="margin-top: 0;">Dear ${name},</h2>
-          <p>Congratulations! 🎉</p>
+          <p>Congratulations!</p>
           <p>Your registration for <strong>SABRANG 2026</strong>, the Annual Festival at JK Lakshmipat University, has been successfully completed.</p>
-          <p>Please find your unique QR Code and Registration Receipt attached to this email. This will serve as your entry pass and will be required during the check-in process on campus.</p>
-          
+          <p>Please find your Registration Receipt attached to this email. This will serve as your entry pass and will be required during the check-in process on campus.</p>
           <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0;">
             <p style="margin: 0; font-size: 14px; color: #64748b;"><strong>Important:</strong></p>
             <ul style="margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
@@ -343,16 +330,14 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
               <li>You may carry a digital copy on your mobile or a printed copy during fest entry.</li>
             </ul>
           </div>
-
           <p>We look forward to welcoming you to Sabrang 2026!</p>
-          <p>If you have any questions, please feel free to reach out to us.</p>
           <p>Warm regards,<br/><strong>SABRANG 2026 Team</strong><br/>JK Lakshmipat University</p>
         </div>
         <div class="footer">
           <div class="social-icons">
-            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull; 
-            <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull; 
-            <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull; 
+            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull;
+            <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull;
+            <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull;
             <a href="https://www.facebook.com/share/1Hsdb57Jcf/">Facebook</a>
           </div>
           <p style="margin-bottom: 5px;">JK Lakshmipat University, Jaipur</p>
@@ -364,63 +349,31 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
     </html>
   `;
 
-  let logoAttachment: any = null;
-  let jkluAttachment: any = null;
-  try {
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    
-    const logoPath = path.join(process.cwd(), 'public', 'sabrang logo.png');
-    const logoBytes = await fs.readFile(logoPath);
-    logoAttachment = {
-      filename: 'sabrang_logo.png',
-      content: logoBytes,
-      cid: 'sabrang_logo'
-    };
-
-    const jkluPath = path.join(process.cwd(), 'public', 'logos', 'jklu_logo.png');
-    const jkluBytes = await fs.readFile(jkluPath);
-    jkluAttachment = {
-      filename: 'jklu_logo.png',
-      content: jkluBytes,
-      cid: 'jklu_logo'
-    };
-  } catch (err) {
-    // Non-fatal if branding images missing locally
-  }
-
-  const mailOptions: any = {
-    from: `"Sabrang Team" <${process.env.SMTP_FROM || ''}>`,
-    to: to,
-    subject: "Welcome to Sabrang 2026 – Registration Confirmed!",
-    html: htmlContent,
-    attachments: [
-      {
-        filename: 'Sabrang_Registration_Receipt.pdf',
-        content: Buffer.from(pdfBytes),
-        contentType: 'application/pdf'
-      }
-    ]
-  };
-
-  if (logoAttachment) {
-    mailOptions.attachments.push(logoAttachment);
-  }
-  if (jkluAttachment) {
-    mailOptions.attachments.push(jkluAttachment);
-  }
+  const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
 
   const maxRetries = 2;
   for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
     try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`Email sent successfully on attempt ${attempt}. MessageId:`, info?.messageId);
-      return;
-    } catch (err) {
-      console.warn(`SMTP sendMail attempt ${attempt} failed:`, err);
-      if (attempt > maxRetries) {
-        throw err;
+      const result = await sendBrevoEmail({
+        to: [{ email: to, name }],
+        subject: 'Welcome to Sabrang 2026 – Registration Confirmed!',
+        htmlContent,
+        textContent: `Hi ${name}, your registration for Sabrang 2026 is confirmed! Your receipt is attached.`,
+        attachment: [
+          {
+            content: pdfBase64,
+            name: 'Sabrang_Registration_Receipt.pdf',
+          },
+        ],
+      });
+      if (result.success) {
+        console.log(`[Brevo] Registration email sent on attempt ${attempt}. MessageId:`, result.messageId);
+        return;
       }
+      throw new Error(result.error || 'Brevo send failed');
+    } catch (err) {
+      console.warn(`[Brevo] sendEmail attempt ${attempt} failed:`, err);
+      if (attempt > maxRetries) throw err;
       await new Promise(resolve => setTimeout(resolve, attempt * 1000));
     }
   }

@@ -1,34 +1,30 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Check, ChevronRight, ArrowLeft, Upload, AlertTriangle, Loader2, CheckCircle2, XCircle, ShieldCheck, Download, ExternalLink, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { Check, ChevronRight, ArrowLeft, Upload, AlertTriangle, Loader2, CheckCircle2, XCircle, ShieldCheck, Download, ExternalLink, RefreshCw, Users, Sparkles, Plus, Minus, Calendar } from "lucide-react";
+import {
+  OFFICIAL_EVENTS,
+  getEventById,
+  calculateEventItemPrice,
+  calculateTotalRegistrationFee,
+  getGroupTeamRequirements,
+  SabrangEvent,
+  VAAD_VIVAAD_REPRESENTATIVES,
+  FESTIVAL_DAYS,
+  VisitorPassConfig,
+  calculateVisitorPassFee,
+} from "@/lib/eventPricing";
 
-type StepId = "select" | "forms" | "review" | "payment";
+type StepId = "select" | "forms" | "review";
 
 const STEPS: { id: StepId; name: string }[] = [
   { id: "select", name: "Select Events" },
   { id: "forms", name: "Your Details" },
-  { id: "review", name: "Review" },
-  { id: "payment", name: "Payment" },
+  { id: "review", name: "Review & Pay" },
 ];
 
-const EVENTS = [
-  { id: "visitor", title: "Visitor Pass", price: 69, isTeam: false, type: "visitor" },
-  { id: "panache", title: "Panache", price: 2999, isTeam: true, type: "generic" },
-  { id: "dance_battle", title: "Dance Battle", price: 2499, isTeam: true, type: "generic" },
-  { id: "bandjam", title: "BANDJAM", price: 1499, isTeam: true, type: "generic" },
-  { id: "bgmi", title: "BGMI TOURNAMENT", price: 499, isTeam: true, type: "bgmi" },
-  { id: "valorant", title: "VALORANT TOURNAMENT", price: 499, isTeam: true, type: "valorant" },
-  { id: "freefire", title: "FREE FIRE TOURNAMENT", price: 499, isTeam: true, type: "freefire" },
-  { id: "versevaad", title: "VERSEVAAD", price: 499, isTeam: false, type: "generic" },
-  { id: "focus", title: "FOCUS", price: 499, isTeam: false, type: "generic" },
-  { id: "dumb_show", title: "DUMB SHOW", price: 499, isTeam: true, type: "generic" },
-  { id: "clay_modelling", title: "CLAY MODELLING", price: 499, isTeam: false, type: "generic" },
-  { id: "echoes_of_noor", title: "ECHOES OF NOOR", price: 499, isTeam: true, type: "generic" },
-  { id: "bidding", title: "BIDDING BEFORE WICKET", price: 1499, isTeam: true, type: "generic" },
-  { id: "courtroom", title: "COURTROOM", price: 1499, isTeam: true, type: "generic" },
-  { id: "art_relay", title: "ART RELAY", price: 1499, isTeam: true, type: "generic" },
-];
+const EVENTS = OFFICIAL_EVENTS;
 
 type TeamMember = {
   id: string;
@@ -54,14 +50,88 @@ export default function CheckoutForm() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   
-  // Dynamic team members state. Key is the group (e.g., 'bgmi', 'generic')
+  // Dynamic team members state. Key is the group (e.g., 'bgmi', 'generic', 'visitor')
   const [teamMembers, setTeamMembers] = useState<Record<string, TeamMember[]>>({});
+
+  // Visitor Pass Multi-Day and Multi-Person state
+  const [visitorDays, setVisitorDays] = useState<string[]>(["day1"]);
+  const [visitorCount, setVisitorCount] = useState<number>(1);
   
   // ID Cards
   const [idCards, setIdCards] = useState<Record<string, File | null>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+
+  const handleIdCardUpload = (
+    key: string,
+    file: File | null,
+    onSuccess: (f: File) => void,
+    onClear: () => void
+  ) => {
+    if (!file) {
+      onClear();
+      setUploadProgress((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      return;
+    }
+
+    // Accept image formats only
+    if (!file.type.startsWith("image/")) {
+      alert("Only image formats (PNG, JPG, JPEG, WEBP) are accepted for ID card verification.");
+      onClear();
+      return;
+    }
+
+    // Max size 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      alert("ID card image size exceeds the 5MB limit. Please upload a smaller image.");
+      onClear();
+      return;
+    }
+
+    setUploadProgress((prev) => ({ ...prev, [key]: 15 }));
+
+    const reader = new FileReader();
+    let current = 15;
+    const timer = setInterval(() => {
+      current += Math.floor(Math.random() * 25) + 15;
+      if (current >= 95) {
+        current = 95;
+        clearInterval(timer);
+      }
+      setUploadProgress((prev) => ({ ...prev, [key]: current }));
+    }, 45);
+
+    reader.onload = () => {
+      clearInterval(timer);
+      setUploadProgress((prev) => ({ ...prev, [key]: 100 }));
+      onSuccess(file);
+    };
+
+    reader.onerror = () => {
+      clearInterval(timer);
+      alert("Failed to load image. Please try again.");
+      onClear();
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
+  const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [couponData, setCouponData] = useState<{
+    valid: boolean;
+    finalPrice: number;
+    discountAmount: number;
+    discountType: string;
+    discountValue: number;
+  } | null>(null);
+  const [copiedOffer, setCopiedOffer] = useState(false);
+  const [cartLoadedFromUrl, setCartLoadedFromUrl] = useState(false);
 
   // Cashfree Payment states
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -99,14 +169,23 @@ export default function CheckoutForm() {
     }
   }, []);
 
-  // Listen for order_id in URL search parameters
+  // Listen for order_id or pre-selected events in URL search parameters
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get("order_id");
     if (orderId) {
-      setCurrentStep("payment");
       verifyOrderPayment(orderId);
+      return;
+    }
+    const eventParam = params.get("event") || params.get("events") || params.get("cart");
+    if (eventParam) {
+      const ids = eventParam.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+      const validIds = ids.filter((id) => EVENTS.some((e) => e.id.toLowerCase() === id));
+      if (validIds.length > 0) {
+        setSelectedEvents((prev) => Array.from(new Set([...prev, ...validIds])));
+        setCartLoadedFromUrl(true);
+      }
     }
   }, [verifyOrderPayment]);
 
@@ -160,6 +239,12 @@ export default function CheckoutForm() {
         selectedEvents,
         teamMembers,
         amount: calculateTotal(),
+        visitorConfig: selectedEvents.includes("visitor")
+          ? { count: visitorCount, days: visitorDays }
+          : undefined,
+        vaadVivaadRepresentative: selectedEvents.includes("vaad_vivaad")
+          ? getField("generic", "vaadVivaadRepresentative").trim()
+          : undefined,
       };
 
       const res = await fetch("/api/register", {
@@ -222,6 +307,10 @@ export default function CheckoutForm() {
 
   const handleNext = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
+    if (currentStep === "review") {
+      handleCashfreePayment();
+      return;
+    }
     if (stepIndex < STEPS.length - 1) {
       setCurrentStep(STEPS[stepIndex + 1].id);
       if (formContainerRef.current) {
@@ -247,15 +336,127 @@ export default function CheckoutForm() {
   };
 
   const calculateTotal = () => {
-    const total = selectedEvents.reduce((acc, eventId) => {
-      const ev = EVENTS.find((e) => e.id === eventId);
-      return acc + (ev ? ev.price : 0);
-    }, 0);
+    const rawTotal = calculateTotalRegistrationFee(selectedEvents, teamMembers, {
+      count: visitorCount,
+      days: visitorDays,
+    });
     
-    if (promoApplied && total > 0) {
-      return Math.max(0, total - 100);
+    if (promoApplied && couponData?.valid) {
+      return Math.max(0, couponData.finalPrice);
     }
-    return total;
+    return rawTotal;
+  };
+
+  const handleApplyCoupon = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setPromoError("Please enter a coupon code");
+      return;
+    }
+    setIsCheckingPromo(true);
+    setPromoError(null);
+    try {
+      const activeGroups = getActiveGroups();
+      const primaryGroup = activeGroups[0] || "visitor";
+      const regNum = getField(primaryGroup, "registrationNumber") || getField(primaryGroup, "rollNumber") || "";
+
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "VERIFY_COUPON",
+          coupon: code,
+          selectedEvents,
+          teamMembers,
+          visitorConfig: selectedEvents.includes("visitor")
+            ? { count: visitorCount, days: visitorDays }
+            : undefined,
+          registrationNumber: regNum,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        setCouponData(data);
+        setPromoApplied(true);
+        setPromoError(null);
+      } else {
+        setCouponData(null);
+        setPromoApplied(false);
+        setPromoError(data.error || "Invalid or expired coupon code");
+      }
+    } catch (err: any) {
+      setCouponData(null);
+      setPromoApplied(false);
+      setPromoError(err.message || "Failed to verify coupon code");
+    } finally {
+      setIsCheckingPromo(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setPromoCode("");
+    setPromoApplied(false);
+    setCouponData(null);
+    setPromoError(null);
+  };
+
+  const handleVisitorCountChange = (newCount: number) => {
+    const count = Math.max(1, Math.min(10, newCount));
+    setVisitorCount(count);
+
+    // Sync teamMembers['visitor'] to hold exactly (count - 1) additional attendees
+    setTeamMembers((prev) => {
+      const currentList = prev["visitor"] || [];
+      const neededExtra = count - 1;
+
+      if (currentList.length === neededExtra) {
+        return prev;
+      }
+
+      if (currentList.length < neededExtra) {
+        const toAdd = neededExtra - currentList.length;
+        const newItems: TeamMember[] = Array.from({ length: toAdd }, () => ({
+          id: Math.random().toString(36).substr(2, 9),
+          name: "",
+          email: "",
+          mobileNumber: "",
+          gender: "",
+          age: "",
+          institutionName: getField("visitor", "institutionName") || getField("generic", "institutionName"),
+          referralCode: getField("visitor", "referralCode").toUpperCase(),
+          address: getField("visitor", "address") || getField("generic", "address"),
+          idCard: null,
+        }));
+        return {
+          ...prev,
+          visitor: [...currentList, ...newItems],
+        };
+      } else {
+        return {
+          ...prev,
+          visitor: currentList.slice(0, neededExtra),
+        };
+      }
+    });
+  };
+
+  const toggleVisitorDay = (dayId: string) => {
+    setVisitorDays((prev) => {
+      if (prev.includes(dayId)) {
+        if (prev.length <= 1) return prev; // keep at least 1 day selected
+        return prev.filter((d) => d !== dayId);
+      }
+      return [...prev, dayId];
+    });
+  };
+
+  const toggleAllVisitorDays = () => {
+    if (visitorDays.length === FESTIVAL_DAYS.length) {
+      setVisitorDays(["day1"]);
+    } else {
+      setVisitorDays(FESTIVAL_DAYS.map((d) => d.id));
+    }
   };
 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -336,10 +537,7 @@ export default function CheckoutForm() {
   };
 
   const getTeamRequirements = (group: string) => {
-    if (group === 'bgmi') return { min: 4, max: 5 };
-    if (group === 'valorant') return { min: 5, max: 6 };
-    if (group === 'freefire') return { min: 4, max: 5 };
-    return { min: 2, max: 15 };
+    return getGroupTeamRequirements(group, selectedEvents, { count: visitorCount, days: visitorDays });
   };
 
   // Ensure all required fields are filled for active groups
@@ -377,10 +575,18 @@ export default function CheckoutForm() {
         if (group === 'generic') {
           const hasTeamEvents = selectedEvents.map(id => EVENTS.find(e => e.id === id)).some(e => e?.type === 'generic' && e?.isTeam);
           if (hasTeamEvents && !getField(group, 'teamName').trim()) return true;
+
+          // Vaad Vivaad representative is mandatory if Vaad Vivaad is selected
+          if (selectedEvents.includes('vaad_vivaad') && !getField('generic', 'vaadVivaadRepresentative').trim()) {
+            return true;
+          }
         }
 
-        // Team members validation
-        const hasTeamEvents = selectedEvents.map(id => EVENTS.find(e => e.id === id)).some(e => e?.type === group && e?.isTeam);
+        // Team members / Additional attendees validation
+        const hasTeamEvents =
+          selectedEvents.map(id => EVENTS.find(e => e.id === id)).some(e => e?.type === group && e?.isTeam) ||
+          (group === 'visitor' && visitorCount > 1);
+
         if (hasTeamEvents) {
           const members = teamMembers[group] || [];
           const req = getTeamRequirements(group);
@@ -389,8 +595,14 @@ export default function CheckoutForm() {
           if (totalMembers < req.min) return true;
           
           for (const m of members) {
-            if (!m.name.trim() || !isValidEmail(m.email) || !isValidPhone(m.mobileNumber) || !m.gender || !m.institutionName.trim() || !m.address.trim()) {
-              return true;
+            if (group === 'visitor') {
+              if (!m.name.trim() || !isValidPhone(m.mobileNumber) || !m.gender || !m.institutionName.trim() || !m.address.trim()) {
+                return true;
+              }
+            } else {
+              if (!m.name.trim() || !isValidEmail(m.email) || !isValidPhone(m.mobileNumber) || !m.gender || !m.institutionName.trim() || !m.address.trim()) {
+                return true;
+              }
             }
           }
         }
@@ -425,7 +637,7 @@ export default function CheckoutForm() {
           </div>
         )}
         
-        {showTeamFields && !specificFields && (
+        {showTeamFields && !specificFields && group !== 'visitor' && (
           <div className="space-y-4 mb-8">
             <div className="space-y-2">
               <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
@@ -442,6 +654,42 @@ export default function CheckoutForm() {
                 placeholder="Enter Team Name"
               />
             </div>
+          </div>
+        )}
+
+        {/* Vaad Vivaad Chosen Representative */}
+        {group === 'generic' && selectedEvents.includes('vaad_vivaad') && (
+          <div className="space-y-3 mb-8 p-4 rounded-xl bg-violet-950/20 border border-violet-500/30">
+            <label className="text-xs font-mono text-violet-300 uppercase tracking-widest flex justify-between">
+              <span>
+                Vaad Vivaad — Chosen MP / Journalist <span className="text-violet-400">*</span>
+              </span>
+            </label>
+            <p className="text-xs text-white/70 leading-relaxed">
+              Select the Member of Parliament/Journalist of your choice whom you will be representing/referencing during the competition.
+            </p>
+            <select
+              value={getField('generic', 'vaadVivaadRepresentative')}
+              onBlur={() => handleBlur('generic_vaadVivaadRepresentative')}
+              onChange={(e) => updateField('generic', 'vaadVivaadRepresentative', e.target.value)}
+              className={`w-full bg-black/60 border rounded-lg px-4 py-3 text-white focus:outline-none transition-all ${
+                touched['generic_vaadVivaadRepresentative'] && !getField('generic', 'vaadVivaadRepresentative').trim()
+                  ? "border-red-500/50 focus:border-red-500"
+                  : "border-white/10 focus:border-violet-500"
+              }`}
+            >
+              <option value="" className="bg-[#020202]">-- Select MP / Journalist (1 to 40) --</option>
+              {VAAD_VIVAAD_REPRESENTATIVES.map((name, idx) => (
+                <option key={name} value={name} className="bg-[#020202]">
+                  {idx + 1}. {name}
+                </option>
+              ))}
+            </select>
+            {touched['generic_vaadVivaadRepresentative'] && !getField('generic', 'vaadVivaadRepresentative').trim() && (
+              <p className="text-xs text-red-400 font-mono">
+                Please select an MP or Journalist from the list to continue.
+              </p>
+            )}
           </div>
         )}
         
@@ -566,19 +814,58 @@ export default function CheckoutForm() {
               <input
                 type="file"
                 id={`file_${group}`}
-                accept="image/png, image/jpeg, image/jpg, application/pdf"
-                onChange={(e) => setIdCards(prev => ({ ...prev, [group]: e.target.files?.[0] || null }))}
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  handleIdCardUpload(
+                    group,
+                    file,
+                    (validFile) => setIdCards((prev) => ({ ...prev, [group]: validFile })),
+                    () => {
+                      e.target.value = "";
+                      setIdCards((prev) => ({ ...prev, [group]: null }));
+                    }
+                  );
+                }}
                 className="hidden"
               />
               <label
                 htmlFor={`file_${group}`}
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden"
               >
-                <Upload className="w-4 h-4" />
-                {idCards[group] ? idCards[group]?.name : "Choose file"}
+                {typeof uploadProgress[group] === "number" && uploadProgress[group] < 100 ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                    <span className="text-white/80">Uploading... {uploadProgress[group]}%</span>
+                  </>
+                ) : idCards[group] ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="truncate max-w-[280px] text-white font-medium">{idCards[group]?.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span>Choose image</span>
+                  </>
+                )}
+
+                {/* Line progress along bottom border */}
+                {typeof uploadProgress[group] === "number" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10">
+                    <div
+                      className={`h-full transition-all duration-150 ease-out shadow-[0_0_8px_rgba(168,85,247,0.8)] ${
+                        uploadProgress[group] === 100
+                          ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                          : "bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
+                      }`}
+                      style={{ width: `${uploadProgress[group]}%` }}
+                    />
+                  </div>
+                )}
               </label>
             </div>
-            <p className="text-[10px] text-white/40 font-mono">Max size: 500KB</p>
+            <p className="text-[10px] text-white/40 font-mono">Max size: 5MB (Images only: PNG, JPG, JPEG, WEBP)</p>
           </div>
         </div>
 
@@ -598,12 +885,14 @@ export default function CheckoutForm() {
           />
         </div>
 
-        {/* Dynamic Team Members Section */}
+        {/* Dynamic Team Members / Additional Visitors Section */}
         {showTeamFields && (
           <div className="pt-8 mt-8 border-t border-white/10">
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-bold text-[#22d3ee]">Team Members</h4>
-              {totalMembers < req.max && (
+              <h4 className="text-lg font-bold text-[#22d3ee]">
+                {group === 'visitor' ? 'Additional Visitors' : 'Team Members'}
+              </h4>
+              {group !== 'visitor' && totalMembers < req.max && (
                 <button
                   type="button"
                   onClick={() => addTeamMember(group)}
@@ -616,8 +905,17 @@ export default function CheckoutForm() {
             
             <div className={`p-4 rounded-lg mb-6 border ${needsMore ? 'bg-red-500/10 border-red-500/30' : 'bg-green-500/10 border-green-500/30'}`}>
               <p className="text-sm text-white/90">
-                Team size requirement: {req.min} - {req.max} members<br/>
-                Current: <strong className={needsMore ? 'text-red-400' : 'text-green-400'}>{totalMembers}</strong> (including leader)
+                {group === 'visitor' ? (
+                  <>
+                    Passes booked: <strong>{visitorCount}</strong> attendee(s) • <strong>{visitorDays.length}</strong> day(s)<br/>
+                    Booking Lead: Attendee #1. Please fill in details for the remaining {members.length} visitor(s) below.
+                  </>
+                ) : (
+                  <>
+                    Team size requirement: {req.min} - {req.max} members<br/>
+                    Current: <strong className={needsMore ? 'text-red-400' : 'text-green-400'}>{totalMembers}</strong> (including leader)
+                  </>
+                )}
               </p>
               {needsMore && (
                 <p className="text-sm text-red-400 mt-2 flex items-center gap-1">
@@ -630,14 +928,18 @@ export default function CheckoutForm() {
               {members.map((member, index) => (
                 <div key={member.id} className="relative pt-6 border-t border-white/5">
                   <div className="flex justify-between items-center mb-4">
-                    <h5 className="font-bold text-white/80">Team Member #{index + 2}</h5>
-                    <button
-                      type="button"
-                      onClick={() => removeTeamMember(group, member.id)}
-                      className="text-red-400 hover:text-red-300 text-sm transition-colors"
-                    >
-                      Remove
-                    </button>
+                    <h5 className="font-bold text-white/80">
+                      {group === 'visitor' ? `Visitor / Attendee #${index + 2}` : `Team Member #${index + 2}`}
+                    </h5>
+                    {group !== 'visitor' && (
+                      <button
+                        type="button"
+                        onClick={() => removeTeamMember(group, member.id)}
+                        className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -712,18 +1014,59 @@ export default function CheckoutForm() {
                         <input
                           type="file"
                           id={`file_${group}_${member.id}`}
-                          accept="image/png, image/jpeg, image/jpg, application/pdf"
-                          onChange={(e) => updateTeamMember(group, member.id, 'idCard', e.target.files?.[0] || null)}
+                          accept="image/png, image/jpeg, image/jpg, image/webp"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            const memberKey = `${group}_${member.id}`;
+                            handleIdCardUpload(
+                              memberKey,
+                              file,
+                              (validFile) => updateTeamMember(group, member.id, 'idCard', validFile),
+                              () => {
+                                e.target.value = "";
+                                updateTeamMember(group, member.id, 'idCard', null);
+                              }
+                            );
+                          }}
                           className="hidden"
                         />
                         <label
                           htmlFor={`file_${group}_${member.id}`}
-                          className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden"
                         >
-                          <Upload className="w-4 h-4" />
-                          {member.idCard ? member.idCard.name : "Choose file"}
+                          {typeof uploadProgress[`${group}_${member.id}`] === "number" && uploadProgress[`${group}_${member.id}`] < 100 ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                              <span className="text-white/80">Uploading... {uploadProgress[`${group}_${member.id}`]}%</span>
+                            </>
+                          ) : member.idCard ? (
+                            <>
+                              <Check className="w-4 h-4 text-emerald-400" />
+                              <span className="truncate max-w-[280px] text-white font-medium">{member.idCard.name}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-4 h-4" />
+                              <span>Choose image</span>
+                            </>
+                          )}
+
+                          {/* Line progress along bottom border */}
+                          {typeof uploadProgress[`${group}_${member.id}`] === "number" && (
+                            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10">
+                              <div
+                                className={`h-full transition-all duration-150 ease-out shadow-[0_0_8px_rgba(168,85,247,0.8)] ${
+                                  uploadProgress[`${group}_${member.id}`] === 100
+                                    ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                                    : "bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
+                                }`}
+                                style={{ width: `${uploadProgress[`${group}_${member.id}`]}%` }}
+                              />
+                            </div>
+                          )}
                         </label>
                       </div>
+                      <p className="text-[10px] text-white/40 font-mono">Max size: 5MB (Images only: PNG, JPG, JPEG, WEBP)</p>
                     </div>
                   </div>
                   <div className="space-y-2 mt-6">
@@ -747,92 +1090,308 @@ export default function CheckoutForm() {
   };
 
   return (
-    <div ref={formContainerRef} className="w-full max-w-2xl mx-auto p-6 md:p-10 pb-24 md:pb-32 min-h-screen lg:min-h-0 flex flex-col justify-center animate-in fade-in duration-500">
+    <div ref={formContainerRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 pb-8 md:pb-12 min-h-screen flex flex-col animate-in fade-in duration-500">
       
-      {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-600 uppercase tracking-tighter mb-2">
-          CHECKOUT
-        </h2>
-        <p className="text-white/50 font-mono text-xs md:text-sm uppercase tracking-widest">
-          Complete your registration for Sabrang 2026
-        </p>
+      {/* Top Header Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-white/10">
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors mb-2 font-mono group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Sabrang &apos;26</span>
+          </Link>
+          <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight">
+            CHECKOUT
+          </h2>
+          <p className="text-white/50 text-xs md:text-sm mt-1 font-mono">
+            Complete your registration for Sabrang 2026
+          </p>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto py-1">
+          {STEPS.map((step, idx) => {
+            const isActive = idx === stepIndex;
+            const isCompleted = idx < stepIndex;
+
+            return (
+              <React.Fragment key={step.id}>
+                {idx > 0 && (
+                  <div className={`w-4 sm:w-8 h-[1px] ${isCompleted ? "bg-cyan-500" : "bg-white/10"}`} />
+                )}
+                <div
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 ${
+                    isActive
+                      ? "bg-slate-800 text-white font-semibold border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]"
+                      : isCompleted
+                        ? "bg-cyan-950/40 text-cyan-400 border border-cyan-500/30"
+                        : "bg-white/5 text-white/40 border border-white/5"
+                  }`}
+                >
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    isActive ? "bg-cyan-500 text-black" : isCompleted ? "bg-cyan-400/20 text-cyan-300" : "bg-white/10 text-white/40"
+                  }`}>
+                    {isCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : idx + 1}
+                  </span>
+                  <span>{step.name}</span>
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Progress Steps */}
-      <div className="flex items-center justify-between mb-12 relative">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-white/10 z-0"></div>
-        {STEPS.map((step, idx) => {
-          const isActive = idx === stepIndex;
-          const isCompleted = idx < stepIndex;
+      {/* 2-Column Checkout Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full flex-grow">
+        {/* Left Column: Form Steps & Controls */}
+        <div className="lg:col-span-8 flex flex-col space-y-6">
           
-          return (
-            <div key={step.id} className="relative z-10 flex flex-col items-center gap-2 bg-[#020202] px-2">
-              <div 
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  isActive 
-                    ? "bg-violet-600 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)] border-2 border-violet-400" 
-                    : isCompleted
-                      ? "bg-white/20 text-white border border-white/30"
-                      : "bg-[#020202] text-white/40 border border-white/10"
-                }`}
-              >
-                {isCompleted ? <Check className="w-4 h-4" /> : idx + 1}
-              </div>
-              <span className={`text-[10px] md:text-xs font-mono uppercase tracking-widest ${
-                isActive ? "text-violet-400" : isCompleted ? "text-white/70" : "text-white/30"
-              }`}>
-                {step.name}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+          {/* STEP 1: SELECT EVENTS */}
+          <div style={{ display: currentStep === "select" ? "block" : "none" }}>
+            <div className="space-y-6">
+              {/* Cart Loaded banner */}
+              {cartLoadedFromUrl && selectedEvents.length > 0 && (
+                <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-xl px-4 py-3 text-xs text-emerald-300 flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 stroke-[2.5]" />
+                  <span>
+                    Cart Loaded: {selectedEvents.length} event{selectedEvents.length > 1 ? "s" : ""} from your cart {selectedEvents.length > 1 ? "have" : "has"} been automatically selected.
+                  </span>
+                </div>
+              )}
 
-      {/* Form Content */}
-      <div className="flex-grow">
-        
-        {/* STEP 1: SELECT EVENTS */}
-        <div style={{ display: currentStep === "select" ? "block" : "none" }}>
-          <div className="space-y-6">
-            <h3 className="text-xl font-bold uppercase tracking-wider text-white/90 border-b border-white/10 pb-2">
-              Choose Your Events
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[400px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {EVENTS.map((event) => {
-                const isSelected = selectedEvents.includes(event.id);
-                const isVisitor = event.id === "visitor";
-                return (
-                  <div 
-                    key={event.id}
-                    onClick={() => toggleEvent(event.id)}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                      isSelected 
-                        ? isVisitor 
-                          ? "bg-amber-900/30 border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
-                          : "bg-violet-900/30 border-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.2)]" 
-                        : isVisitor
-                          ? "bg-amber-900/10 border-amber-500/40 hover:border-amber-400/70 hover:bg-amber-900/20"
-                          : "bg-white/5 border-white/10 hover:border-violet-500/50 hover:bg-white/10"
-                    }`}
+              <div className="flex justify-between items-baseline border-b border-white/10 pb-2">
+                <h3 className="text-xl font-bold uppercase tracking-wider text-amber-400">
+                  Choose Your Events
+                </h3>
+                <span className="text-xs font-mono text-white/40">
+                  {selectedEvents.length} selected
+                </span>
+              </div>
+
+              {/* Special Offer Card */}
+              <div className="bg-[#140c21] border border-purple-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-fuchsia-400" />
+                    <span className="font-black text-xs uppercase tracking-wider text-fuchsia-300">
+                      SPECIAL OFFER
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/70">
+                    Get ₹100 discount on all event registrations – Limited time only!
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3.5 py-1.5 rounded-lg bg-black/50 border border-purple-500/40 text-purple-200 font-mono text-xs font-bold tracking-wider">
+                    SPECIALOFFER
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPromoCode("SPECIALOFFER");
+                      setPromoApplied(true);
+                      navigator.clipboard?.writeText("SPECIALOFFER");
+                      setCopiedOffer(true);
+                      setTimeout(() => setCopiedOffer(false), 2000);
+                    }}
+                    className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-[0_0_12px_rgba(168,85,247,0.4)] transition-all flex items-center gap-1.5 cursor-pointer"
                   >
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className={`font-bold text-sm ${isVisitor && !isSelected ? "text-amber-100" : ""}`}>{event.title}</h4>
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
-                        isSelected 
-                          ? isVisitor ? "bg-amber-500 border-amber-500" : "bg-violet-500 border-violet-500" 
-                          : isVisitor ? "border-amber-500/40" : "border-white/30"
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3 text-black" />}
+                    {copiedOffer ? <Check className="w-3.5 h-3.5" /> : null}
+                    <span>{copiedOffer ? "Applied!" : "Copy Code"}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                {([
+                  "Flagship Events – Team",
+                  "Flagship Events – Solo / Duo",
+                  "Non-Flagship – Esports",
+                  "Non-Flagship – Other Events",
+                  "Activities – Gifts & Hampers",
+                  "General Entry",
+                ] as SabrangEvent["category"][]).map((category) => {
+                  const categoryEvents = EVENTS.filter((e) => e.category === category);
+                  if (categoryEvents.length === 0) return null;
+
+                  const categoryLabel = 
+                    category === "Flagship Events – Team" ? "Flagship" :
+                    category === "Flagship Events – Solo / Duo" ? "Flagship Solo / Duo" :
+                    category === "Non-Flagship – Esports" ? "E-Sports" :
+                    category === "Non-Flagship – Other Events" ? "Competitions & Events" :
+                    category === "Activities – Gifts & Hampers" ? "Activities & Hampers" :
+                    "General Visitor Pass";
+
+                  return (
+                    <div key={category} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-amber-400 font-black text-xl tracking-wide uppercase">
+                          {categoryLabel}
+                        </h4>
+                        <span className="text-xs font-mono text-white/40">
+                          {categoryEvents.length} event{categoryEvents.length > 1 ? "s" : ""}
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {categoryEvents.map((event) => {
+                          const isSelected = selectedEvents.includes(event.id);
+
+                          return (
+                            <div
+                              key={event.id}
+                              onClick={() => toggleEvent(event.id)}
+                              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                                isSelected
+                                  ? "bg-[#0b1726] border-cyan-400/80 shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+                                  : "bg-[#0d0d10] border-white/10 hover:border-white/20 hover:bg-[#131317]"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h5 className="font-black text-base uppercase tracking-wider text-white mb-1.5">
+                                    {event.title}
+                                  </h5>
+                                  <div className="flex flex-wrap items-center gap-3">
+                                    <span className="font-mono text-sm font-bold text-cyan-400">
+                                      {event.id === "visitor"
+                                        ? (isSelected
+                                            ? `₹${calculateVisitorPassFee(visitorCount, visitorDays.length)} (₹69/day/person)`
+                                            : "₹69 per person per day")
+                                        : event.pricingLabel}
+                                    </span>
+                                    {event.id === "visitor" ? (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-white/10 text-white/70 border border-white/5">
+                                        <Users className="w-3 h-3 text-white/40" />
+                                        {visitorCount} {visitorCount === 1 ? "visitor" : "visitors"} • {visitorDays.length} {visitorDays.length === 1 ? "day" : "days"}
+                                      </span>
+                                    ) : event.isTeam ? (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-white/10 text-white/70 border border-white/5">
+                                        <Users className="w-3 h-3 text-white/40" />
+                                        {event.minTeam === event.maxTeam
+                                          ? `${event.minTeam} members`
+                                          : `${event.minTeam} - ${event.maxTeam} members`}
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-white/10 text-white/70 border border-white/5">
+                                        Solo
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div
+                                  className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-all ml-4 ${
+                                    isSelected
+                                      ? "bg-cyan-400 border-cyan-400 text-black shadow-[0_0_12px_rgba(34,211,238,0.7)]"
+                                      : "border-white/20 bg-transparent"
+                                  }`}
+                                >
+                                  {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
+                                </div>
+                              </div>
+
+                              {/* Interactive Inline Visitor Configuration (Days & Quantity) */}
+                              {event.id === "visitor" && isSelected && (
+                                <div
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="mt-4 pt-4 border-t border-white/10 space-y-4"
+                                >
+                                  {/* Select Festival Days */}
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between items-center text-xs">
+                                      <span className="font-semibold text-white/80 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                                        <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                                        Select Festival Days
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={toggleAllVisitorDays}
+                                        className="text-[11px] font-mono text-cyan-400 hover:underline cursor-pointer"
+                                      >
+                                        {visitorDays.length === FESTIVAL_DAYS.length ? "Reset to Day 1" : "Select All 3 Days"}
+                                      </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {FESTIVAL_DAYS.map((day) => {
+                                        const isDaySelected = visitorDays.includes(day.id);
+                                        return (
+                                          <button
+                                            key={day.id}
+                                            type="button"
+                                            onClick={() => toggleVisitorDay(day.id)}
+                                            className={`py-2 px-3 rounded-xl border text-xs font-medium flex flex-col items-center justify-center transition-all cursor-pointer ${
+                                              isDaySelected
+                                                ? "bg-cyan-500/20 border-cyan-400 text-white shadow-[0_0_12px_rgba(6,182,212,0.25)]"
+                                                : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
+                                            }`}
+                                          >
+                                            <span className="font-bold">{day.label}</span>
+                                            <span className="text-[10px] font-mono text-cyan-300">{day.date}</span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  {/* Quantity / Number of Visitors */}
+                                  <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                    <div>
+                                      <div className="text-xs font-semibold text-white">Number of Visitors</div>
+                                      <div className="text-[10px] text-white/50 font-mono">
+                                        Passes issued for each person in your group
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-2 py-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVisitorCountChange(visitorCount - 1)}
+                                        disabled={visitorCount <= 1}
+                                        className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all cursor-pointer"
+                                        aria-label="Decrease visitor count"
+                                      >
+                                        <Minus className="w-3.5 h-3.5" />
+                                      </button>
+                                      <span className="font-mono text-sm font-black text-white w-6 text-center">
+                                        {visitorCount}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVisitorCountChange(visitorCount + 1)}
+                                        disabled={visitorCount >= 10}
+                                        className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all cursor-pointer"
+                                        aria-label="Increase visitor count"
+                                      >
+                                        <Plus className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Calculated Subtotal pill */}
+                                  <div className="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 flex justify-between items-center text-xs">
+                                    <span className="text-white/70 font-mono text-[11px]">
+                                      {visitorCount} visitor{visitorCount > 1 ? "s" : ""} × {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} @ ₹69/person/day
+                                    </span>
+                                    <span className="font-mono font-bold text-cyan-400 text-sm">
+                                      ₹{calculateVisitorPassFee(visitorCount, visitorDays.length)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                    <p className={`font-mono text-xs ${isVisitor ? "text-amber-400" : "text-violet-400"}`}>₹ {event.price}</p>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
         {/* STEP 2: YOUR DETAILS */}
         <div style={{ display: currentStep === "forms" ? "block" : "none" }}>
@@ -950,7 +1509,28 @@ export default function CheckoutForm() {
             ))}
 
             {/* Visitor Pass Group */}
-            {getActiveGroups().includes('visitor') && renderPersonalFields('visitor', 'Visitor Pass', false)}
+            {getActiveGroups().includes('visitor') &&
+              renderPersonalFields(
+                'visitor',
+                visitorCount > 1
+                  ? `Visitor Pass (${visitorCount} Attendees • ${visitorDays.length} ${visitorDays.length === 1 ? 'Day' : 'Days'})`
+                  : `Visitor Pass (${visitorDays.length} ${visitorDays.length === 1 ? 'Day' : 'Days'})`,
+                visitorCount > 1,
+                (
+                  <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-xs flex flex-wrap justify-between items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-cyan-400" />
+                      <span className="font-semibold text-white/90">Pass Validity:</span>
+                      <span className="text-cyan-300 font-mono">
+                        {visitorDays.map(d => `${FESTIVAL_DAYS.find(f => f.id === d)?.label} (${FESTIVAL_DAYS.find(f => f.id === d)?.date})`).join(", ")}
+                      </span>
+                    </div>
+                    <span className="text-white/50 font-mono">
+                      {visitorCount} Attendee{visitorCount > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                )
+              )}
             
           </div>
         </div>
@@ -970,11 +1550,37 @@ export default function CheckoutForm() {
                 </div>
 
                 {selectedEvents.map((eventId) => {
-                  const ev = EVENTS.find((e) => e.id === eventId);
+                  const ev = getEventById(eventId);
+                  if (!ev) return null;
+                  const groupMembers = teamMembers[ev.type];
+                  const totalMembers = 1 + (Array.isArray(groupMembers) ? groupMembers.length : 0);
+                  const itemPrice = calculateEventItemPrice(ev, totalMembers, {
+                    count: visitorCount,
+                    days: visitorDays,
+                  });
+
                   return (
-                    <div key={eventId} className="flex justify-between items-center text-white/90">
-                      <span>{ev?.title}</span>
-                      <span className="font-mono">₹ {ev?.price}</span>
+                    <div key={eventId} className="flex justify-between items-start text-white/90 py-1.5 border-b border-white/5 last:border-0">
+                      <div>
+                        <div className="font-semibold text-sm">{ev.title}</div>
+                        <div className="text-[11px] text-white/40 font-mono">{ev.category}</div>
+                        {eventId === "visitor" && (
+                          <div className="text-[11px] text-cyan-400 font-mono mt-0.5">
+                            {visitorCount} attendee{visitorCount > 1 ? "s" : ""} • {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} ({visitorDays.map(d => FESTIVAL_DAYS.find(f => f.id === d)?.label).join(", ")})
+                          </div>
+                        )}
+                        {ev.isTeam && ev.extraMemberFee > 0 && totalMembers > ev.baseIncludedMembers && (
+                          <div className="text-[11px] text-violet-400 font-mono mt-0.5">
+                            {totalMembers} members ({ev.baseIncludedMembers} base + {totalMembers - ev.baseIncludedMembers} extra @ ₹{ev.extraMemberFee})
+                          </div>
+                        )}
+                        {ev.isTeam && ev.extraMemberFee === 0 && (
+                          <div className="text-[11px] text-white/50 font-mono mt-0.5">
+                            Team of {totalMembers} members (flat team fee)
+                          </div>
+                        )}
+                      </div>
+                      <span className="font-mono text-sm font-bold text-violet-300">₹ {itemPrice}</span>
                     </div>
                   );
                 })}
@@ -983,36 +1589,110 @@ export default function CheckoutForm() {
                   <div className="text-gray-500 italic text-sm">No events selected.</div>
                 )}
 
+                {selectedEvents.includes('vaad_vivaad') && getField('generic', 'vaadVivaadRepresentative') && (
+                  <div className="p-3 rounded-lg bg-violet-950/30 border border-violet-500/20 text-xs text-white/80 flex flex-wrap justify-between items-center gap-1">
+                    <span className="font-mono text-white/50">Vaad Vivaad Representation:</span>
+                    <span className="font-semibold text-violet-300">{getField('generic', 'vaadVivaadRepresentative')}</span>
+                  </div>
+                )}
+
                 <div className="h-px w-full bg-white/10 my-4"></div>
                 
                 {/* Promo Code section */}
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="Enter promo code"
-                    className="flex-grow bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/20 focus:outline-none focus:border-violet-500 transition-all text-sm uppercase"
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setPromoApplied(promoCode.trim().length > 0)}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-all border border-white/10 hover:border-white/30"
-                  >
-                    Apply
-                  </button>
-                </div>
-
-                {promoApplied && (
-                  <div className="flex justify-between items-center text-green-400 text-sm">
-                    <span>Discount:</span>
-                    <span className="font-mono">- ₹ 100</span>
+                <div className="space-y-2 mb-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoCode}
+                      disabled={promoApplied || isCheckingPromo}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value.toUpperCase());
+                        if (promoError) setPromoError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !promoApplied && !isCheckingPromo) {
+                          e.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      placeholder="ENTER PROMO CODE"
+                      className="flex-grow bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/20 focus:outline-none focus:border-violet-500 transition-all text-sm uppercase disabled:opacity-60 font-mono"
+                    />
+                    {promoApplied ? (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="px-4 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-sm font-bold transition-all border border-rose-500/30 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isCheckingPromo || !promoCode.trim()}
+                        onClick={handleApplyCoupon}
+                        className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-bold text-white transition-all border border-violet-400/30 cursor-pointer flex items-center gap-1.5"
+                      >
+                        {isCheckingPromo ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Verifying...</span>
+                          </>
+                        ) : (
+                          <span>Apply</span>
+                        )}
+                      </button>
+                    )}
                   </div>
-                )}
+
+                  {promoError && (
+                    <p className="text-xs text-rose-400 font-medium">{promoError}</p>
+                  )}
+
+                  {promoApplied && couponData && (
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center text-emerald-400 text-xs font-mono">
+                      <span>
+                        Coupon {promoCode} applied ({couponData.discountType === 'fixed' ? `Special Price ₹${couponData.finalPrice}` : `${couponData.discountValue}% Off`})
+                      </span>
+                      <span className="font-bold">- ₹ {couponData.discountAmount}</span>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="flex justify-between items-center font-black text-xl text-violet-400 pt-2 border-t border-white/10">
                   <span>Total Amount</span>
                   <span>₹ {calculateTotal()}</span>
+                </div>
+
+                {paymentError && (
+                  <div className="mt-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5 text-left">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>{paymentError}</span>
+                  </div>
+                )}
+
+                <div className="mt-6 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCashfreePayment}
+                    disabled={isProcessingPayment}
+                    className="w-full py-4 px-6 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-extrabold text-base flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(139,92,246,0.35)] transition-all cursor-pointer"
+                  >
+                    {isProcessingPayment ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Connecting to Cashfree Gateway...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-5 h-5" />
+                        <span>Proceed to Pay ₹{calculateTotal()} via Cashfree</span>
+                      </>
+                    )}
+                  </button>
+                  <p className="text-[11px] text-white/40 font-mono mt-3 text-center uppercase tracking-wider">
+                    Secured by Cashfree Payments India 256-bit SSL • UPI, Cards, NetBanking
+                  </p>
                 </div>
               </div>
             </div>
@@ -1022,207 +1702,299 @@ export default function CheckoutForm() {
           </div>
         </div>
 
-        {/* STEP 4: PAYMENT */}
-        <div style={{ display: currentStep === "payment" ? "block" : "none" }}>
-          {verificationStatus === "verifying" && (
-            <div className="py-12 px-6 text-center space-y-6 max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto">
-                <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
-              </div>
-              <h3 className="text-xl font-bold uppercase tracking-wider text-white">
-                Verifying Payment
-              </h3>
-              <p className="text-white/60 text-sm leading-relaxed">
-                Communicating securely with Cashfree payment gateway. Please keep this window open while we generate your registration pass.
-              </p>
-            </div>
-          )}
-
-          {verificationStatus === "success" && verifiedOrder && (
-            <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(16,185,129,0.3)]">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black uppercase tracking-tight text-white">
-                  Registration Confirmed
+        {/* Verification Status / Result Screen when redirected back from Cashfree */}
+        {verificationStatus !== "idle" && (
+          <div className="space-y-6">
+            {verificationStatus === "verifying" && (
+              <div className="py-12 px-6 text-center space-y-6 max-w-md mx-auto">
+                <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto">
+                  <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+                </div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-white">
+                  Verifying Payment
                 </h3>
-                <p className="text-emerald-400 font-mono text-xs uppercase tracking-widest">
-                  Payment Processed Successfully
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Communicating securely with Cashfree payment gateway. Please keep this window open while we generate your registration pass.
                 </p>
               </div>
+            )}
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-mono text-xs">
-                <div className="flex justify-between border-b border-white/10 pb-2">
-                  <span className="text-white/50">Order ID:</span>
-                  <span className="text-white font-medium">{verifiedOrder.orderId}</span>
+            {verificationStatus === "success" && verifiedOrder && (
+              <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(16,185,129,0.3)]">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
                 </div>
-                <div className="flex justify-between border-b border-white/10 pb-2">
-                  <span className="text-white/50">Registration ID:</span>
-                  <span className="text-violet-300 font-medium">{verifiedOrder.registrationId}</span>
+                
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black uppercase tracking-tight text-white">
+                    Registration Confirmed
+                  </h3>
+                  <p className="text-emerald-400 font-mono text-xs uppercase tracking-widest">
+                    Payment Processed Successfully
+                  </p>
                 </div>
-                {verifiedOrder.email && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Pass Delivered To:</span>
-                    <span className="text-white/90">{verifiedOrder.email}</span>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-mono text-xs">
+                  <div className="flex justify-between border-b border-white/10 pb-2">
+                    <span className="text-white/50">Order ID:</span>
+                    <span className="text-white font-medium">{verifiedOrder.orderId}</span>
                   </div>
-                )}
-              </div>
-
-              <p className="text-white/60 text-xs leading-relaxed">
-                Your official festival pass with verifiable QR code has been generated. You may download it below.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                <a
-                  href={`/api/receipt?id=${encodeURIComponent(verifiedOrder.registrationId)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Pass (PDF)
-                </a>
-                <button
-                  type="button"
-                  onClick={() => { window.location.href = "/"; }}
-                  className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
-                >
-                  Return to Home
-                </button>
-              </div>
-            </div>
-          )}
-
-          {verificationStatus === "error" && (
-            <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
-              <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(244,63,94,0.3)]">
-                <XCircle className="w-8 h-8 text-rose-400" />
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black uppercase tracking-tight text-white">
-                  Payment Verification Issue
-                </h3>
-                <p className="text-rose-400/90 text-sm">
-                  {paymentError || "The transaction could not be confirmed or was cancelled."}
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const params = new URLSearchParams(window.location.search);
-                    const id = params.get("order_id");
-                    if (id) {
-                      verifyOrderPayment(id);
-                    } else {
-                      setVerificationStatus("idle");
-                    }
-                  }}
-                  className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Retry Verification
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVerificationStatus("idle");
-                    setPaymentError(null);
-                    setCurrentStep("review");
-                  }}
-                  className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
-                >
-                  Back to Review
-                </button>
-              </div>
-            </div>
-          )}
-
-          {verificationStatus === "idle" && (
-            <div className="space-y-6 text-center py-4">
-              <h3 className="text-xl font-bold uppercase tracking-wider text-white/90 border-b border-white/10 pb-2 mb-8">
-                Payment Summary
-              </h3>
-              
-              <div className="bg-[#260b3b]/30 border border-[#5e239d]/50 rounded-xl p-6 text-left mb-6 inline-block max-w-sm mx-auto w-full">
-                <h4 className="font-bold text-violet-300 mb-2 uppercase text-sm tracking-widest flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4" /> Before proceeding:
-                </h4>
-                <ul className="text-white/70 text-sm space-y-2 list-disc list-inside">
-                  <li>Ensure all personal details are accurate</li>
-                  <li>Payment is processed securely by Cashfree</li>
-                  <li>Do not refresh or close the page while processing</li>
-                </ul>
-              </div>
-
-              {paymentError && (
-                <div className="max-w-md mx-auto p-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-start gap-3 text-left">
-                  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-                  <span>{paymentError}</span>
-                </div>
-              )}
-              
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleCashfreePayment}
-                  disabled={isProcessingPayment}
-                  className="px-10 py-4 w-full md:w-auto bg-violet-600 hover:bg-violet-500 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg font-bold text-lg flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(139,92,246,0.3)] mx-auto transition-all text-white cursor-pointer"
-                >
-                  {isProcessingPayment ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Connecting to Cashfree Gateway...</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-5 h-5" />
-                      <span>Pay ₹ {calculateTotal()} via Cashfree</span>
-                    </>
+                  <div className="flex justify-between border-b border-white/10 pb-2">
+                    <span className="text-white/50">Registration ID:</span>
+                    <span className="text-violet-300 font-medium">{verifiedOrder.registrationId}</span>
+                  </div>
+                  {verifiedOrder.email && (
+                    <div className="flex justify-between">
+                      <span className="text-white/50">Pass Delivered To:</span>
+                      <span className="text-white/90">{verifiedOrder.email}</span>
+                    </div>
                   )}
-                </button>
+                </div>
+
+                <p className="text-white/60 text-xs leading-relaxed">
+                  Your official festival pass with verifiable QR code has been generated. You may download it below.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                  <a
+                    href={`/api/receipt?id=${encodeURIComponent(verifiedOrder.registrationId)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Pass (PDF)
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => { window.location.href = "/"; }}
+                    className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
+                  >
+                    Return to Home
+                  </button>
+                </div>
               </div>
-              
-              <p className="text-[11px] text-white/40 font-mono mt-4 uppercase tracking-widest">
-                Secured by Cashfree Payments India 256-bit SSL • UPI, Cards, NetBanking
-              </p>
+            )}
+
+            {verificationStatus === "error" && (
+              <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
+                <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(244,63,94,0.3)]">
+                  <XCircle className="w-8 h-8 text-rose-400" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black uppercase tracking-tight text-white">
+                    Payment Verification Issue
+                  </h3>
+                  <p className="text-rose-400/90 text-sm">
+                    {paymentError || "The transaction could not be confirmed or was cancelled."}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const params = new URLSearchParams(window.location.search);
+                      const id = params.get("order_id");
+                      if (id) {
+                        verifyOrderPayment(id);
+                      } else {
+                        setVerificationStatus("idle");
+                      }
+                    }}
+                    className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Retry Verification
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVerificationStatus("idle");
+                      setPaymentError(null);
+                      setCurrentStep("review");
+                    }}
+                    className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
+                  >
+                    Back to Review
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Navigation Buttons */}
+        {verificationStatus === "idle" && (
+          <div className="flex lg:hidden justify-between items-center mt-6 border-t border-white/10 pt-4">
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={stepIndex === 0 || isProcessingPayment}
+              className={`px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 text-xs font-bold ${
+                stepIndex === 0
+                  ? "opacity-0 pointer-events-none" 
+                  : "bg-white/5 border border-white/10 hover:border-cyan-400/50 hover:bg-white/10 text-white cursor-pointer"
+              }`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back
+            </button>
+
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isNextDisabled() || isProcessingPayment}
+              className="px-8 py-2.5 bg-cyan-400 hover:bg-cyan-300 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all flex items-center gap-2 font-bold text-black text-xs shadow-[0_0_15px_rgba(6,182,212,0.35)] cursor-pointer"
+            >
+              {isProcessingPayment ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Connecting...</span>
+                </>
+              ) : currentStep === "review" ? (
+                <>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Pay ₹{calculateTotal()}</span>
+                </>
+              ) : (
+                <>
+                  <span>Continue</span>
+                  <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Right Column: Sticky Selected Items Sidebar */}
+      <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-4">
+        <div className="bg-[#0c0c0e] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-5">
+          <h3 className="text-base font-bold text-white uppercase tracking-wider">
+            Selected Items
+          </h3>
+
+          {/* List of items */}
+          <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/20">
+            {selectedEvents.length === 0 ? (
+              <div className="text-white/40 text-xs italic py-6 text-center">
+                No events selected yet. Click an event to add.
+              </div>
+            ) : (
+              selectedEvents.map((id) => {
+                const ev = getEventById(id);
+                if (!ev) return null;
+                const groupMembers = teamMembers[ev.type];
+                const totalMembers = 1 + (Array.isArray(groupMembers) ? groupMembers.length : 0);
+                const price = calculateEventItemPrice(ev, totalMembers, {
+                  count: visitorCount,
+                  days: visitorDays,
+                });
+
+                return (
+                  <div key={id} className="flex justify-between items-start text-xs py-2 border-b border-white/5 last:border-0">
+                    <div>
+                      <div className="font-bold text-white uppercase tracking-wide">{ev.title}</div>
+                      <div className="text-[10px] text-white/40 font-mono">
+                        {id === "visitor"
+                          ? `${visitorCount} Attendee${visitorCount > 1 ? "s" : ""} • ${visitorDays.length} Day${visitorDays.length > 1 ? "s" : ""}`
+                          : ev.category}
+                      </div>
+                    </div>
+                    <span className="font-mono text-cyan-400 font-bold text-xs shrink-0">
+                      {ev.isTeam ? `Team ₹${price}` : `₹${price}`}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {promoApplied && couponData && (
+            <div className="flex justify-between items-center text-xs font-mono text-emerald-400 border-t border-white/5 pt-2">
+              <span>Promo ({promoCode})</span>
+              <span>- ₹{couponData.discountAmount}</span>
+            </div>
+          )}
+
+          <div className="border-t border-white/10 pt-4 flex justify-between items-baseline">
+            <span className="font-bold text-sm text-white uppercase tracking-wider">Total</span>
+            <span className="font-mono text-2xl font-black text-white">
+              ₹{calculateTotal().toFixed(2)}
+            </span>
+          </div>
+
+          {/* Sidebar Action Button */}
+          {currentStep === "select" && (
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={selectedEvents.length === 0}
+              className="w-full py-3.5 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:opacity-30 disabled:cursor-not-allowed text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all cursor-pointer"
+            >
+              <span>Continue</span>
+              <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          )}
+
+          {currentStep === "forms" && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isNextDisabled()}
+                className="w-full py-3.5 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:opacity-30 disabled:cursor-not-allowed text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all cursor-pointer"
+              >
+                <span>Proceed to Review</span>
+                <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+              <button
+                type="button"
+                onClick={handleBack}
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Events</span>
+              </button>
+            </div>
+          )}
+
+          {currentStep === "review" && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleCashfreePayment}
+                disabled={isProcessingPayment}
+                className="w-full py-3.5 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all cursor-pointer"
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Connecting...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Proceed to Payment</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={isProcessingPayment}
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Edit Details</span>
+              </button>
             </div>
           )}
         </div>
       </div>
-
-      {/* Navigation Buttons */}
-      <div className="relative z-50 flex justify-between items-center mt-6 border-t border-white/10 pt-4 bg-[#020202]">
-        <button
-          type="button"
-          onClick={handleBack}
-          disabled={stepIndex === 0 || verificationStatus === "success" || verificationStatus === "verifying"}
-          className={`relative z-50 px-6 py-3 rounded-lg transition-all flex items-center gap-2 text-sm font-bold ${
-            stepIndex === 0 || verificationStatus === "success" || verificationStatus === "verifying"
-              ? "opacity-0 pointer-events-none" 
-              : "bg-white/5 border border-white/10 hover:border-violet-400/50 hover:bg-white/10 text-white cursor-pointer"
-          }`}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-
-        {currentStep !== "payment" && (
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={isNextDisabled()}
-            className="relative z-50 px-8 py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-900/40 disabled:text-white/40 disabled:shadow-none disabled:cursor-not-allowed rounded-lg transition-all flex items-center gap-2 font-bold shadow-[0_0_15px_rgba(139,92,246,0.4)] text-white text-sm"
-          >
-            {currentStep === "review" ? "Proceed to Payment" : "Continue"}
-            {currentStep !== "review" && <ChevronRight className="w-4 h-4" />}
-          </button>
-        )}
-      </div>
     </div>
-  );
+  </div>
+);
 }

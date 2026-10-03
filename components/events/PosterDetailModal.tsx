@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { Download, FileText } from "lucide-react";
 import { GalleryItem } from "@/lib/highlights-data";
 
 /**
@@ -94,6 +95,29 @@ export default function PosterDetailModal({
             <span>{item.venue}</span>
             <span className="h-1 w-1 rounded-full bg-slate-600" />
             <span>Sabrang {item.year}</span>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap gap-2.5">
+            <a
+              href="/docs/Sabrang_2026_Event_Rulebook.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              download="Sabrang_2026_Event_Rulebook.pdf"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 text-xs font-semibold transition-all shadow-sm active:scale-95"
+            >
+              <FileText className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Event Rulebook (PDF)</span>
+            </a>
+            <a
+              href="/docs/Sabrang_2026_Brochure.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              download="Sabrang_2026_Brochure.pdf"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 text-xs font-semibold transition-all shadow-sm active:scale-95"
+            >
+              <Download className="w-3.5 h-3.5 text-purple-400" />
+              <span>Brochure (PDF)</span>
+            </a>
           </div>
         </div>
       </div>

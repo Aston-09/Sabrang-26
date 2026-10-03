@@ -44,33 +44,19 @@ export function sanitizeErrorDetails(input: string | null | undefined): string {
 }
 
 /**
- * Gets or creates the nodemailer transporter safely.
+ * Sends an error alert email via Brevo.
  */
-async function getAlertTransporter() {
-  const nodemailer = await import('nodemailer');
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                       (process.env.NEXT_PUBLIC_CASHFREE_ENV || '').trim().toUpperCase() === 'PRODUCTION';
-
-  return nodemailer.createTransport({
-    pool: true,
-    maxConnections: 3,
-    rateLimit: 2,
-    host: process.env.SMTP_HOST || 'smtp.office365.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: false, // STARTTLS
-    auth: {
-      user: process.env.SMTP_USER || '',
-      pass: process.env.SMTP_PASS || '',
-    },
-    tls: isProduction ? {
-      rejectUnauthorized: true
-    } : {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 8000,
-    greetingTimeout: 5000,
-    socketTimeout: 10000,
+async function sendAlertEmail(to: string, subject: string, htmlContent: string, textContent: string): Promise<void> {
+  const { sendBrevoEmail } = await import('./brevo');
+  const result = await sendBrevoEmail({
+    to: [{ email: to, name: 'Sabrang Dev Team' }],
+    subject,
+    htmlContent,
+    textContent,
   });
+  if (!result.success) {
+    throw new Error(result.error || 'Brevo alert dispatch failed');
+  }
 }
 
 /**
@@ -107,7 +93,7 @@ export async function sendErrorNotificationAlert(payload: ErrorAlertPayload): Pr
 
   try {
     const recipientEmail = process.env.ERROR_ALERT_EMAIL || 'devamgupta@jklu.edu.in';
-    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'admin@jklu.edu.in';
+    const fromAddress = process.env.BREVO_SENDER_EMAIL || 'sabrang@jklu.edu.in';
     const environment = payload.environment || process.env.NODE_ENV || 'development';
 
     // Sanitize message and stack trace to prevent credential leaks
@@ -219,17 +205,7 @@ Stack Trace:
 ${cleanStack.substring(0, 1000)}
     `.trim();
 
-    const transporter = await getAlertTransporter();
-
-    const mailOptions = {
-      from: `"Sabrang System Monitor" <${fromAddress}>`,
-      to: recipientEmail,
-      subject: subject,
-      text: textContent,
-      html: htmlContent,
-    };
-
-    await transporter.sendMail(mailOptions);
+    await sendAlertEmail(recipientEmail, subject, htmlContent, textContent);
     console.log(`[ErrorAlertService] Error notification email sent successfully to ${recipientEmail} for Error ID: ${errorId}`);
 
     // Update Firestore error record notification status if errorId exists
@@ -249,7 +225,7 @@ ${cleanStack.substring(0, 1000)}
     if (payload.errorId && payload.errorId !== 'N/A' && adminDb) {
       adminDb.collection('systemErrors').doc(payload.errorId).update({
         notificationStatus: 'FAILED',
-        notificationError: (sendErr as any)?.message || 'SMTP dispatch failed',
+        notificationError: (sendErr as any)?.message || 'Brevo dispatch failed',
       }).catch(() => {});
     }
 

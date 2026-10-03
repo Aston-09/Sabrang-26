@@ -7,6 +7,7 @@ import { finalizeRegistration } from '@/lib/registrationHelper';
 import { validateRegistrationNumber } from '@/lib/utils';
 
 import { isRateLimited, sanitizeObject, isProd, cashfreeAppId, cashfreeSecretKey, formatPhoneNumber } from '@/lib/security';
+import { calculateTotalRegistrationFee } from '@/lib/eventPricing';
 
 // Initialize Cashfree
 const cashfree = new Cashfree(
@@ -104,8 +105,19 @@ export async function POST(req: Request) {
       }
       const code = (data.coupon || '').trim().toUpperCase();
       const eventTarget = data.eventId || data.event || data.eventName || data.eventTitle || '';
-      // Server-side calculated base price. Ignore client-provided amount to prevent price tampering.
-      const basePrice = 500;
+      
+      const eventList = Array.isArray(data.selectedEvents) && data.selectedEvents.length > 0
+        ? data.selectedEvents
+        : (data.eventId ? [data.eventId] : []);
+
+      let basePrice = calculateTotalRegistrationFee(eventList, data.teamMembers, data.visitorConfig);
+      if (basePrice <= 0 && typeof data.basePrice === 'number' && data.basePrice > 0) {
+        basePrice = data.basePrice;
+      }
+      if (basePrice <= 0) {
+        basePrice = 500;
+      }
+
       const couponStatus = await checkCoupon(code, basePrice, eventTarget);
       return NextResponse.json(couponStatus);
     }
@@ -169,30 +181,13 @@ export async function POST(req: Request) {
         const eventTarget = data.eventId || data.event || data.eventName || data.eventTitle || '';
         
         // Authoritative event catalog prices to prevent price tampering
-        const EVENT_PRICES: Record<string, number> = {
-          visitor: 69,
-          panache: 2999,
-          dance_battle: 2499,
-          bandjam: 1499,
-          bgmi: 499,
-          valorant: 499,
-          freefire: 499,
-          versevaad: 499,
-          focus: 499,
-          dumb_show: 499,
-          clay_modelling: 499,
-          echoes_of_noor: 499,
-          bidding: 1499,
-          courtroom: 1499,
-          art_relay: 1499,
-        };
+        const eventList = Array.isArray(data.selectedEvents) && data.selectedEvents.length > 0
+          ? data.selectedEvents
+          : (data.eventId ? [data.eventId] : []);
 
-        let basePrice = 500;
-        if (Array.isArray(data.selectedEvents) && data.selectedEvents.length > 0) {
-          const sum = data.selectedEvents.reduce((acc: number, evId: string) => acc + (EVENT_PRICES[evId] ?? 0), 0);
-          if (sum > 0) basePrice = sum;
-        } else if (data.eventId && EVENT_PRICES[data.eventId]) {
-          basePrice = EVENT_PRICES[data.eventId];
+        let basePrice = calculateTotalRegistrationFee(eventList, data.teamMembers, data.visitorConfig);
+        if (basePrice <= 0) {
+          basePrice = 500;
         }
 
         const couponStatus = await checkCoupon(couponCode, basePrice, eventTarget);

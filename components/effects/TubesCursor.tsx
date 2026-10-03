@@ -7,7 +7,6 @@ import {
   CURSOR_TRAIL_COLORS,
   CURSOR_TRAIL_MAX_SEGMENTS,
   CURSOR_TRAIL_MIN_SEGMENTS,
-  CURSOR_TRAIL_IDLE_MS,
 } from "@/lib/constants";
 
 export default function TubesCursor() {
@@ -61,111 +60,13 @@ export default function TubesCursor() {
         app = null;
       });
 
-    let idleTimer: NodeJS.Timeout | null = null;
-    let animFrameId: number | null = null;
-    let isIdle = false;
-
-    const currentPos = {
-      x: typeof window !== "undefined" ? window.innerWidth / 2 : 500,
-      y: typeof window !== "undefined" ? window.innerHeight / 2 : 400,
-    };
-    const velocity = {
-      x: (Math.random() - 0.5) * 4,
-      y: (Math.random() - 0.5) * 4,
-    };
-    let angle = Math.random() * Math.PI * 2;
-    let speed = 3;
-
-    const MAX_IDLE_WANDER_MS = 10000;
-
-    const startRandomWander = () => {
-      if (isIdle) return;
-      isIdle = true;
-      const wanderStart = performance.now();
-
-      const wander = () => {
-        if (!isIdle) return;
-        // Stop wandering after the max duration to save GPU
-        if (performance.now() - wanderStart > MAX_IDLE_WANDER_MS) {
-          isIdle = false;
-          return;
-        }
-
-        angle += (Math.random() - 0.5) * 0.2;
-        speed += (Math.random() - 0.5) * 0.2;
-        speed = Math.max(1.5, Math.min(4.5, speed));
-
-        velocity.x = Math.cos(angle) * speed;
-        velocity.y = Math.sin(angle) * speed;
-
-        currentPos.x += velocity.x;
-        currentPos.y += velocity.y;
-
-        const padding = 100;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        if (currentPos.x < padding) {
-          currentPos.x = padding;
-          angle = Math.PI - angle;
-        } else if (currentPos.x > width - padding) {
-          currentPos.x = width - padding;
-          angle = Math.PI - angle;
-        }
-
-        if (currentPos.y < padding) {
-          currentPos.y = padding;
-          angle = -angle;
-        } else if (currentPos.y > height - padding) {
-          currentPos.y = height - padding;
-          angle = -angle;
-        }
-
-        // Always dispatch to our own canvas so the threejs-components library
-        // receives every idle-wander tick. Using elementFromPoint() breaks when
-        // HeroScene's full-screen WebGL canvas is on top — that canvas swallows
-        // the untrusted synthetic events before they can reach the tubes renderer.
-        if (canvas) {
-          const eventInit = {
-            clientX: currentPos.x,
-            clientY: currentPos.y,
-            pageX: currentPos.x,
-            pageY: currentPos.y,
-            bubbles: true,
-            cancelable: true,
-          };
-
-          canvas.dispatchEvent(new PointerEvent("pointermove", eventInit));
-          canvas.dispatchEvent(new MouseEvent("mousemove", eventInit));
-        }
-
-        animFrameId = requestAnimationFrame(wander);
-      };
-
-      animFrameId = requestAnimationFrame(wander);
-    };
-
-    const stopRandomWander = () => {
-      isIdle = false;
-      if (animFrameId !== null) {
-        cancelAnimationFrame(animFrameId);
-        animFrameId = null;
-      }
-    };
-
-    const resetIdleTimer = () => {
-      stopRandomWander();
-      if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        startRandomWander();
-      }, CURSOR_TRAIL_IDLE_MS);
-    };
-
     const handleUserPointer = (e: MouseEvent | PointerEvent | TouchEvent) => {
+      // Guard against synthetic/dispatched events to prevent infinite bubbling loops
+      if ("isTrusted" in e && !e.isTrusted) return;
+
       let cx = 0;
       let cy = 0;
       if ("clientX" in e && typeof e.clientX === "number") {
-        if (!e.isTrusted) return;
         cx = e.clientX;
         cy = e.clientY;
       } else if ("touches" in e && e.touches.length > 0) {
@@ -174,10 +75,6 @@ export default function TubesCursor() {
       } else {
         return;
       }
-
-      currentPos.x = cx;
-      currentPos.y = cy;
-      resetIdleTimer();
 
       if (canvas) {
         const eventInit: any = {
@@ -189,7 +86,7 @@ export default function TubesCursor() {
           screenY: cy,
           pointerType: "mouse",
           isPrimary: true,
-          bubbles: true,
+          bubbles: false,
           cancelable: true,
         };
         try {
@@ -201,39 +98,15 @@ export default function TubesCursor() {
       }
     };
 
-    const handleMouseLeave = () => {
-      startRandomWander();
-    };
-
-    const handleWindowBlur = () => {
-      startRandomWander();
-    };
-
-    const handleWindowFocus = () => {
-      resetIdleTimer();
-    };
-
     window.addEventListener("pointermove", handleUserPointer, { passive: true });
     window.addEventListener("mousemove", handleUserPointer, { passive: true });
     window.addEventListener("touchmove", handleUserPointer, { passive: true });
-    window.addEventListener("mouseleave", handleMouseLeave);
-    document.addEventListener("mouseleave", handleMouseLeave);
-    window.addEventListener("blur", handleWindowBlur);
-    window.addEventListener("focus", handleWindowFocus);
-
-    resetIdleTimer();
 
     return () => {
       isMounted = false;
-      stopRandomWander();
-      if (idleTimer) clearTimeout(idleTimer);
       window.removeEventListener("pointermove", handleUserPointer);
       window.removeEventListener("mousemove", handleUserPointer);
       window.removeEventListener("touchmove", handleUserPointer);
-      window.removeEventListener("mouseleave", handleMouseLeave);
-      document.removeEventListener("mouseleave", handleMouseLeave);
-      window.removeEventListener("blur", handleWindowBlur);
-      window.removeEventListener("focus", handleWindowFocus);
       if (app && typeof app.dispose === "function") {
         app.dispose();
       }

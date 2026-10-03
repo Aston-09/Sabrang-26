@@ -142,8 +142,6 @@ export const CURSOR_TRAIL_COLORS = [
 // tail lifetime ≈ segments / 60fps: 12–45 lands the longest tail at ~0.75s.
 export const CURSOR_TRAIL_MIN_SEGMENTS = 12;
 export const CURSOR_TRAIL_MAX_SEGMENTS = 45;
-// Idle delay before the trail starts wandering on its own.
-export const CURSOR_TRAIL_IDLE_MS = 1200;
 
 export interface GalleryItem {
   id: number;

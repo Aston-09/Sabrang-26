@@ -16,6 +16,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Download, FileText } from "lucide-react";
 import { galleryItems, type GalleryItem } from "@/lib/highlights-data";
 import { createWheelGesture } from "@/lib/gestureStepper";
 import PosterDetailModal from "./PosterDetailModal";
@@ -106,12 +107,43 @@ function ArchiveHeading({
     <header
       className={`mx-auto w-full max-w-[1440px] px-6 sm:px-10 md:px-14 flex items-center justify-between gap-4 ${className}`}
     >
-      <h1
-        id="gallery-highlights-heading"
-        className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white font-[family-name:var(--font-space-grotesk)] text-neon-rgb"
-      >
-        Events
-      </h1>
+      <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
+        <h1
+          id="gallery-highlights-heading"
+          className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white font-[family-name:var(--font-space-grotesk)] text-neon-rgb"
+        >
+          Events
+        </h1>
+
+        {/* Download links */}
+        <div className="pointer-events-auto flex items-center gap-2">
+          <a
+            href="/docs/Sabrang_2026_Brochure.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            download="Sabrang_2026_Brochure.pdf"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-500/40 bg-purple-950/40 hover:bg-purple-900/60 hover:border-purple-300 text-purple-200 text-[11px] sm:text-xs font-semibold backdrop-blur-md transition-all shadow-[0_0_12px_rgba(168,85,247,0.2)] active:scale-95"
+            title="Download Sabrang 2026 Brochure (PDF)"
+          >
+            <Download className="w-3.5 h-3.5 text-purple-300" />
+            <span className="hidden sm:inline">Festival</span>
+            <span>Brochure</span>
+          </a>
+
+          <a
+            href="/docs/Sabrang_2026_Event_Rulebook.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            download="Sabrang_2026_Event_Rulebook.pdf"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-900/60 hover:border-cyan-300 text-cyan-200 text-[11px] sm:text-xs font-semibold backdrop-blur-md transition-all shadow-[0_0_12px_rgba(6,182,212,0.2)] active:scale-95"
+            title="Download Sabrang 2026 Event Rulebook (PDF)"
+          >
+            <FileText className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="hidden sm:inline">Event</span>
+            <span>Rulebook</span>
+          </a>
+        </div>
+      </div>
 
       {/* Dropdown sits to the right of the title, pointer-events enabled even
           when the heading is inside the pointer-events-none overlay layer. */}
@@ -130,10 +162,34 @@ function ArchiveHeading({
 
 function StaticArchive({ items }: { items: GalleryItem[] }) {
   return (
-    <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-3 px-6 py-16 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-      {items.map((item, index) => (
-        <ArchivePlate key={item.id} item={item} index={index} />
-      ))}
+    <div className="mx-auto w-full max-w-6xl px-6 py-12">
+      <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+        <a
+          href="/docs/Sabrang_2026_Brochure.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          download="Sabrang_2026_Brochure.pdf"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/40 bg-purple-950/40 hover:bg-purple-900/60 text-purple-200 text-xs font-semibold backdrop-blur-md transition-all"
+        >
+          <Download className="w-4 h-4 text-purple-300" />
+          <span>Download Festival Brochure (PDF)</span>
+        </a>
+        <a
+          href="/docs/Sabrang_2026_Event_Rulebook.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          download="Sabrang_2026_Event_Rulebook.pdf"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/40 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-200 text-xs font-semibold backdrop-blur-md transition-all"
+        >
+          <FileText className="w-4 h-4 text-cyan-300" />
+          <span>Download Event Rulebook (PDF)</span>
+        </a>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {items.map((item, index) => (
+          <ArchivePlate key={item.id} item={item} index={index} />
+        ))}
+      </div>
     </div>
   );
 }
