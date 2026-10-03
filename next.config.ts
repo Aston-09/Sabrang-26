@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  serverExternalPackages: ["firebase-admin"],
   output: process.env.VERCEL ? undefined : 'standalone',
   images: {
     // Serve AVIF first (≈40% smaller than WebP for photos), then WebP as fallback.
