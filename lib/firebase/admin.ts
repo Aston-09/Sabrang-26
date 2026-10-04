@@ -1,5 +1,5 @@
 import { getApps, initializeApp, cert } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
+import type { Auth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
 function formatPrivateKey(rawKey: string | undefined): string | undefined {
@@ -46,9 +46,15 @@ if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   }
 }
 
-export const adminAuth = getApps().length
-  ? getAuth()
-  : (null as unknown as ReturnType<typeof getAuth>);
+export const adminAuth = new Proxy({} as any, {
+  get(_target, prop) {
+    if (!getApps().length) return null;
+    const { getAuth } = require("firebase-admin/auth");
+    const auth = getAuth();
+    const val = (auth as any)[prop];
+    return typeof val === "function" ? val.bind(auth) : val;
+  },
+});
 export const adminDb = getApps().length
   ? getFirestore()
   : (null as unknown as ReturnType<typeof getFirestore>);

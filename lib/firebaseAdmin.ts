@@ -1,6 +1,6 @@
 import { getApps, initializeApp, cert, applicationDefault, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
-import { getAuth, type Auth } from 'firebase-admin/auth';
+import type { Auth } from 'firebase-admin/auth';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -122,5 +122,13 @@ function initFirebaseAdmin(): App | null {
 const app = initFirebaseAdmin();
 export const adminApp = app as App;
 export const adminDb = app ? getFirestore(app) : (null as unknown as Firestore);
-export const adminAuth = app ? getAuth(app) : (null as unknown as Auth);
+export const adminAuth: Auth = new Proxy({} as Auth, {
+  get(_target, prop) {
+    if (!app) return null;
+    const { getAuth } = require('firebase-admin/auth');
+    const auth = getAuth(app);
+    const val = (auth as any)[prop];
+    return typeof val === 'function' ? val.bind(auth) : val;
+  },
+});
 
