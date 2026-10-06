@@ -34,7 +34,6 @@ type TeamMember = {
   gender: string;
   age: string;
   institutionName: string;
-  referralCode: string;
   address: string;
   idCard: File | null;
 };
@@ -216,8 +215,6 @@ export default function CheckoutForm() {
       const gender = getField(primaryGroup, "gender");
       const institutionName = getField(primaryGroup, "institutionName");
       const address = getField(primaryGroup, "address");
-      const rawRef = getField(primaryGroup, "referralCode");
-      const referralCode = rawRef && rawRef.trim() ? rawRef.trim().toUpperCase() : "2024BTECH014";
 
       const regNum = getField(primaryGroup, "registrationNumber") || getField(primaryGroup, "rollNumber") || `REG_${Date.now()}`;
 
@@ -233,8 +230,6 @@ export default function CheckoutForm() {
         address,
         registrationNumber: regNum,
         rollNumber: regNum,
-        referralCode,
-        referredByCode: referralCode,
         coupon: promoApplied ? promoCode.trim().toUpperCase() : "",
         selectedEvents,
         teamMembers,
@@ -317,6 +312,30 @@ export default function CheckoutForm() {
       return;
     }
     if (stepIndex < STEPS.length - 1) {
+      if (currentStep === "select") {
+        const activeGroups = getActiveGroups();
+        const nextTeam = { ...teamMembers };
+        let modified = false;
+        activeGroups.forEach(group => {
+          if (group === "visitor") return;
+          const req = getGroupTeamRequirements(group, selectedEvents, { count: visitorCount, days: visitorDays });
+          const currentMembers = nextTeam[group] || [];
+          const neededExtra = req.min - 1;
+          if (currentMembers.length < neededExtra) {
+            const toAdd = neededExtra - currentMembers.length;
+            const newItems = Array.from({ length: toAdd }, () => ({
+              id: Math.random().toString(36).substr(2, 9),
+              name: "", email: "", mobileNumber: "", gender: "", age: "",
+              institutionName: getField(group, 'institutionName') || getField("generic", "institutionName"),
+              address: getField(group, 'address') || getField("generic", "address"),
+              idCard: null,
+            }));
+            nextTeam[group] = [...currentMembers, ...newItems];
+            modified = true;
+          }
+        });
+        if (modified) setTeamMembers(nextTeam);
+      }
       setCurrentStep(STEPS[stepIndex + 1].id);
       if (formContainerRef.current) {
         formContainerRef.current.scrollIntoView({ behavior: "smooth" });
@@ -435,7 +454,6 @@ export default function CheckoutForm() {
           gender: "",
           age: "",
           institutionName: getField("visitor", "institutionName") || getField("generic", "institutionName"),
-          referralCode: getField("visitor", "referralCode").toUpperCase(),
           address: getField("visitor", "address") || getField("generic", "address"),
           idCard: null,
         }));
@@ -478,12 +496,12 @@ export default function CheckoutForm() {
   };
 
   const updateField = (group: string, field: string, value: string) => {
-    const finalValue = field === 'referralCode' ? value.toUpperCase() : value;
+    const finalValue = value;
     setFormData((prev) => {
       const newData = { ...prev, [`${group}_${field}`]: finalValue };
       
       // Auto-sync personal details across groups for better UX
-      const personalFields = ['name', 'email', 'mobileNumber', 'gender', 'age', 'institutionName', 'address', 'referralCode'];
+      const personalFields = ['name', 'email', 'mobileNumber', 'gender', 'age', 'institutionName', 'address'];
       if (personalFields.includes(field)) {
         // Sync to all other active groups
         const activeGroups = getActiveGroups();
@@ -522,7 +540,6 @@ export default function CheckoutForm() {
       gender: "",
       age: "",
       institutionName: getField(group, 'institutionName'), // copy from leader by default
-      referralCode: getField(group, 'referralCode').toUpperCase(),
       address: getField(group, 'address'),
       idCard: null,
     };
@@ -565,12 +582,13 @@ export default function CheckoutForm() {
         const email = getField(group, 'email').trim();
         const mobile = getField(group, 'mobileNumber').trim();
         const gender = getField(group, 'gender');
+        const age = getField(group, 'age').trim();
         const inst = getField(group, 'institutionName').trim();
         const address = getField(group, 'address').trim();
         const idCard = idCards[group];
         
         // ALL groups (including visitor) now require all these details
-        if (!name || !isValidEmail(email) || !isValidPhone(mobile) || !gender || !inst || !address) return true;
+        if (!name || !isValidEmail(email) || !isValidPhone(mobile) || !gender || !age || !inst || !idCard || !address) return true;
 
         // Specific fields
         if (group === 'bgmi') {
@@ -607,11 +625,11 @@ export default function CheckoutForm() {
           
           for (const m of members) {
             if (group === 'visitor') {
-              if (!m.name.trim() || !isValidPhone(m.mobileNumber) || !m.gender || !m.institutionName.trim() || !m.address.trim()) {
+              if (!m.name.trim() || !isValidPhone(m.mobileNumber) || !m.gender || !m.age.trim() || !m.institutionName.trim() || !m.idCard || !m.address.trim()) {
                 return true;
               }
             } else {
-              if (!m.name.trim() || !isValidEmail(m.email) || !isValidPhone(m.mobileNumber) || !m.gender || !m.institutionName.trim() || !m.address.trim()) {
+              if (!m.name.trim() || !isValidEmail(m.email) || !isValidPhone(m.mobileNumber) || !m.gender || !m.age.trim() || !m.institutionName.trim() || !m.idCard || !m.address.trim()) {
                 return true;
               }
             }
@@ -633,10 +651,10 @@ export default function CheckoutForm() {
     return (
       <div key={group} className="space-y-6 bg-white/5 p-6 rounded-xl border border-white/10 mt-6 relative overflow-hidden">
         {/* Glow effect */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 opacity-50"></div>
+        <div className="hidden"></div>
         
         <div className="mb-6">
-          <h3 className="text-xl font-bold uppercase tracking-wider text-white/90">
+          <h3 className="text-xl font-semibold text-white text-white/90">
             {title}
           </h3>
         </div>
@@ -651,7 +669,7 @@ export default function CheckoutForm() {
         {showTeamFields && !specificFields && group !== 'visitor' && (
           <div className="space-y-4 mb-8">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
+              <label className="text-sm font-medium text-white/80 flex justify-between">
                 <span>Team / Squad Name <span className="text-violet-400">*</span></span>
               </label>
               <input
@@ -659,7 +677,7 @@ export default function CheckoutForm() {
                 value={getField(group, 'teamName')}
                 onBlur={() => handleBlur(`${group}_teamName`)}
                 onChange={(e) => updateField(group, 'teamName', e.target.value)}
-                className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all ${
+                className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
                   touched[`${group}_teamName`] && !getField(group, 'teamName').trim() ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
                 }`}
                 placeholder="Enter Team Name"
@@ -671,7 +689,7 @@ export default function CheckoutForm() {
         {/* Vaad Vivaad Chosen Representative */}
         {group === 'generic' && selectedEvents.includes('vaad_vivaad') && (
           <div className="space-y-3 mb-8 p-4 rounded-xl bg-violet-950/20 border border-violet-500/30">
-            <label className="text-xs font-mono text-violet-300 uppercase tracking-widest flex justify-between">
+            <label className="text-sm text-white/80 text-violet-300 uppercase tracking-widest flex justify-between">
               <span>
                 Vaad Vivaad — Chosen MP / Journalist <span className="text-violet-400">*</span>
               </span>
@@ -697,7 +715,7 @@ export default function CheckoutForm() {
               ))}
             </select>
             {touched['generic_vaadVivaadRepresentative'] && !getField('generic', 'vaadVivaadRepresentative').trim() && (
-              <p className="text-xs text-red-400 font-mono">
+              <p className="text-xs text-red-400 font-sans">
                 Please select an MP or Journalist from the list to continue.
               </p>
             )}
@@ -706,15 +724,15 @@ export default function CheckoutForm() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Name <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Name" : group === 'visitor' ? "Primary Attendee Name" : "Name"} <span className="text-violet-400">*</span></span>
             </label>
             <input
               type="text"
               value={getField(group, 'name')}
               onBlur={() => handleBlur(`${group}_name`)}
               onChange={(e) => updateField(group, 'name', e.target.value)}
-              className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all ${
+              className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
                 touched[`${group}_name`] && !getField(group, 'name').trim() ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
               }`}
               placeholder="Enter your full name"
@@ -722,15 +740,15 @@ export default function CheckoutForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Email <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Email" : group === 'visitor' ? "Primary Attendee Email" : "Email"} <span className="text-violet-400">*</span></span>
             </label>
             <input
               type="email"
               value={getField(group, 'email')}
               onBlur={() => handleBlur(`${group}_email`)}
               onChange={(e) => updateField(group, 'email', e.target.value)}
-              className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all ${
+              className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
                 touched[`${group}_email`] && !isValidEmail(getField(group, 'email')) ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
               }`}
               placeholder="you@example.com"
@@ -738,15 +756,15 @@ export default function CheckoutForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Mobile Number <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Mobile Number" : group === 'visitor' ? "Primary Attendee Mobile" : "Mobile Number"} <span className="text-violet-400">*</span></span>
             </label>
             <input
               type="tel"
               value={getField(group, 'mobileNumber')}
               onBlur={() => handleBlur(`${group}_mobileNumber`)}
               onChange={(e) => updateField(group, 'mobileNumber', e.target.value)}
-              className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all ${
+              className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
                 touched[`${group}_mobileNumber`] && !isValidPhone(getField(group, 'mobileNumber')) ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
               }`}
               placeholder="10-digit number"
@@ -754,14 +772,14 @@ export default function CheckoutForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Gender <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Gender" : group === 'visitor' ? "Primary Attendee Gender" : "Gender"} <span className="text-violet-400">*</span></span>
             </label>
             <select
               value={getField(group, 'gender')}
               onBlur={() => handleBlur(`${group}_gender`)}
               onChange={(e) => updateField(group, 'gender', e.target.value)}
-              className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white focus:outline-none transition-all appearance-none ${
+              className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white focus:outline-none transition-all appearance-none ${
                 touched[`${group}_gender`] && !getField(group, 'gender') ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
               }`}
             >
@@ -773,15 +791,15 @@ export default function CheckoutForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Age <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Age" : group === 'visitor' ? "Primary Attendee Age" : "Age"} <span className="text-violet-400">*</span></span>
             </label>
             <input
               type="number"
               value={getField(group, 'age')}
               onBlur={() => handleBlur(`${group}_age`)}
               onChange={(e) => updateField(group, 'age', e.target.value)}
-              className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all ${
+              className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
                 touched[`${group}_age`] && !getField(group, 'age') ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
               }`}
               placeholder="e.g., 20"
@@ -789,15 +807,15 @@ export default function CheckoutForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Institution Name <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Institution Name" : group === 'visitor' ? "Primary Attendee Institution" : "Institution Name"} <span className="text-violet-400">*</span></span>
             </label>
             <input
               type="text"
               value={getField(group, 'institutionName')}
               onBlur={() => handleBlur(`${group}_institutionName`)}
               onChange={(e) => updateField(group, 'institutionName', e.target.value)}
-              className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all ${
+              className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
                 touched[`${group}_institutionName`] && !getField(group, 'institutionName').trim() ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
               }`}
               placeholder="Your school/college/university"
@@ -805,21 +823,8 @@ export default function CheckoutForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Referral Code <span className="text-white/40">(Optional)</span></span>
-            </label>
-            <input
-              type="text"
-              value={getField(group, 'referralCode')}
-              onChange={(e) => updateField(group, 'referralCode', e.target.value.toUpperCase())}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-violet-500 transition-all uppercase"
-              placeholder="Optional"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
-              <span>Institution Identity Card <span className="text-violet-400">*</span></span>
+            <label className="text-sm font-medium text-white/80 flex justify-between">
+              <span>{showTeamFields ? "Team Leader Identity Card" : group === 'visitor' ? "Primary Attendee Identity Card" : "Institution Identity Card"} <span className="text-violet-400">*</span></span>
             </label>
             <div className="relative">
               <input
@@ -876,12 +881,12 @@ export default function CheckoutForm() {
                 )}
               </label>
             </div>
-            <p className="text-[10px] text-white/40 font-mono">Max size: 5MB (Images only: PNG, JPG, JPEG, WEBP)</p>
+            <p className="text-[10px] text-white/40 font-sans">Max size: 5MB (Images only: PNG, JPG, JPEG, WEBP)</p>
           </div>
         </div>
 
         <div className="space-y-2 mt-6">
-          <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
+          <label className="text-sm font-medium text-white/80 flex justify-between">
             <span>Address <span className="text-violet-400">*</span></span>
           </label>
           <textarea
@@ -889,7 +894,7 @@ export default function CheckoutForm() {
             onBlur={() => handleBlur(`${group}_address`)}
             onChange={(e) => updateField(group, 'address', e.target.value)}
             rows={2}
-            className={`w-full bg-black/40 border rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none transition-all resize-none ${
+            className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all resize-none ${
               touched[`${group}_address`] && !getField(group, 'address').trim() ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-violet-500"
             }`}
             placeholder="Enter your full address"
@@ -937,7 +942,7 @@ export default function CheckoutForm() {
 
             <div className="space-y-8">
               {members.map((member, index) => (
-                <div key={member.id} className="relative pt-6 border-t border-white/5">
+                <div key={member.id} className="relative pt-6 border-t border-white/5 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div className="flex justify-between items-center mb-4">
                     <h5 className="font-bold text-white/80">
                       {group === 'visitor' ? `Visitor / Attendee #${index + 2}` : `Team Member #${index + 2}`}
@@ -945,7 +950,11 @@ export default function CheckoutForm() {
                     {group !== 'visitor' && (
                       <button
                         type="button"
-                        onClick={() => removeTeamMember(group, member.id)}
+                        onClick={() => {
+                          if (window.confirm("Are you sure you want to remove this team member?")) {
+                            removeTeamMember(group, member.id);
+                          }
+                        }}
                         className="text-red-400 hover:text-red-300 text-sm transition-colors"
                       >
                         Remove
@@ -955,7 +964,7 @@ export default function CheckoutForm() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Name <span className="text-violet-400">*</span></label>
+                      <label className="text-sm font-medium text-white/80">Name <span className="text-violet-400">*</span></label>
                       <input
                         type="text"
                         value={member.name}
@@ -965,7 +974,7 @@ export default function CheckoutForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Email <span className="text-violet-400">*</span></label>
+                      <label className="text-sm font-medium text-white/80">Email <span className="text-violet-400">*</span></label>
                       <input
                         type="email"
                         value={member.email}
@@ -975,7 +984,7 @@ export default function CheckoutForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Mobile Number <span className="text-violet-400">*</span></label>
+                      <label className="text-sm font-medium text-white/80">Mobile Number <span className="text-violet-400">*</span></label>
                       <input
                         type="tel"
                         value={member.mobileNumber}
@@ -985,7 +994,7 @@ export default function CheckoutForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Gender <span className="text-violet-400">*</span></label>
+                      <label className="text-sm font-medium text-white/80">Gender <span className="text-violet-400">*</span></label>
                       <select
                         value={member.gender}
                         onChange={(e) => updateTeamMember(group, member.id, 'gender', e.target.value)}
@@ -998,7 +1007,7 @@ export default function CheckoutForm() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Age <span className="text-violet-400">*</span></label>
+                      <label className="text-sm font-medium text-white/80">Age <span className="text-violet-400">*</span></label>
                       <input
                         type="number"
                         value={member.age}
@@ -1008,7 +1017,7 @@ export default function CheckoutForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Institution Name <span className="text-violet-400">*</span></label>
+                      <label className="text-sm font-medium text-white/80">Institution Name <span className="text-violet-400">*</span></label>
                       <input
                         type="text"
                         value={member.institutionName}
@@ -1018,7 +1027,7 @@ export default function CheckoutForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-mono text-white/60 uppercase tracking-widest flex justify-between">
+                      <label className="text-sm font-medium text-white/80 flex justify-between">
                         <span>Institution Identity Card <span className="text-violet-400">*</span></span>
                       </label>
                       <div className="relative">
@@ -1077,11 +1086,11 @@ export default function CheckoutForm() {
                           )}
                         </label>
                       </div>
-                      <p className="text-[10px] text-white/40 font-mono">Max size: 5MB (Images only: PNG, JPG, JPEG, WEBP)</p>
+                      <p className="text-[10px] text-white/40 font-sans">Max size: 5MB (Images only: PNG, JPG, JPEG, WEBP)</p>
                     </div>
                   </div>
                   <div className="space-y-2 mt-6">
-                    <label className="text-xs font-mono text-white/60 uppercase tracking-widest">Address <span className="text-violet-400">*</span></label>
+                    <label className="text-sm font-medium text-white/80">Address <span className="text-violet-400">*</span></label>
                     <textarea
                       value={member.address}
                       onChange={(e) => updateTeamMember(group, member.id, 'address', e.target.value)}
@@ -1108,7 +1117,7 @@ export default function CheckoutForm() {
         <div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors mb-2 font-mono group"
+            className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors mb-2 font-sans group"
           >
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
             <span>Back to Sabrang &apos;26</span>
@@ -1116,7 +1125,7 @@ export default function CheckoutForm() {
           <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight">
             CHECKOUT
           </h2>
-          <p className="text-white/50 text-xs md:text-sm mt-1 font-mono">
+          <p className="text-white/50 text-xs md:text-sm mt-1 font-sans">
             Complete your registration for Sabrang 2026
           </p>
         </div>
@@ -1173,10 +1182,10 @@ export default function CheckoutForm() {
               )}
 
               <div className="flex justify-between items-baseline border-b border-white/10 pb-2">
-                <h3 className="text-xl font-bold uppercase tracking-wider text-amber-400">
+                <h3 className="text-xl font-semibold text-white text-amber-400">
                   Choose Your Events
                 </h3>
-                <span className="text-xs font-mono text-white/40">
+                <span className="text-sm text-white/80 text-white/40">
                   {selectedEvents.length} selected
                 </span>
               </div>
@@ -1195,7 +1204,7 @@ export default function CheckoutForm() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="px-3.5 py-1.5 rounded-lg bg-black/50 border border-purple-500/40 text-purple-200 font-mono text-xs font-bold tracking-wider">
+                  <span className="px-3.5 py-1.5 rounded-lg bg-black/50 border border-purple-500/40 text-purple-200 font-sans text-xs font-bold tracking-wider">
                     SPECIALOFFER
                   </span>
                   <button
@@ -1241,7 +1250,7 @@ export default function CheckoutForm() {
                         <h4 className="text-amber-400 font-black text-xl tracking-wide uppercase">
                           {categoryLabel}
                         </h4>
-                        <span className="text-xs font-mono text-white/40">
+                        <span className="text-sm text-white/80 text-white/40">
                           {categoryEvents.length} event{categoryEvents.length > 1 ? "s" : ""}
                         </span>
                       </div>
@@ -1266,7 +1275,7 @@ export default function CheckoutForm() {
                                     {event.title}
                                   </h5>
                                   <div className="flex flex-wrap items-center gap-3">
-                                    <span className="font-mono text-sm font-bold text-cyan-400">
+                                    <span className="font-sans text-sm font-bold text-cyan-400">
                                       {event.id === "visitor"
                                         ? (isSelected
                                             ? `₹${calculateVisitorPassFee(visitorCount, visitorDays.length)} (₹69/day/person)`
@@ -1274,19 +1283,19 @@ export default function CheckoutForm() {
                                         : event.pricingLabel}
                                     </span>
                                     {event.id === "visitor" ? (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-white/10 text-white/70 border border-white/5">
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm text-white/80 bg-white/10 text-white/70 border border-white/5">
                                         <Users className="w-3 h-3 text-white/40" />
                                         {visitorCount} {visitorCount === 1 ? "visitor" : "visitors"} • {visitorDays.length} {visitorDays.length === 1 ? "day" : "days"}
                                       </span>
                                     ) : event.isTeam ? (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-white/10 text-white/70 border border-white/5">
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm text-white/80 bg-white/10 text-white/70 border border-white/5">
                                         <Users className="w-3 h-3 text-white/40" />
                                         {event.minTeam === event.maxTeam
                                           ? `${event.minTeam} members`
                                           : `${event.minTeam} - ${event.maxTeam} members`}
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono bg-white/10 text-white/70 border border-white/5">
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm text-white/80 bg-white/10 text-white/70 border border-white/5">
                                         Solo
                                       </span>
                                     )}
@@ -1320,7 +1329,7 @@ export default function CheckoutForm() {
                                       <button
                                         type="button"
                                         onClick={toggleAllVisitorDays}
-                                        className="text-[11px] font-mono text-cyan-400 hover:underline cursor-pointer"
+                                        className="text-[11px] font-sans text-cyan-400 hover:underline cursor-pointer"
                                       >
                                         {visitorDays.length === FESTIVAL_DAYS.length ? "Reset to Day 1" : "Select All 3 Days"}
                                       </button>
@@ -1341,7 +1350,7 @@ export default function CheckoutForm() {
                                             }`}
                                           >
                                             <span className="font-bold">{day.label}</span>
-                                            <span className="text-[10px] font-mono text-cyan-300">{day.date}</span>
+                                            <span className="text-[10px] font-sans text-cyan-300">{day.date}</span>
                                           </button>
                                         );
                                       })}
@@ -1352,7 +1361,7 @@ export default function CheckoutForm() {
                                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
                                     <div>
                                       <div className="text-xs font-semibold text-white">Number of Visitors</div>
-                                      <div className="text-[10px] text-white/50 font-mono">
+                                      <div className="text-[10px] text-white/50 font-sans">
                                         Passes issued for each person in your group
                                       </div>
                                     </div>
@@ -1367,7 +1376,7 @@ export default function CheckoutForm() {
                                       >
                                         <Minus className="w-3.5 h-3.5" />
                                       </button>
-                                      <span className="font-mono text-sm font-black text-white w-6 text-center">
+                                      <span className="font-sans text-sm font-black text-white w-6 text-center">
                                         {visitorCount}
                                       </span>
                                       <button
@@ -1384,10 +1393,10 @@ export default function CheckoutForm() {
 
                                   {/* Calculated Subtotal pill */}
                                   <div className="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 flex justify-between items-center text-xs">
-                                    <span className="text-white/70 font-mono text-[11px]">
+                                    <span className="text-white/70 font-sans text-[11px]">
                                       {visitorCount} visitor{visitorCount > 1 ? "s" : ""} × {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} @ ₹69/person/day
                                     </span>
-                                    <span className="font-mono font-bold text-cyan-400 text-sm">
+                                    <span className="font-sans font-bold text-cyan-400 text-sm">
                                       ₹{calculateVisitorPassFee(visitorCount, visitorDays.length)}
                                     </span>
                                   </div>
@@ -1421,7 +1430,7 @@ export default function CheckoutForm() {
             {getActiveGroups().includes('bgmi') && renderPersonalFields('bgmi', 'BGMI TOURNAMENT', true, (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Squad Name <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1429,11 +1438,11 @@ export default function CheckoutForm() {
                     value={getField('bgmi', 'teamName')}
                     onBlur={() => handleBlur(`bgmi_teamName`)}
                     onChange={(e) => updateField('bgmi', 'teamName', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`bgmi_teamName`] && !getField('bgmi', 'teamName').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`bgmi_teamName`] && !getField('bgmi', 'teamName').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Leader In-Game Name <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1441,11 +1450,11 @@ export default function CheckoutForm() {
                     value={getField('bgmi', 'leaderIgn')}
                     onBlur={() => handleBlur(`bgmi_leaderIgn`)}
                     onChange={(e) => updateField('bgmi', 'leaderIgn', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`bgmi_leaderIgn`] && !getField('bgmi', 'leaderIgn').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`bgmi_leaderIgn`] && !getField('bgmi', 'leaderIgn').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Leader UID <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1453,7 +1462,7 @@ export default function CheckoutForm() {
                     value={getField('bgmi', 'leaderUid')}
                     onBlur={() => handleBlur(`bgmi_leaderUid`)}
                     onChange={(e) => updateField('bgmi', 'leaderUid', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`bgmi_leaderUid`] && !getField('bgmi', 'leaderUid').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`bgmi_leaderUid`] && !getField('bgmi', 'leaderUid').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
               </div>
@@ -1463,7 +1472,7 @@ export default function CheckoutForm() {
             {getActiveGroups().includes('valorant') && renderPersonalFields('valorant', 'VALORANT TOURNAMENT', true, (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Team Name <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1471,11 +1480,11 @@ export default function CheckoutForm() {
                     value={getField('valorant', 'teamName')}
                     onBlur={() => handleBlur(`valorant_teamName`)}
                     onChange={(e) => updateField('valorant', 'teamName', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`valorant_teamName`] && !getField('valorant', 'teamName').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`valorant_teamName`] && !getField('valorant', 'teamName').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Leader Riot ID <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1483,7 +1492,7 @@ export default function CheckoutForm() {
                     value={getField('valorant', 'leaderRiotId')}
                     onBlur={() => handleBlur(`valorant_leaderRiotId`)}
                     onChange={(e) => updateField('valorant', 'leaderRiotId', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`valorant_leaderRiotId`] && !getField('valorant', 'leaderRiotId').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`valorant_leaderRiotId`] && !getField('valorant', 'leaderRiotId').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
               </div>
@@ -1493,7 +1502,7 @@ export default function CheckoutForm() {
             {getActiveGroups().includes('freefire') && renderPersonalFields('freefire', 'FREE FIRE TOURNAMENT', true, (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Team Name <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1501,11 +1510,11 @@ export default function CheckoutForm() {
                     value={getField('freefire', 'teamName')}
                     onBlur={() => handleBlur(`freefire_teamName`)}
                     onChange={(e) => updateField('freefire', 'teamName', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`freefire_teamName`] && !getField('freefire', 'teamName').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`freefire_teamName`] && !getField('freefire', 'teamName').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-white/60 uppercase tracking-widest">
+                  <label className="text-sm font-medium text-white/80">
                     <span>Leader UID <span className="text-violet-400">*</span></span>
                   </label>
                   <input
@@ -1513,7 +1522,7 @@ export default function CheckoutForm() {
                     value={getField('freefire', 'leaderUid')}
                     onBlur={() => handleBlur(`freefire_leaderUid`)}
                     onChange={(e) => updateField('freefire', 'leaderUid', e.target.value)}
-                    className={`w-full bg-black/40 border rounded-lg px-4 py-2 text-white focus:outline-none ${touched[`freefire_leaderUid`] && !getField('freefire', 'leaderUid').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg focus:bg-white/10 px-4 py-2 text-white focus:outline-none ${touched[`freefire_leaderUid`] && !getField('freefire', 'leaderUid').trim() ? "border-red-500/50" : "border-white/10 focus:border-violet-500"}`}
                   />
                 </div>
               </div>
@@ -1532,11 +1541,11 @@ export default function CheckoutForm() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-cyan-400" />
                       <span className="font-semibold text-white/90">Pass Validity:</span>
-                      <span className="text-cyan-300 font-mono">
+                      <span className="text-cyan-300 font-sans">
                         {visitorDays.map(d => `${FESTIVAL_DAYS.find(f => f.id === d)?.label} (${FESTIVAL_DAYS.find(f => f.id === d)?.date})`).join(", ")}
                       </span>
                     </div>
-                    <span className="text-white/50 font-mono">
+                    <span className="text-white/50 font-sans">
                       {visitorCount} Attendee{visitorCount > 1 ? "s" : ""}
                     </span>
                   </div>
@@ -1549,13 +1558,13 @@ export default function CheckoutForm() {
         {/* STEP 3: REVIEW */}
         <div style={{ display: currentStep === "review" ? "block" : "none" }}>
           <div className="space-y-6">
-            <h3 className="text-xl font-bold uppercase tracking-wider text-white/90 border-b border-white/10 pb-2">
+            <h3 className="text-xl font-semibold text-white text-white/90 border-b border-white/10 pb-2">
               Review Your Order
             </h3>
             
             <div className="bg-white/5 border border-violet-500/30 rounded-xl p-6">
               <div className="space-y-4">
-                <div className="flex justify-between items-center text-white/50 text-xs font-mono uppercase tracking-widest border-b border-white/10 pb-2">
+                <div className="flex justify-between items-center text-white/50 text-sm text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
                   <span>Selected Items</span>
                   <span>Price</span>
                 </div>
@@ -1574,24 +1583,24 @@ export default function CheckoutForm() {
                     <div key={eventId} className="flex justify-between items-start text-white/90 py-1.5 border-b border-white/5 last:border-0">
                       <div>
                         <div className="font-semibold text-sm">{ev.title}</div>
-                        <div className="text-[11px] text-white/40 font-mono">{ev.category}</div>
+                        <div className="text-[11px] text-white/40 font-sans">{ev.category}</div>
                         {eventId === "visitor" && (
-                          <div className="text-[11px] text-cyan-400 font-mono mt-0.5">
+                          <div className="text-[11px] text-cyan-400 font-sans mt-0.5">
                             {visitorCount} attendee{visitorCount > 1 ? "s" : ""} • {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} ({visitorDays.map(d => FESTIVAL_DAYS.find(f => f.id === d)?.label).join(", ")})
                           </div>
                         )}
                         {ev.isTeam && ev.extraMemberFee > 0 && totalMembers > ev.baseIncludedMembers && (
-                          <div className="text-[11px] text-violet-400 font-mono mt-0.5">
+                          <div className="text-[11px] text-violet-400 font-sans mt-0.5">
                             {totalMembers} members ({ev.baseIncludedMembers} base + {totalMembers - ev.baseIncludedMembers} extra @ ₹{ev.extraMemberFee})
                           </div>
                         )}
                         {ev.isTeam && ev.extraMemberFee === 0 && (
-                          <div className="text-[11px] text-white/50 font-mono mt-0.5">
+                          <div className="text-[11px] text-white/50 font-sans mt-0.5">
                             Team of {totalMembers} members (flat team fee)
                           </div>
                         )}
                       </div>
-                      <span className="font-mono text-sm font-bold text-violet-300">₹ {itemPrice}</span>
+                      <span className="font-sans text-sm font-bold text-violet-300">₹ {itemPrice}</span>
                     </div>
                   );
                 })}
@@ -1602,7 +1611,7 @@ export default function CheckoutForm() {
 
                 {selectedEvents.includes('vaad_vivaad') && getField('generic', 'vaadVivaadRepresentative') && (
                   <div className="p-3 rounded-lg bg-violet-950/30 border border-violet-500/20 text-xs text-white/80 flex flex-wrap justify-between items-center gap-1">
-                    <span className="font-mono text-white/50">Vaad Vivaad Representation:</span>
+                    <span className="font-sans text-white/50">Vaad Vivaad Representation:</span>
                     <span className="font-semibold text-violet-300">{getField('generic', 'vaadVivaadRepresentative')}</span>
                   </div>
                 )}
@@ -1627,7 +1636,7 @@ export default function CheckoutForm() {
                         }
                       }}
                       placeholder="ENTER PROMO CODE"
-                      className="flex-grow bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/20 focus:outline-none focus:border-violet-500 transition-all text-sm uppercase disabled:opacity-60 font-mono"
+                      className="flex-grow bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-violet-500 transition-all text-sm uppercase disabled:opacity-60 font-sans"
                     />
                     {promoApplied ? (
                       <button
@@ -1661,7 +1670,7 @@ export default function CheckoutForm() {
                   )}
 
                   {promoApplied && couponData && (
-                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center text-emerald-400 text-xs font-mono">
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center text-emerald-400 text-sm text-white/80">
                       <span>
                         Coupon {promoCode} applied ({couponData.discountType === 'fixed' ? `Special Price ₹${couponData.finalPrice}` : `${couponData.discountValue}% Off`})
                       </span>
@@ -1701,13 +1710,13 @@ export default function CheckoutForm() {
                       </>
                     )}
                   </button>
-                  <p className="text-[11px] text-white/40 font-mono mt-3 text-center uppercase tracking-wider">
+                  <p className="text-[11px] text-white/40 font-sans mt-3 text-center uppercase tracking-wider">
                     Secured by Cashfree Payments India 256-bit SSL • UPI, Cards, NetBanking
                   </p>
                 </div>
               </div>
             </div>
-            <p className="text-center text-xs text-white/40 font-mono">
+            <p className="text-center text-xs text-white/40 font-sans">
               Please review your selections before proceeding to payment
             </p>
           </div>
@@ -1721,7 +1730,7 @@ export default function CheckoutForm() {
                 <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto">
                   <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
                 </div>
-                <h3 className="text-xl font-bold uppercase tracking-wider text-white">
+                <h3 className="text-xl font-semibold text-white text-white">
                   Verifying Payment
                 </h3>
                 <p className="text-white/60 text-sm leading-relaxed">
@@ -1740,12 +1749,12 @@ export default function CheckoutForm() {
                   <h3 className="text-2xl font-black uppercase tracking-tight text-white">
                     Registration Confirmed
                   </h3>
-                  <p className="text-emerald-400 font-mono text-xs uppercase tracking-widest">
+                  <p className="text-emerald-400 font-sans text-xs uppercase tracking-widest">
                     Payment Processed Successfully
                   </p>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-mono text-xs">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-sans text-xs">
                   <div className="flex justify-between border-b border-white/10 pb-2">
                     <span className="text-white/50">Order ID:</span>
                     <span className="text-white font-medium">{verifiedOrder.orderId}</span>
@@ -1908,13 +1917,13 @@ export default function CheckoutForm() {
                   <div key={id} className="flex justify-between items-start text-xs py-2 border-b border-white/5 last:border-0">
                     <div>
                       <div className="font-bold text-white uppercase tracking-wide">{ev.title}</div>
-                      <div className="text-[10px] text-white/40 font-mono">
+                      <div className="text-[10px] text-white/40 font-sans">
                         {id === "visitor"
                           ? `${visitorCount} Attendee${visitorCount > 1 ? "s" : ""} • ${visitorDays.length} Day${visitorDays.length > 1 ? "s" : ""}`
                           : ev.category}
                       </div>
                     </div>
-                    <span className="font-mono text-cyan-400 font-bold text-xs shrink-0">
+                    <span className="font-sans text-cyan-400 font-bold text-xs shrink-0">
                       {ev.isTeam ? `Team ₹${price}` : `₹${price}`}
                     </span>
                   </div>
@@ -1924,7 +1933,7 @@ export default function CheckoutForm() {
           </div>
 
           {promoApplied && couponData && (
-            <div className="flex justify-between items-center text-xs font-mono text-emerald-400 border-t border-white/5 pt-2">
+            <div className="flex justify-between items-center text-sm text-white/80 text-emerald-400 border-t border-white/5 pt-2">
               <span>Promo ({promoCode})</span>
               <span>- ₹{couponData.discountAmount}</span>
             </div>
@@ -1932,7 +1941,7 @@ export default function CheckoutForm() {
 
           <div className="border-t border-white/10 pt-4 flex justify-between items-baseline">
             <span className="font-bold text-sm text-white uppercase tracking-wider">Total</span>
-            <span className="font-mono text-2xl font-black text-white">
+            <span className="font-sans text-2xl font-black text-white">
               ₹{calculateTotal().toFixed(2)}
             </span>
           </div>

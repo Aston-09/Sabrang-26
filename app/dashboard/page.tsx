@@ -134,9 +134,6 @@ export default function Dashboard() {
                     <span className="block text-[10px] text-white/50 sm:text-slate-400 font-mono uppercase tracking-widest leading-none">
                       Entry: {reg.qrCode}
                     </span>
-                    <span className="block text-[11px] text-indigo-400 sm:text-indigo-600 font-bold mt-1 font-mono uppercase tracking-widest leading-none">
-                      Referral: {reg.referralCode}
-                    </span>
                   </div>
                 </div>
 

@@ -445,12 +445,6 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
     await lockRef.create({ lockedAt: FieldValue.serverTimestamp() });
     
     const ownRoll = formData.registrationNumber || formData.rollNumber;
-    const { generateOwnReferralCode, normalizeReferralCode, attachReferralData, DEFAULT_REFERRAL_CODE } = await import('./referralHelper');
-    const ownReferralCode = generateOwnReferralCode(ownRoll);
-    const rawEntered = formData.referredByCode || formData.referralCode || formData.referral || formData.referredBy;
-    const effectiveReferral = rawEntered && rawEntered.trim() 
-      ? normalizeReferralCode(rawEntered) 
-      : (ownReferralCode !== DEFAULT_REFERRAL_CODE ? DEFAULT_REFERRAL_CODE : null);
 
     // We got the lock! Save data to Firestore Registration Collection
     const docRef = await adminDb.collection('registrations').add({
@@ -459,9 +453,6 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
       email: formData.email,
       phone: formData.mobile,
       rollNumber: formData.registrationNumber,
-      referralCode: (ownReferralCode || '').toUpperCase(), // ALWAYS ALL CAPS
-      referredByCode: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(), // DEFAULT: 2024BTECH014
-      referralSource: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(),
       gender: formData.gender || 'N/A',
       course: formData.course || 'N/A',
       pincode: formData.pincode || (formData.address ? (formData.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A'),
@@ -485,9 +476,6 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
     });
     docId = docRef.id;
     console.log("Registration saved. Firestore ID:", docId);
-
-    // Process referral relationship asynchronously
-    attachReferralData(formData, docId).catch(err => console.error("Failed to attach referral tracking:", err));
   } catch (err: any) {
     if (err.code === 6 || err.message?.includes('ALREADY_EXISTS')) {
       console.log(`Database lock exists for order ${orderId}. Fetching existing ID...`);
@@ -499,12 +487,6 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
       } else {
         console.warn("Database lock existed but registration not found. Creating fallback registration document...");
         const ownRoll = formData.registrationNumber || formData.rollNumber;
-        const { generateOwnReferralCode, normalizeReferralCode, attachReferralData, DEFAULT_REFERRAL_CODE } = await import('./referralHelper');
-        const ownReferralCode = generateOwnReferralCode(ownRoll);
-        const rawEntered = formData.referredByCode || formData.referralCode || formData.referral || formData.referredBy;
-        const effectiveReferral = rawEntered && rawEntered.trim() 
-          ? normalizeReferralCode(rawEntered) 
-          : (ownReferralCode !== DEFAULT_REFERRAL_CODE ? DEFAULT_REFERRAL_CODE : null);
 
         const docRef = await adminDb.collection('registrations').add({
           ...formData,
@@ -512,9 +494,6 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
           email: formData.email,
           phone: formData.mobile,
           rollNumber: formData.registrationNumber,
-          referralCode: (ownReferralCode || '').toUpperCase(), // ALWAYS ALL CAPS
-          referredByCode: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(), // DEFAULT: 2024BTECH014
-          referralSource: (effectiveReferral || DEFAULT_REFERRAL_CODE).toUpperCase(),
           gender: formData.gender || 'N/A',
           course: formData.course || 'N/A',
           pincode: formData.pincode || (formData.address ? (formData.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A'),
@@ -538,7 +517,6 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
         });
         docId = docRef.id;
         console.log("Registration saved via lock fallback. Firestore ID:", docId);
-        attachReferralData(formData, docId).catch(err => console.error("Failed to attach referral tracking:", err));
       }
     } else {
       throw err;

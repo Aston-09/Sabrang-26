@@ -138,22 +138,6 @@ export const generateId = () => {
   return Math.random().toString(36).substring(2, 15);
 };
 
-export const generateReferralCode = () => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
-    const array = new Uint32Array(5);
-    crypto.getRandomValues(array);
-    for (let i = 0; i < 5; i++) {
-      code += chars.charAt(array[i] % chars.length);
-    }
-  } else {
-    for (let i = 0; i < 5; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-  }
-  return code;
-};
 
 // Sanitize user input to prevent XSS attacks
 export const sanitizeInput = (input: string): string => {

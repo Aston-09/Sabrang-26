@@ -122,13 +122,6 @@ export async function POST(req: Request) {
       return NextResponse.json(couponStatus);
     }
 
-    if (action === 'VERIFY_REFERRAL') {
-      const { validateReferralCode } = await import('@/lib/referralHelper');
-      const enteredCode = data.referralCode || data.code || '';
-      const ownRoll = data.registrationNumber || data.rollNumber || '';
-      const referralStatus = await validateReferralCode(enteredCode, ownRoll);
-      return NextResponse.json(referralStatus);
-    }
     if (action === 'VERIFY_PINCODE') {
       const pin = (data.pincode || '').trim();
       if (pin.length === 6 && /^\d+$/.test(pin)) {

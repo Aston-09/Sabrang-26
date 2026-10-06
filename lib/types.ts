@@ -64,7 +64,6 @@ export interface Registration {
   couponCode?: string;
   discountAmount?: number;
   qrCode: string;
-  referralCode?: string;
   attended?: boolean;
   hasEntered?: boolean;
   attendedAt?: Timestamp | Date;

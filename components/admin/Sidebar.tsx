@@ -354,7 +354,6 @@ export default function Sidebar() {
     { name: 'Registration', href: '/admin/registrations', icon: CustomClipboardIcon },
     { name: 'Ticket Scanner', href: '/admin/scanner', icon: CustomScannerIcon },
     { name: 'Entry Logs', href: '/admin/entry-logs', icon: CustomEntryLogsIcon },
-    { name: 'Referrals', href: '/admin/referrals', icon: CustomShareIcon },
     { name: 'Coupons', href: '/admin/coupons', icon: CustomTagIcon },
     { name: 'Audit Logs', href: '/admin/audit', icon: CustomAuditIcon },
     { name: 'System Errors', href: '/admin/errors', icon: CustomAlertCircleIcon },
