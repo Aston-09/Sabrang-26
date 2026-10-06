@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef } from 'react'
+import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { HERO_PIN_END, HERO_SCRUB } from '@/components/3d/hero/heroScrollState'
@@ -85,13 +86,28 @@ export default function AboutSection() {
           }}
         ></div>
 
-        {/* STEP 1: LEFT ALIGNED (Robot) */}
-        <div ref={step1Ref} className="about-card invisible" style={{ left: '5%' }}>
-          <span className="text-[var(--text-muted)] tracking-[4px] mb-4 block text-[0.75rem]" style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}>/ PHASE_01</span>
-          <h2 className="about-heading">Cultural <br />Extravaganza</h2>
-          <p className="text-lg text-[var(--text-muted)] font-light leading-relaxed">
-            Sabrang ’26 is the annual cultural extravaganza of JK Lakshmipat University, Jaipur, bringing together music, dance, art, and youthful energy under one vibrant celebration.
-          </p>
+        {/* STEP 1: LEFT ALIGNED — Varun Jain Featured Artist */}
+        <div ref={step1Ref} className="about-card about-card--artist invisible" style={{ left: '5%' }}>
+          <div className="artist-card-inner">
+            <div className="artist-image-wrapper">
+              <Image
+                src="/images/varun-jain.jpg"
+                alt="Varun Jain performing live"
+                width={400}
+                height={400}
+                className="artist-image"
+                priority
+              />
+              <div className="artist-image-glow" />
+            </div>
+            <div className="artist-info">
+              <span className="text-[var(--text-muted)] tracking-[4px] mb-4 block text-[0.75rem]" style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}>/ PHASE_01</span>
+              <h2 className="about-heading">Varun Jain<br /><i>Live</i></h2>
+              <p className="text-lg text-[var(--text-muted)] font-light leading-relaxed">
+                Get ready for an electrifying night as Varun Jain takes the stage at Sabrang &apos;26 — bringing soulful melodies and raw energy to the heart of the fest.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* STEP 2: RIGHT ALIGNED (DNA) */}
@@ -99,7 +115,7 @@ export default function AboutSection() {
           <span className="text-[var(--text-muted)] tracking-[4px] mb-4 block text-[0.75rem]" style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}>/ PHASE_02</span>
           <h2 className="about-heading">Creativity meets <br />Culture</h2>
           <p className="text-lg text-[var(--text-muted)] font-light leading-relaxed">
-            More than just a fest, Sabrang ’26 is a space where people come together to celebrate, compete, perform, and create unforgettable memories.
+            More than just a fest, Sabrang &apos;26 is a space where people come together to celebrate, compete, perform, and create unforgettable memories.
           </p>
         </div>
 

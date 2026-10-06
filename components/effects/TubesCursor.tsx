@@ -102,6 +102,8 @@ export default function TubesCursor() {
     window.addEventListener("mousemove", handleUserPointer, { passive: true });
     window.addEventListener("touchmove", handleUserPointer, { passive: true });
 
+    // Magnetic update logic removed due to missing dependencies
+
     return () => {
       isMounted = false;
       window.removeEventListener("pointermove", handleUserPointer);
