@@ -267,29 +267,9 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
 export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) {
   const { sendBrevoEmail } = await import('./brevo');
 
-  // Load logos as base64 for inline embedding via Brevo attachments
-  let sabranLogoBase64: string | undefined;
-  let jkluLogoBase64: string | undefined;
-  try {
-    const fsPromises = await import('fs/promises');
-    const pathModule = await import('path');
-
-    const sabrangPath = pathModule.join(process.cwd(), 'public', 'sabrang-logo', 'Sabrang_Logo.png');
-    sabranLogoBase64 = (await fsPromises.readFile(sabrangPath)).toString('base64');
-
-    const jkluPath = pathModule.join(process.cwd(), 'public', 'sabrang-logo', 'jklu_logo.png');
-    jkluLogoBase64 = (await fsPromises.readFile(jkluPath)).toString('base64');
-  } catch {
-    // Non-fatal: email sends without inline logos
-  }
-
-  const sabrangLogoTag = sabranLogoBase64
-    ? `<img src="data:image/png;base64,${sabranLogoBase64}" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />`
-    : `<span style="color: #FACC15; font-size: 28px; font-weight: bold; letter-spacing: 2px;">SABRANG 2026</span>`;
-
-  const jkluLogoTag = jkluLogoBase64
-    ? `<img src="data:image/png;base64,${jkluLogoBase64}" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />`
-    : `<span style="font-size: 13px; font-weight: 700; color: #333;">JKLU</span>`;
+  // Use absolute URLs for images to prevent Gmail from clipping the email (Base64 strings are too large)
+  const sabrangLogoTag = `<img src="https://res.cloudinary.com/eprhemvt/image/upload/v1788091530/sabrang-2026/sabrang-logo/sabrang-logo.png" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />`;
+  const jkluLogoTag = `<img src="https://res.cloudinary.com/eprhemvt/image/upload/v1787060374/sabrang-2026/sabrang-logo/white_jklu_logo.png" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />`;
 
   const htmlContent = `
     <!DOCTYPE html>
