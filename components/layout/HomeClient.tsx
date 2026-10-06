@@ -53,7 +53,7 @@ export default function HomeClient() {
       <Link
         ref={btnRef}
         href="/register"
-        className="group fixed bottom-8 right-10 z-[45] flex items-center gap-2.5 bg-white/10 hover:bg-white/20 border border-white/25 hover:border-white/40 backdrop-blur-md px-6 py-3 rounded-full text-white text-[11px] font-bold tracking-widest uppercase shadow-[0_0_24px_rgba(255,255,255,0.08)] hover:shadow-[0_0_36px_rgba(255,255,255,0.18)] transition-all duration-300"
+        className="group fixed bottom-8 right-10 z-[45] hidden md:flex items-center gap-2.5 bg-white/10 hover:bg-white/20 border border-white/25 hover:border-white/40 backdrop-blur-md px-6 py-3 rounded-full text-white text-[11px] font-bold tracking-widest uppercase shadow-[0_0_24px_rgba(255,255,255,0.08)] hover:shadow-[0_0_36px_rgba(255,255,255,0.18)] transition-all duration-300"
         style={{ willChange: 'opacity, transform' }}
       >
         REGISTER NOW

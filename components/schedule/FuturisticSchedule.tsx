@@ -172,60 +172,6 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
 
       <main className="relative z-10 w-full h-full max-w-[1200px] mx-auto flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-12 pb-8">
         
-        {/* REVEALING SOON — Schedule temporarily hidden */}
-        <div className="text-center mb-8 relative z-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1
-              className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-black tracking-tight text-white mb-3 uppercase leading-none"
-              style={{ fontFamily: 'var(--font-space-grotesk), "Space Grotesk", sans-serif' }}
-            >
-              SCHEDULE
-            </h1>
-            <p className="text-violet-400/80 font-mono text-xs sm:text-sm tracking-[0.3em] uppercase">
-              23 - 25 OCTOBER 2026
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative w-full max-w-xl text-center p-10 sm:p-16"
-        >
-          <h2
-            className="relative z-10 text-3xl sm:text-5xl md:text-6xl font-black uppercase text-white tracking-tight leading-none"
-            style={{
-              fontFamily: '"Syne", var(--font-space-grotesk), sans-serif',
-              textShadow: "0 0 30px rgba(255,255,255,0.7), 0 0 50px rgba(168,85,247,0.4)",
-            }}
-          >
-            REVEALING SOON
-          </h2>
-        </motion.div>
-
-        {/* 
-          TEMPORARILY HIDDEN — SCHEDULE REVEAL
-
-          Day 1, Day 2, and Day 3 schedule content is intentionally
-          commented out and hidden for now.
-
-          The schedule will be revealed at a later date.
-          DO NOT DELETE this code.
-
-          To restore the schedule:
-          1. Uncomment the schedule rendering section below.
-          2. Remove/disable the "REVEALING SOON" state above.
-          3. Verify the Day 1, Day 2, and Day 3 layouts.
-
-          This code is preserved intentionally so the original
-          schedule implementation can be restored without rebuilding it.
-        */}
-        {/* 
         <div className="text-center mb-6 flex-shrink-0 mt-8 sm:mt-4">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-[0.25em] text-white uppercase font-mono drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
             SCHEDULE
@@ -258,7 +204,6 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
             ))}
           </div>
         </div>
-        */}
       </main>
 
       <style>{`
