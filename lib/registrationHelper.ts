@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import fs from 'fs/promises';
 import path from 'path';
 import { formatPhoneNumber, maskEmail } from './security';
+import { extractRegistrationInfo } from './registrationDataHelper';
 
 
 
@@ -171,37 +172,39 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
     page.drawLine({ start: { x: 40, y: y - 5 }, end: { x: 555, y: y - 5 }, thickness: 1.5, color: darkColor });
   };
 
-  // Helper function to draw grid cells
-  const drawField = (label: string, value: string, x: number, y: number) => {
+  // Helper function to draw grid cells with optional width constraint
+  const drawField = (label: string, value: string, x: number, y: number, maxWidth: number = 245) => {
     page.drawText(label.toUpperCase(), { x, y, size: 7.5, color: greyColor });
-    page.drawText(clean(value), { x, y: y - 13, size: 10.5, color: darkColor });
+    let valStr = clean(value);
+    if (helveticaFont.widthOfTextAtSize(valStr, 10.5) > maxWidth) {
+      while (valStr.length > 3 && helveticaFont.widthOfTextAtSize(valStr + '...', 10.5) > maxWidth) {
+        valStr = valStr.slice(0, -1);
+      }
+      valStr += '...';
+    }
+    page.drawText(valStr, { x, y: y - 13, size: 10.5, color: darkColor });
   };
+
+  // Extract unified registration attributes according to Team vs Solo specifications
+  const regInfo = extractRegistrationInfo(data, id);
 
   // 1. PARTICIPANT INFORMATION Section
   drawSectionHeader('PARTICIPANT INFORMATION', 525);
-  drawField('Full Name', data.name || 'N/A', 40, 502);
-  drawField('Registration ID / Roll No.', data.rollNumber || data.registrationNumber || id, 300, 502);
+  drawField('Full Name', regInfo.name, 40, 502);
+  drawField('Registration ID / Roll No.', regInfo.rollNumber, 300, 502);
   
-  const rawInstitution = (
-    data.institutionName ||
-    data.college ||
-    data.collegeName ||
-    data.institution ||
-    data.university ||
-    ''
-  );
-  const collegeOrInstitution = typeof rawInstitution === 'string' ? rawInstitution.trim() : String(rawInstitution || '').trim();
-  const displayCollege = (collegeOrInstitution && collegeOrInstitution.toUpperCase() !== 'N/A')
-    ? collegeOrInstitution
-    : 'N/A';
-  drawField('College / Institution', displayCollege, 40, 469);
+  drawField('College / Institution', regInfo.college, 40, 469);
+  drawField('Event Type', regInfo.eventType, 300, 469);
   
-  drawField('Email Address', data.email || 'N/A', 40, 436);
-  drawField('Mobile Number', formatPhoneNumber(data.phone || data.mobile || ''), 300, 436);
+  drawField('Email Address', regInfo.email, 40, 436);
+  drawField('Mobile Number', regInfo.phone, 300, 436);
+
+  drawField('Team Name', regInfo.teamName, 40, 403);
+  drawField('No. of Teammates', regInfo.noOfTeammates, 300, 403);
 
   // 2. ADDRESS Section
-  drawSectionHeader('ADDRESS', 380);
-  drawField('Street / Locality', data.address || 'N/A', 40, 355);
+  drawSectionHeader('ADDRESS', 360);
+  drawField('Street / Locality', regInfo.address, 40, 335, 500);
 
   // 3. PAYMENT SUMMARY Section
   drawSectionHeader('PAYMENT SUMMARY', 280);

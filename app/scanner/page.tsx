@@ -7,6 +7,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Check, X, User, AlertCircle, Mail, Phone, ShieldCheck, MapPin } from 'lucide-react';
 import { useScannerSession } from '../../components/scanner/ScannerSessionProvider';
 import { getEventById } from '@/lib/eventPricing';
+import { extractRegistrationInfo } from '@/lib/registrationDataHelper';
 
 function getScannedEventName(data: any): string {
   if (!data) return 'N/A';
@@ -521,30 +522,50 @@ export default function ScannerView() {
 
             {/* Main simplified details */}
             <div className="space-y-4 mb-6">
-              
-              {/* Attendee Name & profile detail */}
-              <div className="bg-[#F5F1E5]/40 p-4 border-2 border-brand-ink rounded-md flex flex-col gap-2">
-                <div>
-                  <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Attendee Name</span>
-                  <span className="font-adminHeading text-xl font-black uppercase text-brand-ink leading-tight block">{scannedData.name}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 border-t border-brand-ink/10 pt-3">
-                  <div>
-                    <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Application Number</span>
-                    <span className="text-xs font-bold text-brand-ink block">{scannedData.registrationNumber || scannedData.rollNumber || scannedData.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Mobile</span>
-                    <span className="text-xs font-bold text-brand-ink block">{scannedData.phone || scannedData.mobile || 'N/A'}</span>
-                  </div>
-                </div>
+              {(() => {
+                const regInfo = extractRegistrationInfo(scannedData);
+                return (
+                  <div className="bg-[#F5F1E5]/40 p-4 border-2 border-brand-ink rounded-md flex flex-col gap-2">
+                    <div>
+                      <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Attendee Name</span>
+                      <span className="font-adminHeading text-xl font-black uppercase text-brand-ink leading-tight block">{regInfo.name}</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 border-t border-brand-ink/10 pt-3">
+                      <div>
+                        <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Application Number</span>
+                        <span className="text-xs font-bold text-brand-ink block font-mono">{regInfo.rollNumber}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Mobile</span>
+                        <span className="text-xs font-bold text-brand-ink block">{regInfo.phone}</span>
+                      </div>
+                    </div>
 
-                <div className="border-t border-brand-ink/10 pt-3">
-                  <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Event Name</span>
-                  <span className="text-xs font-bold text-brand-ink block">{getScannedEventName(scannedData)}</span>
-                </div>
-              </div>
+                    <div className="grid grid-cols-2 gap-4 border-t border-brand-ink/10 pt-3">
+                      <div>
+                        <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Event Name</span>
+                        <span className="text-xs font-bold text-brand-ink block">{getScannedEventName(scannedData)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Event Type</span>
+                        <span className="text-xs font-bold text-brand-ink block">{regInfo.eventType}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 border-t border-brand-ink/10 pt-3">
+                      <div>
+                        <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Team Name</span>
+                        <span className="text-xs font-bold text-brand-ink block">{regInfo.teamName}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">No. of Teammates</span>
+                        <span className="text-xs font-bold text-brand-ink block">{regInfo.noOfTeammates}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Already Checked In Detail Alert */}
               {scannedData.hasEntered && (

@@ -26,6 +26,8 @@ function formatPrivateKey(rawKey: string | undefined): string | undefined {
   return key;
 }
 
+let app: any;
+
 if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   try {
     const privateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY);

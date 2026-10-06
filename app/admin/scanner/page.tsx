@@ -8,6 +8,7 @@ import { auth, db } from '../../../lib/firebase';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Check, X, User, AlertCircle, Mail, Phone, Loader2 } from 'lucide-react';
 import { getEventById } from '@/lib/eventPricing';
+import { extractRegistrationInfo } from '@/lib/registrationDataHelper';
 
 function getScannedEventName(data: any): string {
   if (!data) return 'N/A';
@@ -628,30 +629,50 @@ export default function AdminScannerView() {
 
             {/* Main details */}
             <div className="space-y-4 mb-6">
-              
-              {/* Attendee Name & profile detail */}
-              <div className="bg-slate-50 p-4 border border-slate-200/80 rounded-xl flex flex-col gap-2">
-                <div>
-                  <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Attendee Name</span>
-                  <span className="text-lg font-bold text-slate-900 leading-tight block">{scannedData.name}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
-                  <div>
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Application Number</span>
-                    <span className="text-xs font-semibold text-slate-800 block font-mono">{scannedData.registrationNumber || scannedData.rollNumber || scannedData.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Mobile</span>
-                    <span className="text-xs font-semibold text-slate-800 block">{scannedData.phone || scannedData.mobile || 'N/A'}</span>
-                  </div>
-                </div>
+              {(() => {
+                const regInfo = extractRegistrationInfo(scannedData);
+                return (
+                  <div className="bg-slate-50 p-4 border border-slate-200/80 rounded-xl flex flex-col gap-2">
+                    <div>
+                      <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Attendee Name</span>
+                      <span className="text-lg font-bold text-slate-900 leading-tight block">{regInfo.name}</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
+                      <div>
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Application Number</span>
+                        <span className="text-xs font-semibold text-slate-800 block font-mono">{regInfo.rollNumber}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Mobile</span>
+                        <span className="text-xs font-semibold text-slate-800 block">{regInfo.phone}</span>
+                      </div>
+                    </div>
 
-                <div className="border-t border-slate-200 pt-3">
-                  <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Event Name</span>
-                  <span className="text-xs font-semibold text-slate-800 block">{getScannedEventName(scannedData)}</span>
-                </div>
-              </div>
+                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
+                      <div>
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Event Name</span>
+                        <span className="text-xs font-semibold text-slate-800 block">{getScannedEventName(scannedData)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Event Type</span>
+                        <span className="text-xs font-semibold text-slate-800 block">{regInfo.eventType}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
+                      <div>
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">Team Name</span>
+                        <span className="text-xs font-semibold text-slate-800 block">{regInfo.teamName}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block mb-0.5">No. of Teammates</span>
+                        <span className="text-xs font-semibold text-slate-800 block">{regInfo.noOfTeammates}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Already Checked In Detail Alert */}
               {scannedData.hasEntered && (
