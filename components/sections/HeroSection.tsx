@@ -69,12 +69,12 @@ export default function HeroSection() {
           }
         })
           .to('.hero-countdown', {
+            y: () => window.innerHeight * 0.24,
+            scale: 0.6,
             opacity: 0,
-            y: -50,
-            filter: 'blur(20px)',
-            duration: 3,
-            ease: 'power1.in',
-          }, 0)
+            duration: 12,
+            ease: 'power2.inOut',
+          }, 8)
           .set({}, {}, 100) // force total duration to 100 == progress 1
       }
       

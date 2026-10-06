@@ -38,10 +38,79 @@
     margin-left: 0.2em;
 }
 
+/* ─── Artist Card (Varun Jain) ─── */
+
+.about-card--artist {
+    width: 52%;
+    padding: 2.5rem;
+    overflow: hidden;
+}
+
+.artist-card-inner {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.artist-image-wrapper {
+    position: relative;
+    flex-shrink: 0;
+    width: 280px;
+    height: 280px;
+    border-radius: 28px;
+    overflow: hidden;
+}
+
+.artist-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 28px;
+    filter: saturate(1.1) contrast(1.05);
+}
+
+.artist-image-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 28px;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 180, 80, 0.15) 0%,
+        rgba(200, 120, 255, 0.10) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.artist-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.artist-info .about-heading {
+    font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+    margin-bottom: 1rem;
+}
+
+.artist-info p {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.artist-info > span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ─── Responsive ─── */
+
 @media (max-width: 1280px) {
     .about-card {
         width: 40%;
         padding: 2.5rem;
+    }
+
+    .about-card--artist {
+        width: 60%;
+        padding: 2rem;
     }
 }
 
@@ -53,6 +122,10 @@
         right: auto !important;
         transform: translate(-50%, -50%);
         border-radius: 30px;
+    }
+
+    .about-card--artist {
+        width: 85%;
     }
 
     .about-heading {
@@ -77,5 +150,31 @@
 
     .about-card {
         font-family: var(--font-space-grotesk), sans-serif;
+    }
+
+    /* Stack artist card vertically on small screens */
+    .artist-card-inner {
+        flex-direction: column;
+        gap: 1.25rem;
+        align-items: flex-start;
+    }
+
+    .artist-image-wrapper {
+        width: 100%;
+        height: 220px;
+        border-radius: 20px;
+    }
+
+    .artist-image {
+        border-radius: 20px;
+    }
+
+    .artist-image-glow {
+        border-radius: 20px;
+    }
+
+    .about-card--artist {
+        width: 90%;
+        padding: 1.25rem;
     }
 }

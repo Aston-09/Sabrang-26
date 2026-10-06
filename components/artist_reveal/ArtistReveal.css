@@ -1,0 +1,206 @@
+/* ═══════════════════════════════════════════════
+   Artist Reveal – Atmospheric Depth Gallery
+   ═══════════════════════════════════════════════ */
+
+/* ── Section container ── */
+.artist-reveal {
+  position: relative;
+  width: 100%;
+  height: 500vh; /* 5 images × 100vh scroll distance */
+}
+
+/* ── Sticky viewport (pins canvas during scroll) ── */
+.artist-reveal__viewport {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Canvas ── */
+.artist-reveal__canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* ── Label overlay ── */
+.artist-reveal__label {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 260ms ease, color 520ms ease;
+
+  --ui-font: 'SF Mono', 'Fira Code', 'Cascadia Code', 'IBM Plex Mono',
+    'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  --ui-tracking: 0.08em;
+
+  font-family: var(--ui-font);
+  text-transform: uppercase;
+  letter-spacing: var(--ui-tracking);
+  font-size: 0.82rem;
+  line-height: 1.2;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Left column: index, word, chip */
+.artist-reveal__label-left {
+  position: absolute;
+  left: clamp(2.5rem, 8vw, 12rem);
+  top: 50%;
+  transform: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.artist-reveal__label-index {
+  margin: 0;
+  font-size: 9px;
+  opacity: 1;
+}
+
+.artist-reveal__label-word {
+  margin: 0;
+  font-size: clamp(9px, 0.78vw, 11px);
+  white-space: nowrap;
+}
+
+.artist-reveal__label-chip {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* Right column: color specs */
+.artist-reveal__label-right {
+  position: absolute;
+  right: clamp(2.5rem, 7vw, 10rem);
+  top: 50%;
+  transform: none;
+}
+
+.artist-reveal__label-specs {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+  width: min(28vw, 360px);
+  font-family: var(--ui-font);
+  text-transform: uppercase;
+  letter-spacing: var(--ui-tracking);
+  line-height: 1.15;
+}
+
+.artist-reveal__label-row {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.artist-reveal__label-row dt,
+.artist-reveal__label-row dd {
+  margin: 0;
+}
+
+.artist-reveal__label-row dt {
+  font-size: 9px;
+  opacity: 1;
+}
+
+.artist-reveal__label-row dd {
+  font-size: clamp(9px, 0.72vw, 11px);
+  opacity: 1;
+}
+
+/* ── Loading state ── */
+.artist-reveal__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.artist-reveal__loading-bar {
+  width: 100px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.6);
+  animation: artistRevealLoaderAnim 1.5s ease-in-out infinite alternate forwards;
+}
+
+@keyframes artistRevealLoaderAnim {
+  0% {
+    transform: scaleX(0);
+    transform-origin: 0% 50%;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: 0% 50%;
+  }
+  50.1% {
+    transform: scaleX(1);
+    transform-origin: 100% 50%;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: 100% 50%;
+  }
+}
+
+/* ── Responsive: mobile layout ── */
+@media (max-width: 53em) {
+  .artist-reveal__label {
+    inset: auto 0 max(6.25rem, env(safe-area-inset-bottom)) 0;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    align-items: start;
+    column-gap: 1.5rem;
+    row-gap: 0.55rem;
+    padding: 0 max(1rem, env(safe-area-inset-right)) 0 max(1rem, env(safe-area-inset-left));
+  }
+
+  .artist-reveal__label-left {
+    position: static;
+    transform: none;
+    gap: 0.5rem;
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .artist-reveal__label-right {
+    position: static;
+    transform: none;
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .artist-reveal__label-specs {
+    width: auto;
+    max-width: min(58vw, 270px);
+  }
+
+  .artist-reveal__label-word {
+    font-size: 10px;
+  }
+
+  .artist-reveal__label-row {
+    grid-template-columns: 2.8rem 1fr;
+    gap: 0.6rem;
+  }
+
+  .artist-reveal__label-row dd {
+    font-size: 9px;
+  }
+}

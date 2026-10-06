@@ -5,6 +5,7 @@ import Link from 'next/link'
 import AboutSection from '@/components/sections/AboutSection'
 import HeroSection from '@/components/sections/HeroSection'
 import HeroScene from '@/components/3d/hero/HeroScene'
+import ArtistReveal from '@/components/artist_reveal/ArtistReveal'
 import { heroScrollState } from '@/components/3d/hero/heroScrollState'
 import './hero-theme.css'
 
@@ -82,7 +83,7 @@ export default function HomeClient() {
         </div>
       </div>
 
-      <AboutSection />
+      <ArtistReveal />
     </main>
   )
 }

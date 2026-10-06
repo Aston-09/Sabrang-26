@@ -30,7 +30,7 @@ if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   try {
     const privateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY);
 
-    initializeApp({
+    app = initializeApp({
       credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -44,6 +44,8 @@ if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
       console.error("Firebase admin initialization error:", error);
     }
   }
+} else if (getApps().length > 0) {
+  app = getApps()[0];
 }
 
 export const adminAuth = new Proxy({} as any, {
