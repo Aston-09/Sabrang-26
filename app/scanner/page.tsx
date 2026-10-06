@@ -6,6 +6,78 @@ import { db } from '../../lib/firebase';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Check, X, User, AlertCircle, Mail, Phone, ShieldCheck, MapPin } from 'lucide-react';
 import { useScannerSession } from '../../components/scanner/ScannerSessionProvider';
+import { getEventById } from '@/lib/eventPricing';
+
+function getScannedEventName(data: any): string {
+  if (!data) return 'N/A';
+
+  if (Array.isArray(data.selectedEvents) && data.selectedEvents.length > 0) {
+    const names = data.selectedEvents
+      .map((item: any) => {
+        if (!item) return '';
+        if (typeof item === 'string') {
+          const ev = getEventById(item);
+          return ev?.title || item;
+        }
+        if (typeof item === 'object') {
+          return item.title || item.name || item.id || '';
+        }
+        return String(item);
+      })
+      .filter(Boolean);
+
+    if (names.length > 0) {
+      return names.join(', ');
+    }
+  }
+
+  if (data.eventName && typeof data.eventName === 'string' && data.eventName.trim()) {
+    return data.eventName.trim();
+  }
+  if (data.eventTitle && typeof data.eventTitle === 'string' && data.eventTitle.trim()) {
+    return data.eventTitle.trim();
+  }
+
+  if (Array.isArray(data.events) && data.events.length > 0) {
+    const names = data.events
+      .map((item: any) => {
+        if (!item) return '';
+        if (typeof item === 'string') {
+          const ev = getEventById(item);
+          return ev?.title || item;
+        }
+        if (typeof item === 'object') {
+          return item.title || item.name || item.id || '';
+        }
+        return String(item);
+      })
+      .filter(Boolean);
+
+    if (names.length > 0) {
+      return names.join(', ');
+    }
+  }
+
+  if (typeof data.selectedEvents === 'string' && data.selectedEvents.trim()) {
+    const ev = getEventById(data.selectedEvents.trim());
+    return ev?.title || data.selectedEvents.trim();
+  }
+
+  if (data.eventId && typeof data.eventId === 'string' && data.eventId.trim()) {
+    const ev = getEventById(data.eventId.trim());
+    return ev?.title || data.eventId.trim();
+  }
+  if (data.event && typeof data.event === 'string' && data.event.trim()) {
+    const ev = getEventById(data.event.trim());
+    return ev?.title || data.event.trim();
+  }
+
+  if (data.visitorConfig) {
+    return 'Visitor Pass';
+  }
+
+  return 'General Fest Entry';
+}
 
 export default function ScannerView() {
   const { scannerAccount } = useScannerSession();
@@ -468,15 +540,9 @@ export default function ScannerView() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 border-t border-brand-ink/10 pt-3">
-                  <div>
-                    <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Parent&apos;s Name</span>
-                    <span className="text-xs font-bold text-brand-ink block">{scannedData.parentName || scannedData.fatherName || 'N/A'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Region / State</span>
-                    <span className="text-xs font-bold text-brand-ink block">{scannedData.region || 'N/A'}</span>
-                  </div>
+                <div className="border-t border-brand-ink/10 pt-3">
+                  <span className="text-[8px] font-bold text-admin-muted uppercase tracking-widest block mb-0.5">Event Name</span>
+                  <span className="text-xs font-bold text-brand-ink block">{getScannedEventName(scannedData)}</span>
                 </div>
               </div>
 
