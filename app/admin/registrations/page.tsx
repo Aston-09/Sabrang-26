@@ -8,6 +8,7 @@ import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { Modal } from '../../../components/admin/Modal';
 import { logAdminAction } from '../../../lib/audit';
 import { OFFICIAL_EVENTS } from '../../../lib/eventPricing';
+import { getDisplayPaymentAmount } from '@/lib/registrationDataHelper';
 
 // ============================================================================
 // BESPOKE CUSTOM GEOMETRIC SVG ICONS (Gradient-free, Sharp, Heavy-mitre)
@@ -354,8 +355,8 @@ export default function Registrations() {
         const pin = r.pincode || (r.address ? (r.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
         const state = r.region || r.state || 'N/A';
         const formattedDate = r.dateOfPayment || (r.registeredAt ? r.registeredAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-') : 'N/A');
-        const payAmount = r.paymentAmount ? `₹ ${r.paymentAmount}` : '₹ 2500';
-        const recAmount = r.receivedAmount ? `₹ ${r.receivedAmount}` : '₹ 2500';
+        const payAmount = getDisplayPaymentAmount(r);
+        const recAmount = getDisplayPaymentAmount(r);
 
         return [
           index + 1,
@@ -765,9 +766,17 @@ export default function Registrations() {
               <div className="col-span-2 sm:col-span-1">
                 <p className="text-[11px] font-medium text-slate-500 mb-1">Payment Amount</p>
                 <p className="font-bold text-slate-900 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
-                  {selectedReg.paymentAmount ? `₹ ${selectedReg.paymentAmount}` : '₹ 2,500'}
+                  {getDisplayPaymentAmount(selectedReg)}
                 </p>
               </div>
+              {selectedReg.coupon && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">Coupon Applied</p>
+                  <p className="font-bold text-xs text-emerald-800 bg-emerald-50 p-2.5 border border-emerald-200 rounded-lg font-mono">
+                    {selectedReg.coupon}
+                  </p>
+                </div>
+              )}
               <div className="col-span-2 sm:col-span-1">
                 <p className="text-[11px] font-medium text-slate-500 mb-1">Transaction / Order ID</p>
                 <p className="font-mono text-xs text-slate-700 bg-slate-50 p-2.5 border border-slate-200 rounded-lg break-all">{selectedReg.orderId || selectedReg.paymentId || 'N/A'}</p>

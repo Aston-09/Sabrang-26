@@ -135,10 +135,10 @@ export async function POST(req: Request) {
       const unifiedData = extractRegistrationInfo(reg, regId);
 
       const extractAmount = (data: any) => {
-        const val = data?.receivedAmount ?? data?.paymentAmount ?? data?.amount ?? data?.price ?? 2500;
+        const val = data?.receivedAmount ?? data?.paymentAmount ?? data?.amount ?? data?.price ?? 0;
         if (typeof val === 'number' && !isNaN(val)) return val;
         const parsed = parseFloat(String(val).replace(/[^\d.-]/g, ''));
-        return isNaN(parsed) ? 2500 : parsed;
+        return isNaN(parsed) ? 0 : parsed;
       };
 
       const payload = {

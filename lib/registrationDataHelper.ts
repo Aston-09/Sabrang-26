@@ -26,6 +26,30 @@ export function formatDisplayPhone(phone: any): string {
 }
 
 /**
+ * Safely extracts and formats the final payment amount after coupon discount.
+ * Never defaults to a hardcoded amount like 2500. Handles 0 (e.g. 100% discount / free pass) correctly.
+ */
+export function getDisplayPaymentAmount(reg: any): string {
+  if (!reg) return '₹ 0';
+
+  const raw = reg.paymentAmount !== undefined && reg.paymentAmount !== null && reg.paymentAmount !== ''
+    ? reg.paymentAmount
+    : (reg.receivedAmount !== undefined && reg.receivedAmount !== null && reg.receivedAmount !== ''
+        ? reg.receivedAmount
+        : (reg.amount !== undefined && reg.amount !== null && reg.amount !== ''
+            ? reg.amount
+            : (reg.finalPrice !== undefined && reg.finalPrice !== null && reg.finalPrice !== ''
+                ? reg.finalPrice
+                : (reg.price !== undefined && reg.price !== null && reg.price !== '' ? reg.price : 0))));
+
+  const num = Number(raw);
+  if (isNaN(num)) {
+    return `₹ ${raw}`;
+  }
+  return `₹ ${num.toLocaleString('en-IN')}`;
+}
+
+/**
  * Extract clean team name from registration data.
  * Checks all possible properties where team name may be stored dynamically.
  */
