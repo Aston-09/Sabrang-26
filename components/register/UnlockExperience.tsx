@@ -158,7 +158,7 @@ export default function UnlockExperience({
       </div>
 
       {/* Main Content (Pointer Events None to allow clicking tickets behind text) */}
-      <div className="relative z-20 flex flex-col items-center mt-[-10vh] sm:mt-[-5vh] pointer-events-none">
+      <div className="relative z-20 flex flex-col items-center mt-[-10vh] sm:mt-[-5vh]">
         {/* Typography */}
         <div className="relative text-center uppercase tracking-tight leading-[0.85] text-[3rem] sm:text-[4.5rem] md:text-[6rem] lg:text-[8rem] text-white">
           <div
@@ -195,6 +195,8 @@ export default function UnlockExperience({
         {/* Ticket Stub Pass Button (Pointer Events Auto to allow clicking) */}
         <button
           onClick={onBagIt}
+          onTouchStart={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
           className="group pointer-events-auto relative z-40 w-72 sm:w-80 h-20 bg-[#2d0f4d] hover:bg-[#381360] text-white border-2 border-white/80 shadow-[6px_6px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#ffffff] transition-all duration-200 cursor-pointer select-none flex items-stretch text-left overflow-visible"
         >
           {/* Authentic Ticket Notches on Perforation Line (at 74%) */}
