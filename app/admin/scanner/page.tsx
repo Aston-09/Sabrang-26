@@ -321,9 +321,13 @@ export default function AdminScannerView() {
 
     try {
       if (approved) {
+        const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : '';
         const res = await fetch('/api/scan', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
           body: JSON.stringify({
             registrationID: scannedData.id,
             eventId: selectedScanEvent === 'all' ? undefined : selectedScanEvent,
