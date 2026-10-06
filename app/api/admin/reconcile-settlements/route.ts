@@ -5,6 +5,9 @@ import { finalizeRegistration } from '@/lib/registrationHelper';
 import nodemailer from 'nodemailer';
 import { Cashfree, CFEnvironment } from 'cashfree-pg';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 function getFormattedISTDate(date: Date) {
   // Add 5.5 hours to convert UTC to IST
   const istTime = new Date(date.getTime() + (5.5 * 60 * 60 * 1000));
