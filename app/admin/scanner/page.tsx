@@ -51,7 +51,7 @@ export default function AdminScannerView() {
             setAdminEmail(parsed.email || 'Admin');
             setAuthorized(true);
             setLoadingSession(false);
-            return;
+            // Don't return here! We still need onAuthStateChanged to populate auth.currentUser
           }
         } catch {}
       }
@@ -321,7 +321,13 @@ export default function AdminScannerView() {
 
     try {
       if (approved) {
-        const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+        await auth.authStateReady(); // Ensure Firebase Auth is loaded
+        const idToken = auth.currentUser ? await auth.currentUser.getIdToken(true) : '';
+        if (!idToken) {
+          setStatus({ type: 'error', message: 'SESSION EXPIRED. PLEASE RELOGIN.' });
+          setProcessingAction(false);
+          return;
+        }
         const res = await fetch('/api/scan', {
           method: 'POST',
           headers: { 
