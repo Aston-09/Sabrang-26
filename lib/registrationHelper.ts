@@ -592,9 +592,74 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
     }
   })();
 
+  // 5. Automatic Google Sheet Sync
+  const sheetSyncPromise = (async () => {
+    try {
+      const excelWebhook = process.env.EXCEL_SYNC_WEBHOOK_URL;
+      if (!excelWebhook) return;
+      
+      console.log("Automatically syncing registration to Google Sheet...");
+      const escapeForSheets = (val: string) => (typeof val === 'string' && val.startsWith('+')) ? `'${val}` : (val || 'N/A');
+      
+      const dbDate = new Date();
+      const istDate = new Date(dbDate.getTime() + (5.5 * 60 * 60 * 1000));
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const dateGroup = `${istDate.getUTCDate()}-${months[istDate.getUTCMonth()]}`;
+
+      // Format Events
+      const getEventTitle = (id: string) => {
+        const titleMatch = id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return titleMatch;
+      };
+      
+      const eventsList = Array.isArray(formData.selectedEvents) 
+        ? formData.selectedEvents.map(getEventTitle).join(', ') 
+        : (formData.eventName || formData.eventTitle || formData.event || 'N/A');
+
+      const { extractRegistrationInfo } = await import('@/lib/registrationDataHelper');
+      const unifiedData = extractRegistrationInfo(formData, docId);
+
+      const extractAmount = (data: any) => {
+        const val = data?.receivedAmount ?? data?.paymentAmount ?? data?.amount ?? data?.price ?? paymentAmount ?? 2500;
+        if (typeof val === 'number' && !isNaN(val)) return val;
+        const parsed = parseFloat(String(val).replace(/[^\d.-]/g, ''));
+        return isNaN(parsed) ? 2500 : parsed;
+      };
+
+      const payload = {
+        id: docId,
+        name: unifiedData.name,
+        phone: escapeForSheets(unifiedData.phone),
+        email: unifiedData.email,
+        college: unifiedData.college,
+        event: eventsList,
+        members: unifiedData.eventType === 'Team' && unifiedData.noOfTeammates !== 'N/A' 
+          ? (Number(unifiedData.noOfTeammates) + 1) 
+          : 1,
+        amtPaid: String(extractAmount(formData)),
+        paymentId: paymentId || 'N/A',
+        orderId: orderId || 'N/A',
+        date: dbDate.toISOString(),
+      };
+
+      const res = await fetch(excelWebhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok && docId) {
+        await adminDb.collection('registrations').doc(docId).update({ sheetSynced: true });
+        console.log("Successfully synced to Google Sheet.");
+      }
+    } catch (sheetError) {
+      console.error("Auto sheet sync failed:", sheetError);
+    }
+  })();
+
   // Wait for all tasks to complete so Vercel doesn't kill the function early
   try {
-    await Promise.all([emailAndPdfPromise, auditLogPromise]);
+    await Promise.all([emailAndPdfPromise, auditLogPromise, sheetSyncPromise]);
     console.log("All post-registration tasks resolved successfully.");
   } catch (bgError: any) {
     console.error("Error in post-registration tasks:", bgError);

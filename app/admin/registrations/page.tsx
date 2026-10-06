@@ -7,6 +7,7 @@ import { db, auth } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { Modal } from '../../../components/admin/Modal';
 import { logAdminAction } from '../../../lib/audit';
+import { OFFICIAL_EVENTS } from '../../../lib/eventPricing';
 
 // ============================================================================
 // BESPOKE CUSTOM GEOMETRIC SVG ICONS (Gradient-free, Sharp, Heavy-mitre)
@@ -129,6 +130,7 @@ export default function Registrations() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'entered' | 'pending' | 'declined'>('all');
   const [emailFilter, setEmailFilter] = useState<'all' | 'sent' | 'unsent'>('all');
+  const [eventFilter, setEventFilter] = useState<string>('all');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [emailSendingState, setEmailSendingState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [emailSendingMessage, setEmailSendingMessage] = useState('');
@@ -252,14 +254,24 @@ export default function Registrations() {
         (emailFilter === 'sent' && reg.emailSent) ||
         (emailFilter === 'unsent' && !reg.emailSent);
 
-      return matchesSearch && matchesStatus && matchesEmail;
+      const matchesEvent = 
+        eventFilter === 'all' || 
+        (() => {
+          if (Array.isArray(reg.selectedEvents) && reg.selectedEvents.includes(eventFilter)) return true;
+          if (Array.isArray(reg.events) && reg.events.includes(eventFilter)) return true;
+          if (reg.eventId === eventFilter) return true;
+          if (reg.event === eventFilter) return true;
+          return false;
+        })();
+
+      return matchesSearch && matchesStatus && matchesEmail && matchesEvent;
     });
-  }, [registrations, searchQuery, statusFilter, emailFilter]);
+  }, [registrations, searchQuery, statusFilter, emailFilter, eventFilter]);
 
   // Reset pagination on search query or filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter, emailFilter]);
+  }, [searchQuery, statusFilter, emailFilter, eventFilter]);
 
   // 2. Apply sorting
   const sortedRegistrations = useMemo(() => {
@@ -560,6 +572,17 @@ export default function Registrations() {
             <option value="entered">Checked-In</option>
             <option value="pending">Pending Check-In</option>
             <option value="declined">Declined / Blocked</option>
+          </select>
+
+          <select
+            value={eventFilter}
+            onChange={(e: any) => setEventFilter(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-slate-700 font-medium focus:outline-none cursor-pointer"
+          >
+            <option value="all">Event: All Events</option>
+            {OFFICIAL_EVENTS.map(evt => (
+              <option key={evt.id} value={evt.id}>{evt.title}</option>
+            ))}
           </select>
 
           <select

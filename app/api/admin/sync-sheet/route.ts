@@ -121,35 +121,40 @@ export async function POST(req: Request) {
       const parentEmail = reg.parentEmail || reg.fatherEmail || 'N/A';
       const pincode = reg.pincode || (reg.address ? (reg.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
 
+      // Format Events
+      const getEventTitle = (id: string) => {
+        const titleMatch = id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return titleMatch;
+      };
+      
+      const eventsList = Array.isArray(reg.selectedEvents) 
+        ? reg.selectedEvents.map(getEventTitle).join(', ') 
+        : (reg.eventName || reg.eventTitle || reg.event || 'N/A');
+
+      const { extractRegistrationInfo } = await import('@/lib/registrationDataHelper');
+      const unifiedData = extractRegistrationInfo(reg, regId);
+
+      const extractAmount = (data: any) => {
+        const val = data?.receivedAmount ?? data?.paymentAmount ?? data?.amount ?? data?.price ?? 2500;
+        if (typeof val === 'number' && !isNaN(val)) return val;
+        const parsed = parseFloat(String(val).replace(/[^\d.-]/g, ''));
+        return isNaN(parsed) ? 2500 : parsed;
+      };
+
       const payload = {
-        id: String(rowIndex),
-        name: reg.name || 'N/A',
-        email: reg.email || 'N/A',
-        phone: escapeForSheets(reg.phone || reg.mobile || ''),
-        rollNumber: reg.rollNumber || reg.registrationNumber || 'N/A',
-        registeredAt: dbDate.toISOString(),
-        gender: reg.gender || 'N/A',
-        course: reg.course || 'N/A',
-        parentName,
-        parentPhone: escapeForSheets(parentPhone),
-        parentEmail,
-        fatherName: reg.fatherName || reg.parentName || 'N/A',
-        fatherMobile: escapeForSheets(reg.fatherMobile || reg.parentPhone || 'N/A'),
-        fatherEmail: reg.fatherEmail || reg.parentEmail || 'N/A',
-        motherName: reg.motherName || 'N/A',
-        motherMobile: escapeForSheets(reg.motherMobile || 'N/A'),
-        motherEmail: reg.motherEmail || 'N/A',
-        address: reg.address || 'N/A',
-        pincode,
-        region: reg.region || 'N/A',
-        city: reg.city || 'N/A',
-        state: reg.region || 'N/A',
-        receivedAmount: reg.receivedAmount ?? 2500,
-        dateOfPayment,
-        dateGroup,
+        id: regId,
+        name: unifiedData.name,
+        phone: escapeForSheets(unifiedData.phone),
+        email: unifiedData.email,
+        college: unifiedData.college,
+        event: eventsList,
+        members: unifiedData.eventType === 'Team' && unifiedData.noOfTeammates !== 'N/A' 
+          ? (Number(unifiedData.noOfTeammates) + 1) 
+          : 1,
+        amtPaid: String(extractAmount(reg)),
         paymentId: reg.paymentId || 'N/A',
         orderId: reg.orderId || 'N/A',
-        settlementId: reg.settlementId || 'Pending',
+        date: dbDate.toISOString(),
       };
 
       const result = await pushToSheet(excelWebhook, payload);
