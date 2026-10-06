@@ -182,49 +182,54 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   drawField('Full Name', data.name || 'N/A', 40, 502);
   drawField('Registration ID / Roll No.', data.rollNumber || data.registrationNumber || id, 300, 502);
   
-  drawField('College / Course', data.course || data.college || 'JKLU', 40, 469);
+  const rawInstitution = (
+    data.institutionName ||
+    data.college ||
+    data.collegeName ||
+    data.institution ||
+    data.university ||
+    ''
+  );
+  const collegeOrInstitution = typeof rawInstitution === 'string' ? rawInstitution.trim() : String(rawInstitution || '').trim();
+  const displayCollege = (collegeOrInstitution && collegeOrInstitution.toUpperCase() !== 'N/A')
+    ? collegeOrInstitution
+    : 'N/A';
+  drawField('College / Institution', displayCollege, 40, 469);
   
   drawField('Email Address', data.email || 'N/A', 40, 436);
   drawField('Mobile Number', formatPhoneNumber(data.phone || data.mobile || ''), 300, 436);
 
-  // 2. CONTACT DETAILS Section
-  drawSectionHeader('CONTACT DETAILS', 395);
-  drawField('Contact Name', data.parentName || data.fatherName || data.name || 'N/A', 40, 372);
-  drawField('Contact Phone', formatPhoneNumber(data.parentPhone || data.fatherMobile || data.phone || data.mobile || ''), 300, 372);
-  
-  drawField('Contact Email', data.parentEmail || data.fatherEmail || data.email || 'N/A', 40, 339);
-
-  // 3. ADDRESS Section
-  drawSectionHeader('ADDRESS', 298);
-  drawField('Street / Locality', data.address || 'N/A', 40, 275);
+  // 2. ADDRESS Section
+  drawSectionHeader('ADDRESS', 380);
+  drawField('Street / Locality', data.address || 'N/A', 40, 355);
   const pinCode = data.pincode || (data.address ? (data.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
   const cityName = data.city || 'N/A';
   const stateName = data.region || 'N/A';
-  drawField('City / State / PIN', `${cityName}, ${stateName} - ${pinCode}`, 40, 242);
+  drawField('City / State / PIN', `${cityName}, ${stateName} - ${pinCode}`, 40, 320);
 
-  // 4. PAYMENT SUMMARY Section
-  drawSectionHeader('PAYMENT SUMMARY', 201);
+  // 3. PAYMENT SUMMARY Section
+  drawSectionHeader('PAYMENT SUMMARY', 260);
   let amountStr = '2,500.00';
   if (data.paymentAmount !== undefined) {
     amountStr = Number(data.paymentAmount).toFixed(2);
   }
 
-  drawField('Amount Paid', `Rs. ${amountStr}`, 40, 178);
-  drawField('Mode of Payment', 'Online Transfer / UPI', 220, 178);
+  drawField('Amount Paid', `Rs. ${amountStr}`, 40, 235);
+  drawField('Mode of Payment', 'Online Transfer / UPI', 220, 235);
   
-  page.drawText('TRANSACTION STATUS', { x: 410, y: 178, size: 7.5, color: greyColor });
-  page.drawText('Confirmed', { x: 410, y: 165, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
+  page.drawText('TRANSACTION STATUS', { x: 410, y: 235, size: 7.5, color: greyColor });
+  page.drawText('Confirmed', { x: 410, y: 222, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
 
   // Disclaimer Notes
   page.drawText('This receipt confirms successful registration and payment for Sabrang 2026. Please retain this document for your records.', {
     x: 40,
-    y: 110,
+    y: 145,
     size: 7,
     color: greyColor
   });
   page.drawText('For queries, contact the Sabrang organizing committee.', {
     x: 40,
-    y: 99,
+    y: 133,
     size: 7,
     color: greyColor
   });
