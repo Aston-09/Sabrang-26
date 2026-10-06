@@ -202,34 +202,34 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   // 2. ADDRESS Section
   drawSectionHeader('ADDRESS', 380);
   drawField('Street / Locality', data.address || 'N/A', 40, 355);
-  const pinCode = data.pincode || (data.address ? (data.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
-  const cityName = data.city || 'N/A';
-  const stateName = data.region || 'N/A';
-  drawField('City / State / PIN', `${cityName}, ${stateName} - ${pinCode}`, 40, 320);
 
   // 3. PAYMENT SUMMARY Section
-  drawSectionHeader('PAYMENT SUMMARY', 260);
-  let amountStr = '2,500.00';
-  if (data.paymentAmount !== undefined) {
-    amountStr = Number(data.paymentAmount).toFixed(2);
-  }
+  drawSectionHeader('PAYMENT SUMMARY', 280);
+  const rawAmount = data.paymentAmount !== undefined 
+    ? data.paymentAmount 
+    : (data.amount !== undefined 
+        ? data.amount 
+        : (data.receivedAmount !== undefined 
+            ? data.receivedAmount 
+            : (data.price !== undefined ? data.price : 0)));
+  const amountStr = Number(rawAmount || 0).toFixed(2);
 
-  drawField('Amount Paid', `Rs. ${amountStr}`, 40, 235);
-  drawField('Mode of Payment', 'Online Transfer / UPI', 220, 235);
+  drawField('Amount Paid', `Rs. ${amountStr}`, 40, 255);
+  drawField('Mode of Payment', 'Online Transfer / UPI', 220, 255);
   
-  page.drawText('TRANSACTION STATUS', { x: 410, y: 235, size: 7.5, color: greyColor });
-  page.drawText('Confirmed', { x: 410, y: 222, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
+  page.drawText('TRANSACTION STATUS', { x: 410, y: 255, size: 7.5, color: greyColor });
+  page.drawText('Confirmed', { x: 410, y: 242, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
 
   // Disclaimer Notes
   page.drawText('This receipt confirms successful registration and payment for Sabrang 2026. Please retain this document for your records.', {
     x: 40,
-    y: 145,
+    y: 155,
     size: 7,
     color: greyColor
   });
   page.drawText('For queries, contact the Sabrang organizing committee.', {
     x: 40,
-    y: 133,
+    y: 143,
     size: 7,
     color: greyColor
   });
@@ -267,29 +267,9 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
 export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) {
   const { sendBrevoEmail } = await import('./brevo');
 
-  // Load logos as base64 for inline embedding via Brevo attachments
-  let sabranLogoBase64: string | undefined;
-  let jkluLogoBase64: string | undefined;
-  try {
-    const fsPromises = await import('fs/promises');
-    const pathModule = await import('path');
-
-    const sabrangPath = pathModule.join(process.cwd(), 'public', 'sabrang-logo', 'Sabrang_Logo.png');
-    sabranLogoBase64 = (await fsPromises.readFile(sabrangPath)).toString('base64');
-
-    const jkluPath = pathModule.join(process.cwd(), 'public', 'sabrang-logo', 'jklu_logo.png');
-    jkluLogoBase64 = (await fsPromises.readFile(jkluPath)).toString('base64');
-  } catch {
-    // Non-fatal: email sends without inline logos
-  }
-
-  const sabrangLogoTag = sabranLogoBase64
-    ? `<img src="data:image/png;base64,${sabranLogoBase64}" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />`
-    : `<span style="color: #FACC15; font-size: 28px; font-weight: bold; letter-spacing: 2px;">SABRANG 2026</span>`;
-
-  const jkluLogoTag = jkluLogoBase64
-    ? `<img src="data:image/png;base64,${jkluLogoBase64}" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />`
-    : `<span style="font-size: 13px; font-weight: 700; color: #333;">JKLU</span>`;
+  // Use absolute URLs for images to prevent Gmail from clipping the email (Base64 strings are too large)
+  const sabrangLogoTag = `<img src="https://res.cloudinary.com/eprhemvt/image/upload/v1788091530/sabrang-2026/sabrang-logo/sabrang-logo.png" alt="Sabrang '26 Logo" style="max-height: 70px; width: auto; display: block;" />`;
+  const jkluLogoTag = `<img src="https://res.cloudinary.com/eprhemvt/image/upload/v1787060374/sabrang-2026/sabrang-logo/white_jklu_logo.png" alt="JKLU Logo" style="max-height: 55px; width: auto; display: block;" />`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -340,7 +320,7 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
         </div>
         <div class="footer">
           <div class="social-icons">
-            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull;
+            <a href="https://www.instagram.com/jklusabrang">Instagram</a> &bull;
             <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull;
             <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull;
             <a href="https://www.facebook.com/share/1Hsdb57Jcf/">Facebook</a>
@@ -550,7 +530,7 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
   const emailAndPdfPromise = (async () => {
     try {
       console.log("Generating PDF receipt...");
-      const pdfBytes = await generatePDF(formData, docId, paymentId, orderId, dateOfPayment);
+      const pdfBytes = await generatePDF({ ...formData, paymentAmount }, docId, paymentId, orderId, dateOfPayment);
       console.log("PDF receipt generated.");
 
       const isProduction = process.env.NODE_ENV === 'production' || 
