@@ -258,12 +258,12 @@ export default function UnlockExperience({
       </div>
 
       {/* Scattered Tickets Layer */}
-      <div className="absolute top-0 left-0 w-full h-full z-10 overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full z-10 overflow-hidden pointer-events-none">
         {TICKET_DATA.slice(0, ticketCount).map((ticket, i) => (
           <div
             key={i}
             ref={(el) => { ticketsRef.current[i] = el; }}
-            className="absolute top-0 left-0 origin-center cursor-grab active:cursor-grabbing will-change-transform"
+            className="absolute top-0 left-0 origin-center cursor-grab active:cursor-grabbing will-change-transform pointer-events-auto"
           >
             <Ticket variant={ticket.variant as any} isMobile={isMobile} />
           </div>
