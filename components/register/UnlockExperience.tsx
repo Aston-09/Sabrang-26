@@ -195,6 +195,11 @@ export default function UnlockExperience({
         {/* Ticket Stub Pass Button (Pointer Events Auto to allow clicking) */}
         <button
           onClick={onBagIt}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onBagIt();
+          }}
           onTouchStart={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           className="group pointer-events-auto relative z-40 w-72 sm:w-80 h-20 bg-[#2d0f4d] hover:bg-[#381360] text-white border-2 border-white/80 shadow-[6px_6px_0px_#ffffff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#ffffff] transition-all duration-200 cursor-pointer select-none flex items-stretch text-left overflow-visible"
