@@ -202,34 +202,30 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   // 2. ADDRESS Section
   drawSectionHeader('ADDRESS', 380);
   drawField('Street / Locality', data.address || 'N/A', 40, 355);
-  const pinCode = data.pincode || (data.address ? (data.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
-  const cityName = data.city || 'N/A';
-  const stateName = data.region || 'N/A';
-  drawField('City / State / PIN', `${cityName}, ${stateName} - ${pinCode}`, 40, 320);
 
   // 3. PAYMENT SUMMARY Section
-  drawSectionHeader('PAYMENT SUMMARY', 260);
+  drawSectionHeader('PAYMENT SUMMARY', 280);
   let amountStr = '2,500.00';
   if (data.paymentAmount !== undefined) {
     amountStr = Number(data.paymentAmount).toFixed(2);
   }
 
-  drawField('Amount Paid', `Rs. ${amountStr}`, 40, 235);
-  drawField('Mode of Payment', 'Online Transfer / UPI', 220, 235);
+  drawField('Amount Paid', `Rs. ${amountStr}`, 40, 255);
+  drawField('Mode of Payment', 'Online Transfer / UPI', 220, 255);
   
-  page.drawText('TRANSACTION STATUS', { x: 410, y: 235, size: 7.5, color: greyColor });
-  page.drawText('Confirmed', { x: 410, y: 222, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
+  page.drawText('TRANSACTION STATUS', { x: 410, y: 255, size: 7.5, color: greyColor });
+  page.drawText('Confirmed', { x: 410, y: 242, size: 10.5, color: rgb(0.1, 0.5, 0.2) });
 
   // Disclaimer Notes
   page.drawText('This receipt confirms successful registration and payment for Sabrang 2026. Please retain this document for your records.', {
     x: 40,
-    y: 145,
+    y: 155,
     size: 7,
     color: greyColor
   });
   page.drawText('For queries, contact the Sabrang organizing committee.', {
     x: 40,
-    y: 133,
+    y: 143,
     size: 7,
     color: greyColor
   });
