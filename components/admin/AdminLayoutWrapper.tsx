@@ -33,6 +33,7 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
         const role = roleDoc?.exists() ? roleDoc.data()?.role : (userDoc?.exists() ? userDoc.data()?.role : 'admin');
 
         if (role === 'scanner') {
+          setIsAuthenticated(true);
           router.push('/admin/scanner');
         } else {
           setIsAuthenticated(true);
