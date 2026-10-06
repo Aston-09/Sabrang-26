@@ -7,15 +7,16 @@ export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized: Missing or invalid Authorization header" }, { status: 401 });
     }
 
     const idToken = authHeader.split("Bearer ")[1];
     let decodedToken;
     try {
       decodedToken = await adminAuth.verifyIdToken(idToken);
-    } catch (authErr) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    } catch (authErr: any) {
+      console.error("Token verification failed:", authErr);
+      return NextResponse.json({ error: `Unauthorized: Token verification failed (${authErr.message})` }, { status: 401 });
     }
 
     // Role check
@@ -26,8 +27,19 @@ export async function POST(req: Request) {
       userRole = roleDoc.data()?.role;
     }
     
-    if (userRole !== "admin" && userRole !== "scanner" && decodedToken.admin !== true && decodedToken.role !== "admin" && decodedToken.role !== "scanner") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Match frontend behavior: default to 'admin' if no role is found in database
+    const normalizedRole = userRole ? String(userRole).toLowerCase() : "admin";
+    const normalizedTokenRole = decodedToken.role ? String(decodedToken.role).toLowerCase() : "admin";
+
+    if (
+      normalizedRole !== "admin" && 
+      normalizedRole !== "scanner" && 
+      decodedToken.admin !== true && 
+      normalizedTokenRole !== "admin" && 
+      normalizedTokenRole !== "scanner"
+    ) {
+      console.error(`Forbidden: User ${decodedToken.uid} has role '${userRole}' (Token role: '${decodedToken.role}')`);
+      return NextResponse.json({ error: `Forbidden: Your account role '${userRole || 'NONE'}' is not authorized to scan` }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
