@@ -3,6 +3,9 @@ import { adminDb, adminAuth } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { normalizeEventKey } from '@/lib/couponHelper';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("Authorization");
