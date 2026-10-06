@@ -205,10 +205,14 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
 
   // 3. PAYMENT SUMMARY Section
   drawSectionHeader('PAYMENT SUMMARY', 280);
-  let amountStr = '2,500.00';
-  if (data.paymentAmount !== undefined) {
-    amountStr = Number(data.paymentAmount).toFixed(2);
-  }
+  const rawAmount = data.paymentAmount !== undefined 
+    ? data.paymentAmount 
+    : (data.amount !== undefined 
+        ? data.amount 
+        : (data.receivedAmount !== undefined 
+            ? data.receivedAmount 
+            : (data.price !== undefined ? data.price : 0)));
+  const amountStr = Number(rawAmount || 0).toFixed(2);
 
   drawField('Amount Paid', `Rs. ${amountStr}`, 40, 255);
   drawField('Mode of Payment', 'Online Transfer / UPI', 220, 255);
@@ -546,7 +550,7 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
   const emailAndPdfPromise = (async () => {
     try {
       console.log("Generating PDF receipt...");
-      const pdfBytes = await generatePDF(formData, docId, paymentId, orderId, dateOfPayment);
+      const pdfBytes = await generatePDF({ ...formData, paymentAmount }, docId, paymentId, orderId, dateOfPayment);
       console.log("PDF receipt generated.");
 
       const isProduction = process.env.NODE_ENV === 'production' || 
