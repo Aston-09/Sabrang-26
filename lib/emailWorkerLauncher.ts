@@ -1,4 +1,4 @@
-import { adminDb } from './firebaseAdmin';
+import { adminDb, adminApp } from './firebaseAdmin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { generatePDF, sendEmail } from './registrationHelper';
 
@@ -17,8 +17,8 @@ export function startEmailWorker() {
     return;
   }
 
-  if (!adminDb) {
-    console.log('[EmailWorker] Firebase Admin DB not initialized — skipping email worker.');
+  if (!adminDb || adminApp?.name === 'client-admin-fallback' || adminApp?.name === 'build-fallback') {
+    console.log('[EmailWorker] Firebase Admin DB not initialized with real credentials — skipping email worker.');
     return;
   }
 

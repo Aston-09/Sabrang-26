@@ -105,6 +105,7 @@ function ArchiveHeading({
 }) {
   return (
     <header
+      suppressHydrationWarning
       className={`mx-auto w-full max-w-[1440px] px-6 sm:px-10 md:px-14 flex items-center justify-between gap-4 ${className}`}
     >
       <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
