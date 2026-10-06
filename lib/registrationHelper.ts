@@ -320,7 +320,7 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
         </div>
         <div class="footer">
           <div class="social-icons">
-            <a href="https://www.instagram.com/jklu_sabrang">Instagram</a> &bull;
+            <a href="https://www.instagram.com/jklusabrang">Instagram</a> &bull;
             <a href="https://www.linkedin.com/school/jklujaipur/">LinkedIn</a> &bull;
             <a href="https://x.com/jklujaipur">X (Twitter)</a> &bull;
             <a href="https://www.facebook.com/share/1Hsdb57Jcf/">Facebook</a>
