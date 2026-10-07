@@ -18,7 +18,7 @@ if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
 function generateSignature(params, apiSecret) {
   const sortedKeys = Object.keys(params).sort();
   const stringToSign = sortedKeys.map((k) => `${k}=${params[k]}`).join("&") + apiSecret;
-  return crypto.createHash("sha1").update(stringToSign).digest("hex");
+  return crypto.createHash("sha256").update(stringToSign).digest("hex");
 }
 
 async function uploadImage(filePath, publicId) {
@@ -31,6 +31,7 @@ async function uploadImage(filePath, publicId) {
     overwrite: "true",
     public_id: publicId,
     timestamp: timestamp.toString(),
+    signature_algorithm: "sha256",
   };
 
   const signature = generateSignature(params, API_SECRET);
@@ -49,6 +50,7 @@ async function uploadImage(filePath, publicId) {
   formData.append("public_id", publicId);
   formData.append("overwrite", "true");
   formData.append("invalidate", "true");
+  formData.append("signature_algorithm", "sha256");
 
   console.log(`Uploading ${filePath} -> ${folder}/${publicId}...`);
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {

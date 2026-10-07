@@ -22,7 +22,7 @@ const MAPPING_FILE = path.resolve("cloudinary-mapping.json");
 function generateSignature(params, apiSecret) {
   const sortedKeys = Object.keys(params).sort();
   const stringToSign = sortedKeys.map((k) => `${k}=${params[k]}`).join("&") + apiSecret;
-  return crypto.createHash("sha1").update(stringToSign).digest("hex");
+  return crypto.createHash("sha256").update(stringToSign).digest("hex");
 }
 
 // Get all files recursively from public directory
@@ -63,6 +63,7 @@ async function uploadFile(filePath) {
     folder: cloudinaryFolder,
     public_id: cleanName,
     timestamp,
+    signature_algorithm: "sha256",
   };
 
   const signature = generateSignature(params, API_SECRET);
@@ -77,6 +78,7 @@ async function uploadFile(filePath) {
   formData.append("signature", signature);
   formData.append("folder", cloudinaryFolder);
   formData.append("public_id", cleanName);
+  formData.append("signature_algorithm", "sha256");
 
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, {
     method: "POST",

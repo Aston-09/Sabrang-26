@@ -24,12 +24,14 @@ const pincodeCache = new Map<string, any>();
  * that go to Cashfree (name, email). Cashfree rejects HTML-encoded strings. */
 function decodeHtmlEntities(str: string): string {
   if (!str || typeof str !== 'string') return str;
-  return str
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+  const entities: Record<string, string> = {
+    '&amp;': '&',
+    '&quot;': '"',
+    '&#039;': "'",
+    '&lt;': '<',
+    '&gt;': '>'
+  };
+  return str.replace(/&amp;|&quot;|&#039;|&lt;|&gt;/g, (match) => entities[match] || match);
 }
 
 export async function POST(req: Request) {

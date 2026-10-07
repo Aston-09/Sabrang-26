@@ -61,7 +61,7 @@ export default function TrafficTracker() {
     try {
       sessionId = sessionStorage.getItem('sabrang_visitor_sid') || '';
       if (!sessionId) {
-        sessionId = 'sid_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        sessionId = 'sid_' + crypto.randomUUID().replace(/-/g, '') + Date.now().toString(36);
         sessionStorage.setItem('sabrang_visitor_sid', sessionId);
       }
     } catch {

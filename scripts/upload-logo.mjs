@@ -16,7 +16,7 @@ const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 function generateSignature(params, apiSecret) {
   const sortedKeys = Object.keys(params).sort();
   const stringToSign = sortedKeys.map((k) => `${k}=${params[k]}`).join("&") + apiSecret;
-  return crypto.createHash("sha1").update(stringToSign).digest("hex");
+  return crypto.createHash("sha256").update(stringToSign).digest("hex");
 }
 
 async function uploadToCloudinary(filePath, publicId, resourceType = "auto") {
@@ -27,6 +27,7 @@ async function uploadToCloudinary(filePath, publicId, resourceType = "auto") {
     folder,
     public_id: publicId,
     timestamp,
+    signature_algorithm: "sha256",
   };
   
   const signature = generateSignature(params, API_SECRET);
@@ -42,6 +43,7 @@ async function uploadToCloudinary(filePath, publicId, resourceType = "auto") {
   formData.append("signature", signature);
   formData.append("folder", folder);
   formData.append("public_id", publicId);
+  formData.append("signature_algorithm", "sha256");
   
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, {
     method: "POST",
