@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useThree } from '@react-three/fiber'
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import type { HeroQuality } from './heroTier'
@@ -14,6 +15,11 @@ import type { HeroQuality } from './heroTier'
  * canvas already opted out of with antialias:false.
  */
 export default function HeroEffects({ mobile = false, q }: { mobile?: boolean; q: HeroQuality }) {
+  const { size } = useThree()
+
+  // Prevent rendering effects if the canvas has zero size (avoids GL_INVALID_FRAMEBUFFER_OPERATION)
+  if (size.width === 0 || size.height === 0) return null
+
   // The grain pass is a full-screen read/write for a 4.5% overlay -- the first
   // thing to go when there is no GPU doing the work.
   if (mobile || !q.grain) {

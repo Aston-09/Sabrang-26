@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
     '127.0.0.1',
     '172.16.54.52',
     '172.16.54.52:3000',
+    '192.168.56.1',
+    '192.168.56.1:3000',
   ],
   trailingSlash: false,
   async redirects() {

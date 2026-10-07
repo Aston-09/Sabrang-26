@@ -31,6 +31,7 @@ const SUPPRESSED_STRINGS = [
   "Extent3D",
   "mipLevelCount",
   "runner.isFixed",
+  "WebGPU is not available",
 ];
 
 const filterLog = (origFn: (...args: unknown[]) => void) => {
