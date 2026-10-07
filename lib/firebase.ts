@@ -2,7 +2,7 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { initializeFirestore, getFirestore, persistentLocalCache, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
-import { initializeAppCheck, ReCaptchaV3Provider, CustomProvider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, CustomProvider } from 'firebase/app-check';
 
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -71,7 +71,7 @@ if (app) {
       }
       try {
         appCheck = initializeAppCheck(app, {
-          provider: new ReCaptchaV3Provider(siteKey),
+          provider: new ReCaptchaEnterpriseProvider(siteKey),
           isTokenAutoRefreshEnabled: true,
         });
         console.log("Firebase App Check initialized successfully on client.");

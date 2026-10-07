@@ -197,8 +197,8 @@ export async function POST(req: Request) {
         });
         console.log("Pending registration saved.");
 
-        // MOCK MODE: If no keys OR if order amount is 0 (100% discount coupon), return a mock session
-        if (!cashfreeAppId || orderAmount === 0) {
+        // MOCK MODE: If not in production (Sandbox), no keys, OR order amount is 0, return a mock session
+        if (!isProd || !cashfreeAppId || orderAmount === 0) {
           return NextResponse.json({ 
             order_id: orderId,
             payment_session_id: "mock_session_id",
@@ -293,9 +293,9 @@ export async function POST(req: Request) {
       }
       const dbFormData = pendingData.formData;
 
-      // If we are in development and don't have keys, or if it's a 100% discount, allow bypass
-      if (!cashfreeAppId || pendingData.amount === 0) {
-        console.warn("Cashfree App ID missing or amount is 0, bypassing verification.");
+      // If we are in Sandbox, don't have keys, or it's a 100% discount, allow bypass
+      if (!isProd || !cashfreeAppId || pendingData.amount === 0) {
+        console.warn("Sandbox mode, Cashfree App ID missing, or amount is 0. Bypassing verification.");
         // For free tickets, there is no webhook, so the frontend MUST run the background tasks.
         const regId = await finalizeRegistration(dbFormData, "mock_payment_id", sanitizedOrderId, true);
         after(async () => {

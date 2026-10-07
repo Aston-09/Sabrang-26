@@ -294,7 +294,7 @@ export default function CheckoutForm() {
 
       cashfree.checkout({
         paymentSessionId: data.payment_session_id,
-        redirectTarget: "_self",
+        redirectTarget: "_blank",
       });
     } catch (err: any) {
       console.error("Payment error:", err);
@@ -1113,6 +1113,7 @@ export default function CheckoutForm() {
     <div ref={formContainerRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 pb-8 md:pb-12 min-h-screen flex flex-col animate-in fade-in duration-500">
       
       {/* Top Header Bar */}
+      {verificationStatus === "idle" && (
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-white/10">
         <div>
           <Link
@@ -1162,8 +1163,10 @@ export default function CheckoutForm() {
           })}
         </div>
       </div>
+      )}
 
       {/* 2-Column Checkout Layout */}
+      {verificationStatus === "idle" ? (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full flex-grow">
         {/* Left Column: Form Steps & Controls */}
         <div className="lg:col-span-8 flex flex-col space-y-6">
@@ -1722,129 +1725,6 @@ export default function CheckoutForm() {
           </div>
         </div>
 
-        {/* Verification Status / Result Screen when redirected back from Cashfree */}
-        {verificationStatus !== "idle" && (
-          <div className="space-y-6">
-            {verificationStatus === "verifying" && (
-              <div className="py-12 px-6 text-center space-y-6 max-w-md mx-auto">
-                <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto">
-                  <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
-                </div>
-                <h3 className="text-xl font-semibold text-white text-white">
-                  Verifying Payment
-                </h3>
-                <p className="text-white/60 text-sm leading-relaxed">
-                  Communicating securely with Cashfree payment gateway. Please keep this window open while we generate your registration pass.
-                </p>
-              </div>
-            )}
-
-            {verificationStatus === "success" && verifiedOrder && (
-              <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(16,185,129,0.3)]">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black uppercase tracking-tight text-white">
-                    Registration Confirmed
-                  </h3>
-                  <p className="text-emerald-400 font-sans text-xs uppercase tracking-widest">
-                    Payment Processed Successfully
-                  </p>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-sans text-xs">
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/50">Order ID:</span>
-                    <span className="text-white font-medium">{verifiedOrder.orderId}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/50">Registration ID:</span>
-                    <span className="text-violet-300 font-medium">{verifiedOrder.registrationId}</span>
-                  </div>
-                  {verifiedOrder.email && (
-                    <div className="flex justify-between">
-                      <span className="text-white/50">Pass Delivered To:</span>
-                      <span className="text-white/90">{verifiedOrder.email}</span>
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-white/60 text-xs leading-relaxed">
-                  Your official festival pass with verifiable QR code has been generated. You may download it below.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                  <a
-                    href={`/api/receipt?id=${encodeURIComponent(verifiedOrder.registrationId)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Pass (PDF)
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => { window.location.href = "/"; }}
-                    className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
-                  >
-                    Return to Home
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {verificationStatus === "error" && (
-              <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
-                <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(244,63,94,0.3)]">
-                  <XCircle className="w-8 h-8 text-rose-400" />
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black uppercase tracking-tight text-white">
-                    Payment Verification Issue
-                  </h3>
-                  <p className="text-rose-400/90 text-sm">
-                    {paymentError || "The transaction could not be confirmed or was cancelled."}
-                  </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const params = new URLSearchParams(window.location.search);
-                      const id = params.get("order_id");
-                      if (id) {
-                        verifyOrderPayment(id);
-                      } else {
-                        setVerificationStatus("idle");
-                      }
-                    }}
-                    className="px-6 py-3 bg-violet-600 hover:bg-violet-500 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Retry Verification
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVerificationStatus("idle");
-                      setPaymentError(null);
-                      setCurrentStep("review");
-                    }}
-                    className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg font-bold text-sm text-white transition-all"
-                  >
-                    Back to Review
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Mobile Navigation Buttons */}
         {verificationStatus === "idle" && (
           <div className="flex lg:hidden justify-between items-center mt-6 border-t border-white/10 pt-4">
@@ -2014,7 +1894,137 @@ export default function CheckoutForm() {
           )}
         </div>
       </div>
+      </div>
+      ) : (
+        /* Verification Status / Result Screen when redirected back from Cashfree */
+        <div className="flex-grow flex items-center justify-center w-full py-12">
+          <div className="w-full max-w-2xl bg-[#0c0c0e] border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            {verificationStatus === "verifying" && (
+              <div className="py-12 px-6 text-center space-y-6 max-w-md mx-auto">
+                <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center mx-auto">
+                  <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+                </div>
+                <h3 className="text-xl font-semibold text-white">
+                  Verifying Payment
+                </h3>
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Communicating securely with Cashfree payment gateway. Please keep this window open while we generate your registration pass.
+                </p>
+              </div>
+            )}
+
+            {verificationStatus === "success" && verifiedOrder && (
+              <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
+                <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-white">
+                    Registration Successful
+                  </h3>
+                  <p className="text-emerald-400 font-sans text-sm uppercase tracking-widest font-semibold">
+                    Payment Processed Successfully
+                  </p>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-left space-y-3 font-sans text-sm">
+                  <div className="flex justify-between border-b border-white/10 pb-3">
+                    <span className="text-white/50">Order ID:</span>
+                    <span className="text-white font-medium">{verifiedOrder.orderId}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/10 pb-3">
+                    <span className="text-white/50">Registration ID:</span>
+                    <span className="text-violet-300 font-medium">{verifiedOrder.registrationId}</span>
+                  </div>
+                  {verifiedOrder.email && (
+                    <div className="flex justify-between">
+                      <span className="text-white/50">Pass Delivered To:</span>
+                      <span className="text-white/90">{verifiedOrder.email}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-xl bg-violet-950/30 border border-violet-500/30">
+                  <p className="text-violet-200 text-sm font-medium leading-relaxed">
+                    Your registration will be confirmed via email in 24 hours.
+                  </p>
+                </div>
+
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Your official festival pass with verifiable QR code has been generated. You may also download it below.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                  <a
+                    href={`/api/receipt?id=${encodeURIComponent(verifiedOrder.registrationId)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3.5 bg-violet-600 hover:bg-violet-500 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download Pass (PDF)
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => { window.location.href = "/"; }}
+                    className="px-6 py-3.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-bold text-sm text-white transition-all"
+                  >
+                    Return to Home
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {verificationStatus === "error" && (
+              <div className="py-8 px-6 text-center space-y-6 max-w-lg mx-auto">
+                <div className="w-20 h-20 rounded-full bg-rose-500/10 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(244,63,94,0.3)]">
+                  <XCircle className="w-10 h-10 text-rose-400" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-white">
+                    Payment Verification Issue
+                  </h3>
+                  <p className="text-rose-400/90 text-base">
+                    {paymentError || "The transaction could not be confirmed or was cancelled."}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const params = new URLSearchParams(window.location.search);
+                      const id = params.get("order_id");
+                      if (id) {
+                        verifyOrderPayment(id);
+                      } else {
+                        setVerificationStatus("idle");
+                      }
+                    }}
+                    className="px-6 py-3.5 bg-violet-600 hover:bg-violet-500 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                    Retry Verification
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVerificationStatus("idle");
+                      setPaymentError(null);
+                      setCurrentStep("review");
+                    }}
+                    className="px-6 py-3.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-bold text-sm text-white transition-all"
+                  >
+                    Back to Review
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
 }
