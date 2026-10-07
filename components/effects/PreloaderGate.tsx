@@ -2,7 +2,7 @@
 
 import "@/lib/suppress-three-logs";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const SabrangPreloader = dynamic(
   () => import("@/components/effects/SabrangPreloader"),
@@ -10,7 +10,19 @@ const SabrangPreloader = dynamic(
 );
 
 export default function PreloaderGate({ children }: { children: React.ReactNode }) {
-  const [done, setDone] = useState(false);
+  // If we're coming back from a Cashfree payment (has order_id in URL), skip the loader
+  const [done, setDone] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.location.search.includes("order_id=");
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (!done && window.location.search.includes("order_id=")) {
+      setDone(true);
+    }
+  }, [done]);
 
   return (
     <>
@@ -25,6 +37,7 @@ export default function PreloaderGate({ children }: { children: React.ReactNode 
         />
       )}
       <div
+        suppressHydrationWarning
         style={{
           opacity: done ? 1 : 0,
           transition: done ? "opacity 0.4s ease 0.05s" : "none",

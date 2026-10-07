@@ -41,7 +41,7 @@ export const NAV_PROJECTS: Project[] = [
     title: 'Schedule', 
     category: 'Timeline', 
     description: 'When everything happens.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787513797/sabrang-2026/menu-scroll-covers/Schedule.png", 
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/v1791359565/sabrang-2026/menu-scroll-covers/Schedule.png", 
     href: '/schedule' 
   },
   { 
@@ -49,7 +49,7 @@ export const NAV_PROJECTS: Project[] = [
     title: 'Registration', 
     category: 'Join Us', 
     description: 'Sign up to participate.', 
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787513796/sabrang-2026/menu-scroll-covers/Registrations.png", 
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/v1791359586/sabrang-2026/menu-scroll-covers/Registrations.png", 
     href: '/register' 
   },
   { 
