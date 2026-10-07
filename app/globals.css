@@ -97,6 +97,11 @@
     opacity: 0 !important;
     visibility: hidden !important;
   }
+
+  /* Restore cursor pointer for buttons (Tailwind v4 removed this) */
+  button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"] {
+    cursor: pointer;
+  }
 }
 
 @layer utilities {

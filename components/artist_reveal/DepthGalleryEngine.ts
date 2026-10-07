@@ -93,8 +93,8 @@ export class DepthGalleryEngine {
   private velocity = 0
   private velocityMax = 1.5
   private previousProgress = 0
-  private scrollSmoothing = 0.08
-  private velocityDamping = 0.12
+  private scrollSmoothing = 0.14
+  private velocityDamping = 0.18
   private velocityStopThreshold = 0.0001
 
   /* Camera bounds */

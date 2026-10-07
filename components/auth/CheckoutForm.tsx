@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Check, ChevronRight, ArrowLeft, Upload, AlertTriangle, Loader2, CheckCircle2, XCircle, ShieldCheck, Download, ExternalLink, RefreshCw, Users, Sparkles, Plus, Minus, Calendar } from "lucide-react";
 import {
   OFFICIAL_EVENTS,
@@ -131,6 +133,37 @@ export default function CheckoutForm() {
   } | null>(null);
   const [copiedOffer, setCopiedOffer] = useState(false);
   const [cartLoadedFromUrl, setCartLoadedFromUrl] = useState(false);
+  const [specialOffer, setSpecialOffer] = useState<{
+    code: string;
+    desc: string;
+  } | null>(null);
+
+  useEffect(() => {
+    async function fetchSpecialOffer() {
+      try {
+        const q = query(
+          collection(db, "coupons"), 
+          where("active", "==", true), 
+          where("isSpecialOffer", "==", true),
+          limit(1)
+        );
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const doc = snapshot.docs[0];
+          const data = doc.data();
+          setSpecialOffer({
+            code: doc.id,
+            desc: data.specialOfferDesc || "Get an exclusive discount on all event registrations – Limited time only!",
+          });
+        } else {
+          setSpecialOffer(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch special offer:", err);
+      }
+    }
+    fetchSpecialOffer();
+  }, []);
 
   // Cashfree Payment states
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -1194,38 +1227,40 @@ export default function CheckoutForm() {
               </div>
 
               {/* Special Offer Card */}
-              <div className="bg-[#140c21] border border-purple-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-fuchsia-400" />
-                    <span className="font-black text-xs uppercase tracking-wider text-fuchsia-300">
-                      SPECIAL OFFER
-                    </span>
+              {specialOffer && (
+                <div className="bg-[#140c21] border border-purple-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-fuchsia-400" />
+                      <span className="font-black text-xs uppercase tracking-wider text-fuchsia-300">
+                        SPECIAL OFFER
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/70">
+                      {specialOffer.desc}
+                    </p>
                   </div>
-                  <p className="text-xs text-white/70">
-                    Get ₹100 discount on all event registrations – Limited time only!
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3.5 py-1.5 rounded-lg bg-black/50 border border-purple-500/40 text-purple-200 font-sans text-xs font-bold tracking-wider">
+                      {specialOffer.code.toUpperCase()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPromoCode(specialOffer.code.toUpperCase());
+                        setPromoApplied(true);
+                        navigator.clipboard?.writeText(specialOffer.code.toUpperCase());
+                        setCopiedOffer(true);
+                        setTimeout(() => setCopiedOffer(false), 2000);
+                      }}
+                      className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-[0_0_12px_rgba(168,85,247,0.4)] transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {copiedOffer ? <Check className="w-3.5 h-3.5" /> : null}
+                      <span>{copiedOffer ? "Applied!" : "Copy Code"}</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-3.5 py-1.5 rounded-lg bg-black/50 border border-purple-500/40 text-purple-200 font-sans text-xs font-bold tracking-wider">
-                    SPECIALOFFER
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPromoCode("SPECIALOFFER");
-                      setPromoApplied(true);
-                      navigator.clipboard?.writeText("SPECIALOFFER");
-                      setCopiedOffer(true);
-                      setTimeout(() => setCopiedOffer(false), 2000);
-                    }}
-                    className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-[0_0_12px_rgba(168,85,247,0.4)] transition-all flex items-center gap-1.5 cursor-pointer"
-                  >
-                    {copiedOffer ? <Check className="w-3.5 h-3.5" /> : null}
-                    <span>{copiedOffer ? "Applied!" : "Copy Code"}</span>
-                  </button>
-                </div>
-              </div>
+              )}
 
               <div className="space-y-8">
                 {([
@@ -1708,14 +1743,10 @@ export default function CheckoutForm() {
                       </>
                     ) : (
                       <>
-                        <ShieldCheck className="w-5 h-5" />
-                        <span>Proceed to Pay ₹{calculateTotal()} via Cashfree</span>
+                        <span>Proceed to Pay ₹{calculateTotal()}</span>
                       </>
                     )}
                   </button>
-                  <p className="text-[11px] text-white/40 font-sans mt-3 text-center uppercase tracking-wider">
-                    Secured by Cashfree Payments India 256-bit SSL • UPI, Cards, NetBanking
-                  </p>
                 </div>
               </div>
             </div>

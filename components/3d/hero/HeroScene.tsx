@@ -37,7 +37,7 @@ function CameraController() {
 
   useFrame((state, delta) => {
     const d = Math.min(delta, 0.05)
-    const p = THREE.MathUtils.clamp(heroScrollState.progress, 0, 0.3) / 0.3
+    const p = THREE.MathUtils.clamp(heroScrollState.progress, 0, 0.9) / 0.9
     const cam = state.camera as THREE.PerspectiveCamera
 
     if (cam.fov !== heroConfig.cameraFOV) {

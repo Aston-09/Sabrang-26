@@ -96,11 +96,14 @@ export default function Navbar() {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.body.setAttribute("data-menu-open", "true");
     } else {
       document.body.style.overflow = "";
+      document.body.removeAttribute("data-menu-open");
     }
     return () => {
       document.body.style.overflow = "";
+      document.body.removeAttribute("data-menu-open");
     };
   }, [isOpen]);
 

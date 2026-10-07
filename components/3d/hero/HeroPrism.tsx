@@ -272,7 +272,7 @@ export default function HeroPrism({ mobile = false, q }: { mobile?: boolean; q: 
 
     // hero sequence completes by 30% of the page scroll
     const raw = heroScrollState.progress
-    const progress = THREE.MathUtils.clamp(raw, 0, 0.3) / 0.3
+    const progress = THREE.MathUtils.clamp(raw, 0, 0.9) / 0.9
 
     // scroll velocity, damped -> a restrained nudge, never a spin-up
     const instantVel = d > 0 ? (raw - lastProgress.current) / d : 0

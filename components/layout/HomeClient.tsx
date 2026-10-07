@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import AboutSection from '@/components/sections/AboutSection'
 import HeroSection from '@/components/sections/HeroSection'
 import HeroScene from '@/components/3d/hero/HeroScene'
 import ArtistReveal from '@/components/artist_reveal/ArtistReveal'
@@ -12,7 +11,6 @@ import './hero-theme.css'
 export default function HomeClient() {
   const btnRef = useRef<HTMLAnchorElement>(null)
 
-  // Entrance fade-in + scroll-based fade-out tied to hero progress
   useEffect(() => {
     const btn = btnRef.current
     if (!btn) return
@@ -20,28 +18,24 @@ export default function HomeClient() {
     // Entrance: reveal after a short delay
     btn.style.opacity = '0'
     btn.style.transform = 'translateY(12px)'
+    btn.style.transition = 'opacity 0.3s ease, transform 0.3s ease'
     const entranceTimer = setTimeout(() => {
-      btn.style.transition = 'opacity 0.8s ease 0.6s, transform 0.8s ease 0.6s'
       btn.style.opacity = '1'
       btn.style.transform = 'translateY(0)'
-    }, 200)
+    }, 400)
 
-    // Scroll: fade out as hero progress advances past 10%
-    let raf: number
-    const tick = () => {
-      const p = heroScrollState.progress
-      if (p > 0.05) {
-        const fade = Math.max(0, 1 - (p - 0.05) / 0.15)
-        btn.style.opacity = String(fade)
-        btn.style.pointerEvents = fade < 0.05 ? 'none' : 'auto'
-      }
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
+    // Mirror Navbar behavior: hide when menu opens, show when it closes
+    // Matches exactly how the Navbar hides its logo (opacity-0 pointer-events-none)
+    const observer = new MutationObserver(() => {
+      const menuOpen = document.body.hasAttribute('data-menu-open')
+      btn.style.opacity = menuOpen ? '0' : '1'
+      btn.style.pointerEvents = menuOpen ? 'none' : 'auto'
+    })
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-menu-open'] })
 
     return () => {
       clearTimeout(entranceTimer)
-      cancelAnimationFrame(raf)
+      observer.disconnect()
     }
   }, [])
 
@@ -54,7 +48,7 @@ export default function HomeClient() {
       <Link
         ref={btnRef}
         href="/register"
-        className="group fixed bottom-8 right-10 z-[45] hidden md:flex items-center gap-2.5 bg-white/10 hover:bg-white/20 border border-white/25 hover:border-white/40 backdrop-blur-md px-6 py-3 rounded-full text-white text-[11px] font-bold tracking-widest uppercase shadow-[0_0_24px_rgba(255,255,255,0.08)] hover:shadow-[0_0_36px_rgba(255,255,255,0.18)] transition-all duration-300"
+        className="register-now-btn group fixed bottom-8 right-6 md:right-10 z-[45] flex items-center gap-2.5 bg-white/10 hover:bg-white/20 border border-white/25 hover:border-white/40 backdrop-blur-md px-5 py-2.5 md:px-6 md:py-3 rounded-full text-white text-[10px] md:text-[11px] font-bold tracking-widest uppercase shadow-[0_0_24px_rgba(255,255,255,0.08)] hover:shadow-[0_0_36px_rgba(255,255,255,0.18)] transition-all duration-300"
         style={{ willChange: 'opacity, transform' }}
       >
         REGISTER NOW
@@ -78,8 +72,7 @@ export default function HomeClient() {
             length, see HERO_PIN_END. The page ends when the pin releases,
             with PHASE_03 still on screen. */}
         <div id="scroll-trigger" className="relative w-full z-10 pointer-events-none -mt-[100vh]">
-          <section className="h-[100vh] pointer-events-none" data-label="Zoom Phase" />
-          <section className="h-[100vh] pointer-events-none" data-label="Scatter/DNA Phase" />
+          <section className="h-[50vh] pointer-events-none" data-label="Zoom Phase" />
         </div>
       </div>
 

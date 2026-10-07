@@ -348,6 +348,21 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [userRole, setUserRole] = useState<string>('admin'); // Default to admin or fallback
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const authData = sessionStorage.getItem('sabrang_auth');
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          if (parsed.role) {
+            setUserRole(parsed.role);
+          }
+        } catch (e) {}
+      }
+    }
+  }, []);
 
   const navItems = [
     { name: 'Overview', href: '/admin', icon: CustomDashboardIcon },
@@ -425,6 +440,24 @@ export default function Sidebar() {
           {navItems.map((item: any) => {
             const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
             const Icon = item.icon;
+            
+            // Define restricted items for scanners
+            const isRestrictedForScanner = userRole === 'scanner' && (item.name === 'Audit Logs' || item.name === 'System Errors');
+            
+            if (isRestrictedForScanner) {
+              return (
+                <div 
+                  key={item.name} 
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium opacity-40 cursor-not-allowed text-slate-500`}
+                  title={`${item.name} is restricted for scanner accounts`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon size={16} className="text-slate-400" />
+                    <span>{item.name}</span>
+                  </div>
+                </div>
+              );
+            }
             
             return (
               <Link 

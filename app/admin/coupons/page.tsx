@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, updateDoc, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, updateDoc, query, getDocs, where, writeBatch } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { Modal } from '../../../components/admin/Modal';
@@ -39,6 +39,8 @@ export default function CouponsPage() {
   const [expiryDate, setExpiryDate] = useState<string>('');
   const [maxUses, setMaxUses] = useState<number | ''>('');
   const [isActive, setIsActive] = useState(true);
+  const [isSpecialOffer, setIsSpecialOffer] = useState(false);
+  const [specialOfferDesc, setSpecialOfferDesc] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eventSearch, setEventSearch] = useState('');
 
@@ -59,6 +61,8 @@ export default function CouponsPage() {
           maxUses: data.maxUses,
           usedCount: data.usedCount || 0,
           active: data.active !== false,
+          isSpecialOffer: data.isSpecialOffer,
+          specialOfferDesc: data.specialOfferDesc,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
         } as Coupon;
@@ -123,6 +127,8 @@ export default function CouponsPage() {
     setExpiryDate('');
     setMaxUses('');
     setIsActive(true);
+    setIsSpecialOffer(false);
+    setSpecialOfferDesc('');
     setEventSearch('');
     setIsModalOpen(true);
   };
@@ -154,6 +160,8 @@ export default function CouponsPage() {
     
     setMaxUses(coupon.maxUses !== undefined ? coupon.maxUses : '');
     setIsActive(coupon.active);
+    setIsSpecialOffer(coupon.isSpecialOffer || false);
+    setSpecialOfferDesc(coupon.specialOfferDesc || '');
     setEventSearch('');
     setIsModalOpen(true);
   };
@@ -201,6 +209,8 @@ export default function CouponsPage() {
         discountValue: Number(discountValue),
         applicableEvents: applicableEventsList,
         active: isActive,
+        isSpecialOffer,
+        specialOfferDesc: isSpecialOffer ? specialOfferDesc.trim() : null,
         updatedAt: serverTimestamp(),
       };
 
@@ -219,6 +229,18 @@ export default function CouponsPage() {
 
       if (maxUses !== '') {
         couponPayload.maxUses = Number(maxUses);
+      }
+
+      if (isSpecialOffer) {
+        // Query other coupons and set isSpecialOffer to false
+        const snapshot = await getDocs(query(collection(db, 'coupons'), where('isSpecialOffer', '==', true)));
+        const batch = writeBatch(db);
+        snapshot.docs.forEach(docSnap => {
+          if (docSnap.id !== (isEditing ? (currentCouponId || cleanCode).trim().toLowerCase() : cleanCode)) {
+            batch.update(docSnap.ref, { isSpecialOffer: false });
+          }
+        });
+        await batch.commit();
       }
 
       if (!isEditing) {
@@ -324,6 +346,9 @@ export default function CouponsPage() {
                             <Tag size={14} />
                           </div>
                           <span className="font-mono font-bold text-sm lowercase text-slate-900 tracking-wide">{coupon.code}</span>
+                          {coupon.isSpecialOffer && (
+                            <span className="bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200 text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ml-2">Special Offer</span>
+                          )}
                         </div>
                       </td>
                       <td className="p-4">
@@ -625,7 +650,6 @@ export default function CouponsPage() {
             </div>
           </div>
 
-          {/* Active Status Toggle */}
           <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
             <div>
               <p className="text-xs font-bold text-slate-800">Coupon Active Status</p>
@@ -641,6 +665,41 @@ export default function CouponsPage() {
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
             </label>
           </div>
+
+          {/* Special Offer Toggle */}
+          <div className="p-3.5 bg-fuchsia-50/50 border border-fuchsia-200/50 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-fuchsia-900">Set as Special Offer</p>
+                <p className="text-[11px] text-fuchsia-700/70">Display this coupon prominently on the registrations page</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isSpecialOffer}
+                  onChange={(e) => setIsSpecialOffer(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-fuchsia-600"></div>
+              </label>
+            </div>
+
+            {isSpecialOffer && (
+              <div className="pt-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-fuchsia-800 mb-1">
+                  Special Offer Description
+                </label>
+                <input 
+                  type="text" 
+                  value={specialOfferDesc}
+                  onChange={(e) => setSpecialOfferDesc(e.target.value)}
+                  placeholder="e.g. Get ₹100 discount on all event registrations – Limited time only!"
+                  className="w-full bg-white border border-fuchsia-200 rounded-lg py-2 px-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-fuchsia-500 transition-all placeholder:text-slate-400"
+                />
+              </div>
+            )}
+          </div>
+
 
           {/* Submit Button */}
           <button 

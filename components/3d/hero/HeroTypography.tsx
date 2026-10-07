@@ -142,7 +142,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
 
     const rawProgress = heroScrollState.progress
     // Normalize progress so the typography animation completes by 30% of scroll
-    const p = THREE.MathUtils.clamp(rawProgress, 0, 0.3) / 0.3
+    const p = THREE.MathUtils.clamp(rawProgress, 0, 0.9) / 0.9
 
     // PHASE 3 & 4: Map scroll progress to targets
     let targetZ = -2

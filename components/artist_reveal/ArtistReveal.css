@@ -6,7 +6,7 @@
 .artist-reveal {
   position: relative;
   width: 100%;
-  height: 500vh; /* 5 images × 100vh scroll distance */
+  height: 300vh; /* 5 images × 60vh scroll distance */
 }
 
 /* ── Sticky viewport (pins canvas during scroll) ── */

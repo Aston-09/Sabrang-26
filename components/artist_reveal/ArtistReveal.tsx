@@ -75,45 +75,6 @@ export default function ArtistReveal() {
           </div>
         )}
 
-        {/* Label overlay (driven by engine data) */}
-        {labelData && !isLoading && (
-          <div
-            className="artist-reveal__label"
-            style={{ color: labelData.textColor, opacity: 1 }}
-          >
-            {/* Left: index + word + chip */}
-            <div className="artist-reveal__label-left">
-              <p className="artist-reveal__label-index">{labelData.index}</p>
-              <p className="artist-reveal__label-word">{labelData.word}</p>
-              <span
-                className="artist-reveal__label-chip"
-                style={{ backgroundColor: labelData.chipColor }}
-              />
-            </div>
-
-            {/* Right: CMYK / RGB / HEX / PMS */}
-            <div className="artist-reveal__label-right">
-              <dl className="artist-reveal__label-specs">
-                <div className="artist-reveal__label-row">
-                  <dt>CMYK</dt>
-                  <dd>{labelData.cmyk}</dd>
-                </div>
-                <div className="artist-reveal__label-row">
-                  <dt>RGB</dt>
-                  <dd>{labelData.rgb}</dd>
-                </div>
-                <div className="artist-reveal__label-row">
-                  <dt>HEX</dt>
-                  <dd>{labelData.hex}</dd>
-                </div>
-                <div className="artist-reveal__label-row">
-                  <dt>PMS</dt>
-                  <dd>{labelData.pms}</dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )

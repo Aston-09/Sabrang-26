@@ -611,9 +611,6 @@ export default function Registrations() {
                   <th className="p-4 cursor-pointer hover:text-slate-900" onClick={() => handleSort('name')}>
                     Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </th>
-                  <th className="p-4 cursor-pointer hover:text-slate-900" onClick={() => handleSort('rollNumber')}>
-                    Roll / App No {sortField === 'rollNumber' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </th>
                   <th className="p-4 cursor-pointer hover:text-slate-900" onClick={() => handleSort('email')}>
                     Contact {sortField === 'email' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </th>
@@ -639,7 +636,6 @@ export default function Registrations() {
                         </span>
                       )}
                     </td>
-                    <td className="p-4 font-mono text-slate-800 font-semibold">{reg.rollNumber || 'N/A'}</td>
                     <td className="p-4">
                       <div className="font-medium text-slate-800 lowercase">{reg.email}</div>
                       <div className="text-[11px] text-slate-400 mt-0.5">{reg.phone}</div>
@@ -737,10 +733,6 @@ export default function Registrations() {
               <div className="col-span-2 sm:col-span-1">
                 <p className="text-[11px] font-medium text-slate-500 mb-1">Full Name</p>
                 <p className="font-bold text-sm text-slate-900 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">{selectedReg.name}</p>
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <p className="text-[11px] font-medium text-slate-500 mb-1">Application / Roll Number</p>
-                <p className="font-bold text-sm text-slate-900 bg-slate-50 p-2.5 border border-slate-200 rounded-lg font-mono">{selectedReg.rollNumber}</p>
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <p className="text-[11px] font-medium text-slate-500 mb-1">Email Address</p>

@@ -24,6 +24,8 @@ export interface Coupon {
   maxUses?: number;
   usedCount?: number;
   active: boolean;
+  isSpecialOffer?: boolean;
+  specialOfferDesc?: string;
   createdAt?: Timestamp | Date | any;
   updatedAt?: Timestamp | Date | any;
 }
