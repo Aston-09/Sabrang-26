@@ -80,8 +80,6 @@ export default function Footer() {
             <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-white/40 text-[10px] sm:text-[11px]">
               <span>&copy; 2026 Sabrang | JK Lakshmipat University, Jaipur.</span>
               <span className="text-white/20 select-none">•</span>
-              <span className="text-white/50">Secured with Cashfree Payments</span>
-              <span className="text-white/20 select-none">•</span>
               <Link
                 href="/credits"
                 className="inline-flex items-center gap-1 text-white/60 hover:text-purple-400 transition-colors group font-medium"
