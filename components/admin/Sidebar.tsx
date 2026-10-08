@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '../../lib/firebase';
+import { Loader2 } from 'lucide-react';
 
 // ============================================================================
 // BESPOKE CUSTOM GEOMETRIC SVG ICONS FOR SIDEBAR (Gradient-free, Sharp, Heavy-mitre)
@@ -348,6 +349,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userRole, setUserRole] = useState<string>(() => {
     // Attempt to guess initial role from URL to prevent flash
@@ -384,6 +386,7 @@ export default function Sidebar() {
   };
 
   const confirmLogout = async () => {
+    setIsLoggingOut(true);
     let performer = 'Admin';
     if (isFirebaseConfigured() && auth && auth.currentUser) {
       performer = auth.currentUser.email || auth.currentUser.uid || 'Admin';
@@ -511,16 +514,27 @@ export default function Sidebar() {
               <div className="flex items-center justify-end gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                  disabled={isLoggingOut}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmLogout}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
+                  disabled={isLoggingOut}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-[110px] justify-center"
                 >
-                  <CustomLogoutIcon size={16} />
-                  Sign Out
+                  {isLoggingOut ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Signing Out
+                    </>
+                  ) : (
+                    <>
+                      <CustomLogoutIcon size={16} />
+                      Sign Out
+                    </>
+                  )}
                 </button>
               </div>
             </div>
