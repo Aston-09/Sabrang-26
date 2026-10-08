@@ -5,15 +5,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, FIREBASE_SETUP_MESSAGE } from '../../lib/firebase';
-import Sidebar from './Sidebar';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
 
-export default function AdminLayoutWrapper({ children }: { children: React.ReactNode }) {
+export default function ScannerLayoutWrapper({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [configError, setConfigError] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
   useEffect(() => {
     setMounted(true);
 
@@ -32,13 +32,12 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
 
         const role = roleDoc?.exists() ? roleDoc.data()?.role : (userDoc?.exists() ? userDoc.data()?.role : 'admin');
 
-        if (role === 'scanner') {
+        // We allow admin and scanner roles to view this page.
+        if (role === 'scanner' || role === 'admin') {
           setIsAuthenticated(true);
-          if (!pathname?.startsWith('/scanner')) {
-            router.push('/scanner');
-          }
         } else {
-          setIsAuthenticated(true);
+          setIsAuthenticated(false);
+          router.push('/login');
         }
       } catch {
         setIsAuthenticated(true);
@@ -56,16 +55,11 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
           <p className="text-slate-600 text-sm mb-6 leading-relaxed">
             {FIREBASE_SETUP_MESSAGE}
           </p>
-          <div className="text-xs bg-slate-100 border border-slate-200 p-3 rounded-lg text-left font-mono text-slate-800">
-            1. Copy .env.example to .env.local<br/>
-            2. Fill in your Firebase configuration keys
-          </div>
         </div>
       </div>
     );
   }
 
-  // Consistent SSR / Initial client render avoids hydration mismatch
   if (!mounted || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
@@ -74,20 +68,35 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
     );
   }
 
+  const handleLogout = async () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('sabrang_auth');
+    }
+    if (auth) {
+      await auth.signOut();
+    }
+    router.push('/login');
+  };
+
   return (
     <div className="admin-portal-scope flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans">
-      <Sidebar />
-      <main className="flex-1 w-full md:w-[calc(100%-16rem)] pt-16 md:pt-0 overflow-y-auto relative bg-[#f8fafc]">
-        <header className="sticky top-0 z-30 bg-white px-6 md:px-8 h-16 hidden md:flex items-center justify-between border-b border-slate-200 shadow-xs">
+      <main className="flex-1 w-full overflow-y-auto relative bg-[#f8fafc]">
+        {/* Simple header with logout button instead of a full menu */}
+        <header className="sticky top-0 z-30 bg-white px-6 md:px-8 h-16 flex items-center justify-between border-b border-slate-200 shadow-xs">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-            Sabrang 2026 Management System
+            Sabrang 2026 Scanner
           </span>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors text-xs font-medium cursor-pointer"
+          >
+            <LogOut size={14} />
+            <span>Sign Out</span>
+          </button>
         </header>
-
-        <div className="p-6 md:p-10 max-w-7xl mx-auto">{children}</div>
+        <div className="p-4 md:p-8 max-w-5xl mx-auto">{children}</div>
       </main>
 
-      {/* Scoped style specifically for Admin Portal ensuring standard browser cursor */}
       <style jsx global>{`
         .admin-portal-scope,
         .admin-portal-scope *,

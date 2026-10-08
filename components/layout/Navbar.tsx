@@ -107,7 +107,7 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  if (pathname && (pathname.startsWith("/admin") || pathname === "/login")) return null;
+  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/scanner") || pathname === "/login")) return null;
 
   const handleProjectSelect = (project: Project) => {
     if (pathname === project.href) {

@@ -438,12 +438,22 @@ export default function Sidebar() {
         {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 bg-white">
           {navItems.map((item: any) => {
-            const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
             const Icon = item.icon;
             
             // Define restricted items for scanners
-            const isRestrictedForScanner = userRole === 'scanner' && (item.name === 'Audit Logs' || item.name === 'System Errors');
+            const allowedForScanner = ['Overview', 'Ticket Scanner', 'Entry Logs'];
+            const isRestrictedForScanner = userRole === 'scanner' && !allowedForScanner.includes(item.name);
             
+            // Adjust href for scanner
+            let href = item.href;
+            if (userRole === 'scanner') {
+              if (item.name === 'Overview') href = '/scan';
+              if (item.name === 'Ticket Scanner') href = '/scan/scanner';
+              if (item.name === 'Entry Logs') href = '/scan/entry-logs';
+            }
+            
+            const isActive = pathname === href || (href !== '/admin' && href !== '/scan' && pathname?.startsWith(href));
+
             if (isRestrictedForScanner) {
               return (
                 <div 
@@ -462,7 +472,7 @@ export default function Sidebar() {
             return (
               <Link 
                 key={item.name} 
-                href={item.href}
+                href={href}
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                   isActive 

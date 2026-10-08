@@ -3,6 +3,7 @@
 import "@/lib/suppress-three-logs";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const SabrangPreloader = dynamic(
   () => import("@/components/effects/SabrangPreloader"),
@@ -10,8 +11,14 @@ const SabrangPreloader = dynamic(
 );
 
 export default function PreloaderGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  
   // If we're coming back from a Cashfree payment (has order_id in URL), skip the loader
+  // Or if we are navigating to admin, scanner, or login pages.
   const [done, setDone] = useState(() => {
+    const skipRoutes = pathname === "/login" || pathname?.startsWith("/admin") || pathname?.startsWith("/scanner");
+    if (skipRoutes) return true;
+    
     if (typeof window !== "undefined") {
       return window.location.search.includes("order_id=");
     }
@@ -19,10 +26,11 @@ export default function PreloaderGate({ children }: { children: React.ReactNode 
   });
 
   useEffect(() => {
-    if (!done && window.location.search.includes("order_id=")) {
+    const skipRoutes = pathname === "/login" || pathname?.startsWith("/admin") || pathname?.startsWith("/scanner");
+    if (!done && (skipRoutes || window.location.search.includes("order_id="))) {
       setDone(true);
     }
-  }, [done]);
+  }, [done, pathname]);
 
   return (
     <>

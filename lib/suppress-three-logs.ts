@@ -32,6 +32,8 @@ const SUPPRESSED_STRINGS = [
   "mipLevelCount",
   "runner.isFixed",
   "WebGPU is not available",
+  "Failed to stop camera via html5-qrcode",
+  "RenderedCameraImpl video surface onabort",
 ];
 
 const filterLog = (origFn: (...args: unknown[]) => void) => {
@@ -72,6 +74,25 @@ if (typeof window !== "undefined") {
   } catch {
     // Ignore in non-browser environments
   }
+  
+  // Suppress uncaught scanner abort errors that bypass console.error
+  window.addEventListener("error", (event) => {
+    if (
+      event.message?.includes("RenderedCameraImpl video surface onabort") ||
+      event.error?.message?.includes("RenderedCameraImpl video surface onabort")
+    ) {
+      event.preventDefault();
+    }
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    if (
+      event.reason?.message?.includes("RenderedCameraImpl video surface onabort") ||
+      (typeof event.reason === "string" && event.reason.includes("RenderedCameraImpl video surface onabort"))
+    ) {
+      event.preventDefault();
+    }
+  });
 }
 
 export {};

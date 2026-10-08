@@ -13,7 +13,7 @@ export default function TubesCursor() {
   const pathname = usePathname();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const hidden = pathname === "/login" || pathname?.startsWith("/admin");
+  const hidden = pathname === "/login" || pathname?.startsWith("/admin") || pathname?.startsWith("/scanner");
 
   useEffect(() => {
     if (!canvasRef.current) return;

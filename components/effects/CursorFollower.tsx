@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export default function CursorFollower() {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin") || pathname === "/login";
+  const isAdmin = pathname?.startsWith("/admin") || pathname?.startsWith("/scanner") || pathname === "/login";
 
   const [mounted, setMounted] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
