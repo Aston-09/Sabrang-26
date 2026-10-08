@@ -347,6 +347,7 @@ export default function Sidebar() {
   const currentTab = searchParams.get('tab');
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userRole, setUserRole] = useState<string>(() => {
     // Attempt to guess initial role from URL to prevent flash
@@ -378,7 +379,11 @@ export default function Sidebar() {
     { name: 'System Errors', href: '/admin/errors', icon: CustomAlertCircleIcon },
   ];
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
     let performer = 'Admin';
     if (isFirebaseConfigured() && auth && auth.currentUser) {
       performer = auth.currentUser.email || auth.currentUser.uid || 'Admin';
@@ -485,7 +490,7 @@ export default function Sidebar() {
         {/* Sidebar Footer / Logout */}
         <div className="p-3 pb-6 md:pb-3 border-t border-slate-200 bg-white shrink-0">
           <button 
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="flex items-center gap-3 px-3.5 py-2.5 w-full rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer text-xs font-medium"
           >
             <CustomLogoutIcon size={16} />
@@ -493,6 +498,35 @@ export default function Sidebar() {
           </button>
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Sign Out</h3>
+              <p className="text-sm text-slate-600 mb-6">
+                Are you sure you want to sign out of the Sabrang administration dashboard?
+              </p>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
+                >
+                  <CustomLogoutIcon size={16} />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
