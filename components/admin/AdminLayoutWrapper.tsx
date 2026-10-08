@@ -17,6 +17,21 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
   useEffect(() => {
     setMounted(true);
 
+    // Early check: if sessionStorage already says scanner, redirect immediately
+    // before Firebase even initializes. This prevents any flash.
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('sabrang_auth');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.role === 'scanner') {
+            window.location.href = '/scanner';
+            return; // Don't even set up the auth listener
+          }
+        }
+      } catch {}
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         setIsAuthenticated(false);
@@ -33,10 +48,9 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
         const role = roleDoc?.exists() ? roleDoc.data()?.role : (userDoc?.exists() ? userDoc.data()?.role : 'admin');
 
         if (role === 'scanner') {
-          setIsAuthenticated(true);
-          if (!pathname?.startsWith('/scanner')) {
-            router.push('/scanner');
-          }
+          // Hard navigate — never set isAuthenticated, keep showing loader
+          window.location.href = '/scanner';
+          return;
         } else {
           setIsAuthenticated(true);
         }

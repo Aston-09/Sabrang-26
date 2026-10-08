@@ -348,7 +348,11 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [userRole, setUserRole] = useState<string>('admin'); // Default to admin or fallback
+  const [userRole, setUserRole] = useState<string>(() => {
+    // Attempt to guess initial role from URL to prevent flash
+    const isScannerRoute = pathname?.startsWith('/scanner') || pathname === '/scan';
+    return isScannerRoute ? 'scanner' : 'admin';
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -441,32 +445,21 @@ export default function Sidebar() {
             const Icon = item.icon;
             
             // Define restricted items for scanners
-            const allowedForScanner = ['Overview', 'Ticket Scanner', 'Entry Logs'];
+            const allowedForScanner = ['Registration', 'Ticket Scanner', 'Entry Logs'];
             const isRestrictedForScanner = userRole === 'scanner' && !allowedForScanner.includes(item.name);
             
             // Adjust href for scanner
             let href = item.href;
             if (userRole === 'scanner') {
-              if (item.name === 'Overview') href = '/scan';
-              if (item.name === 'Ticket Scanner') href = '/scan/scanner';
-              if (item.name === 'Entry Logs') href = '/scan/entry-logs';
+              if (item.name === 'Registration') href = '/scanner/registrations';
+              if (item.name === 'Ticket Scanner') href = '/scanner';
+              if (item.name === 'Entry Logs') href = '/scanner/entry-logs';
             }
             
-            const isActive = pathname === href || (href !== '/admin' && href !== '/scan' && pathname?.startsWith(href));
+            const isActive = pathname === href || (href !== '/admin' && href !== '/scanner' && pathname?.startsWith(href));
 
             if (isRestrictedForScanner) {
-              return (
-                <div 
-                  key={item.name} 
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium opacity-40 cursor-not-allowed text-slate-500`}
-                  title={`${item.name} is restricted for scanner accounts`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon size={16} className="text-slate-400" />
-                    <span>{item.name}</span>
-                  </div>
-                </div>
-              );
+              return null;
             }
             
             return (

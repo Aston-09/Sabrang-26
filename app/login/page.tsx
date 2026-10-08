@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -57,17 +58,36 @@ export default function LoginPage() {
         })
       );
 
+      // Lock UI into redirecting state BEFORE navigating
+      // This shows a full-screen loader and prevents any other content from flashing
+      setRedirecting(true);
+
+      // Use hard navigation for ALL roles to prevent onAuthStateChanged
+      // in AdminLayoutWrapper from reacting before navigation completes
       if (role === "scanner") {
-        router.push("/admin/scanner");
+        window.location.href = "/scanner";
       } else {
-        router.push("/admin");
+        window.location.href = "/admin";
       }
+      // Don't reset loading — page is navigating away
+      return;
     } catch {
       setError("Invalid email or password. Please verify your credentials.");
-    } finally {
       setLoading(false);
     }
   };
+
+  // Full-screen loader while redirecting — prevents any flash
+  if (redirecting) {
+    return (
+      <div className="admin-portal-scope min-h-screen bg-[#f8fafc] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={28} className="animate-spin text-slate-400" />
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Redirecting...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-portal-scope min-h-screen bg-[#f8fafc] text-slate-900 flex items-center justify-center p-4">
