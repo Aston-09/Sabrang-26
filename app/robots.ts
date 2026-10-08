@@ -80,7 +80,7 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    // LLM crawler guidance — see https://llmstxt.org
+    // LLM crawler guidance - see https://llmstxt.org
     host: baseUrl,
   };
 }

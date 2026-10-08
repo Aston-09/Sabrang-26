@@ -6,7 +6,7 @@ import { isRateLimited } from '@/lib/security';
 export async function GET(req: Request) {
   try {
     const rawIp = req.headers.get('x-forwarded-for') || '127.0.0.1';
-    const ip = rawIp.split(',')[0].trim(); // Take only the first (leftmost) IP — prevent x-forwarded-for spoofing
+    const ip = rawIp.split(',')[0].trim(); // Take only the first (leftmost) IP - prevent x-forwarded-for spoofing
     
     // Rate limit PDF receipt downloads to 10 requests per minute per IP
     if (isRateLimited(ip, 10, 60 * 1000)) {

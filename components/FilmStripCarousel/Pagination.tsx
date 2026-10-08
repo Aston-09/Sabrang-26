@@ -15,7 +15,7 @@ export default function Pagination({
   onSelect,
   active = true,
 }: PaginationProps) {
-  // The dot row is replaced, not accompanied — the control strip keeps one
+  // The dot row is replaced, not accompanied - the control strip keeps one
   // job at a time so nothing shifts position when the state flips.
   if (loading) {
     return (

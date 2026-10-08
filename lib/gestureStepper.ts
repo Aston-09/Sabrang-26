@@ -1,13 +1,13 @@
 // One step per GESTURE, regardless of how far the gesture travelled.
 //
-// This is the counterpart to lib/wheelStepper, which is proportional — a longer
+// This is the counterpart to lib/wheelStepper, which is proportional - a longer
 // scroll there moves further, which is what the menu reel wants because it
 // glides on momentum. An archive viewed one item at a time wants the opposite:
 // a flick and a nudge should both advance exactly one, so the only thing that
 // matters is that a gesture happened and which way it went.
 //
 // The hard part is knowing where a gesture ends. A mouse says so plainly: one
-// notch is one isolated event. A trackpad does not — it emits a dense stream
+// notch is one isolated event. A trackpad does not - it emits a dense stream
 // while the fingers move and then KEEPS emitting through inertia after they
 // lift, so "distance travelled" and "number of events" are both meaningless as
 // gesture boundaries. Three signals separate them:
@@ -18,7 +18,7 @@
 //      decides which side of it a given device falls on.
 //   2. A surge after decay. Inertia only ever slows down, so a magnitude
 //      climbing back up once the tail has started shrinking is the user
-//      pushing again — that re-arms immediately instead of making them wait
+//      pushing again - that re-arms immediately instead of making them wait
 //      out a long inertia tail.
 //   3. A reversal. Turning around is always a new gesture.
 //
@@ -34,7 +34,7 @@
 // as a fresh gesture and fire a second time.
 export const GESTURE_MIN_DELTA = 3; // below this is inertia dust, not intent
 
-// Events closer together than this are a continuous stream — a trackpad, or its
+// Events closer together than this are a continuous stream - a trackpad, or its
 // inertia. Mouse notches never arrive this fast.
 export const STREAM_GAP_MS = 32;
 // How long the input must be quiet to end a gesture. A stream needs a real
@@ -54,7 +54,7 @@ export const GESTURE_DECAY = 0.35;
 // back to a large fraction of the peak it has already decayed away from.
 export const GESTURE_SURGE = 0.6;
 // Backstop. Whatever else happens, one flick cannot become two steps inside
-// this window — deliberate repeat swipes are hundreds of ms apart.
+// this window - deliberate repeat swipes are hundreds of ms apart.
 export const MIN_FIRE_INTERVAL_MS = 120;
 
 export const WHEEL_LINE_HEIGHT = 16; // Firefox reports deltaMode 1 (lines)
@@ -76,7 +76,7 @@ export function createGestureStepper(): GestureStepper {
   let armed = true;
 
   return (magnitude, direction, timeStamp) => {
-    // Dust is dropped before it can touch any state — in particular it must not
+    // Dust is dropped before it can touch any state - in particular it must not
     // refresh lastT, or a long inertia tail would hold the gesture open well
     // after the reel has visibly stopped.
     if (direction === 0 || magnitude < GESTURE_MIN_DELTA) return 0;
@@ -114,7 +114,7 @@ export function createGestureStepper(): GestureStepper {
 
     if (!armed) return 0;
     // Backstop against anything above having misread one vigorous gesture as
-    // two. Scoped to streams, which is the only place that ambiguity exists —
+    // two. Scoped to streams, which is the only place that ambiguity exists -
     // an isolated mouse notch is unambiguous, and applying this to it would cap
     // brisk wheeling at one step per interval. A reversal is exempt too:
     // turning around is always deliberate.

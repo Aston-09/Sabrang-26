@@ -15,7 +15,7 @@ const FONT = '/fonts/FlorasDisplay.ttf'
  *
  * A quad sitting just behind the letters. `src` is the same word
  * rendered white-on-black into an off-screen target, so the march
- * from each pixel toward the cursor accumulates letter coverage —
+ * from each pixel toward the cursor accumulates letter coverage -
  * that accumulation is the shadow, and the spectrum of it is the
  * rainbow bleed around the glyph edges.
  * ================================================================== */
@@ -47,7 +47,7 @@ const FX_FRAG = /* glsl */ `
   }
 
   // Blurred read of the same mask. The original jittered each march step to
-  // hide the low sample count, which is exactly the grain we do not want —
+  // hide the low sample count, which is exactly the grain we do not want -
   // sampling a mip level instead makes the occlusion field smooth, so a plain
   // uniform march resolves it cleanly with no noise at all.
   float readSoft(vec2 uv) {
@@ -80,7 +80,7 @@ const FX_FRAG = /* glsl */ `
       acc += readSoft(uv2) / SAMPLES;
     }
 
-    // Light. Same falloff shape as the original, damped — it sat on a plain
+    // Light. Same falloff shape as the original, damped - it sat on a plain
     // page, here it is additive over a lit chamber that must stay readable.
     float lm = length(p - mp);
     vec4 c = vec4(smoothstep(0., 1., pow(.1 / lm, .2))) * 0.42;
@@ -175,7 +175,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
     materialRef.current.opacity = THREE.MathUtils.damp(materialRef.current.opacity, targetOpacity, 6, delta)
 
     // Very subtle idle float. Lives on the shared group so the glow quad tracks
-    // the letters exactly — otherwise the shadows drift off the glyphs.
+    // the letters exactly - otherwise the shadows drift off the glyphs.
     innerRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.1
 
     const fx = fxRef.current
@@ -184,7 +184,7 @@ export default function HeroTypography({ mobile = false, q }: { mobile?: boolean
     fx.scale.set(fxW, fxH, 1)
 
     // R3F copies the `uniforms` prop onto the material, so the live uniforms
-    // are the material's own — writing to the memoised object does nothing.
+    // are the material's own - writing to the memoised object does nothing.
     const u = (fx.material as THREE.ShaderMaterial).uniforms
 
     // Cursor -> quad UV. Ray/plane rather than a flat NDC map, because the

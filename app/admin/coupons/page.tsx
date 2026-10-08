@@ -1,24 +1,20 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, updateDoc, query, getDocs, where, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp, updateDoc, query, getDocs, where, writeBatch, getDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { Modal } from '../../../components/admin/Modal';
 import { logAdminAction } from '../../../lib/audit';
 import { Coupon, CouponDiscountType } from '../../../lib/types';
-import { Plus, Tag, Check, X, Edit3, Trash2, Power, AlertCircle, Percent, DollarSign, Calendar, Layers } from 'lucide-react';
+import { Plus, Tag, Check, X, Edit3, Trash2, Power, AlertCircle, Percent, DollarSign, Calendar, Layers, Sparkles } from 'lucide-react';
 
-const DEFAULT_SABRANG_EVENTS = [
-  { id: 'panache', title: 'PANACHE - Fashion & Runway Show' },
-  { id: 'echoes-of-noor', title: 'ECHOES OF NOOR - Sufi Night & Acoustics' },
-  { id: 'sync', title: 'SYNC - Group Dance Showdown' },
-  { id: 'step-up', title: 'STEP-UP - Solo Dance Competition' },
-  { id: 'bandjam', title: 'BANDJAM - Battle of Bands' },
-  { id: 'versevaad', title: 'VERSEVAAD - Literary & Slam Poetry' },
-  { id: 'valorant', title: 'VALORANT SHOWDOWN - E-Sports' },
-  { id: 'dj-night', title: 'CELEBRITY PRO-SHOW & DJ NIGHT' },
-];
+import { OFFICIAL_EVENTS } from '@/lib/eventPricing';
+
+const DEFAULT_SABRANG_EVENTS = OFFICIAL_EVENTS.map(e => ({
+  id: e.id,
+  title: `${e.title} (${e.category})`,
+}));
 
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -43,6 +39,31 @@ export default function CouponsPage() {
   const [specialOfferDesc, setSpecialOfferDesc] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eventSearch, setEventSearch] = useState('');
+  const [isEarlyBirdActive, setIsEarlyBirdActive] = useState(false);
+
+  
+  // Fetch Early Bird Settings
+  useEffect(() => {
+    const unsubEarlyBird = onSnapshot(doc(db, 'settings', 'earlyBird'), (snap) => {
+      if (snap.exists()) {
+        setIsEarlyBirdActive(snap.data()?.active || false);
+      }
+    }, (err) => {
+      console.warn('earlyBird listener err:', err?.message);
+    });
+    return () => unsubEarlyBird();
+  }, []);
+
+  const handleToggleEarlyBird = async () => {
+    if (!confirm(`Are you sure you want to ${isEarlyBirdActive ? 'close' : 'activate'} the Early Bird offer globally?`)) return;
+    try {
+      await setDoc(doc(db, 'settings', 'earlyBird'), { active: !isEarlyBirdActive }, { merge: true });
+      await logAdminAction('UPDATE_SETTINGS', 'settings', `${!isEarlyBirdActive ? 'Activated' : 'Closed'} Early Bird Offer`);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update Early Bird status.');
+    }
+  };
 
   // 1. Fetch live coupons from Firestore
   useEffect(() => {
@@ -77,9 +98,7 @@ export default function CouponsPage() {
 
       setCoupons(fetched);
       setLoading(false);
-    }, () => {
-      setLoading(false);
-    });
+    }, (err) => { console.warn("coupons listener err:", err?.message); setLoading(false); });
 
     return () => unsub();
   }, []);
@@ -311,6 +330,32 @@ export default function CouponsPage() {
         >
           <Plus size={16} /> Create Coupon
         </button>
+      </div>
+
+      
+      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-lg font-black tracking-tight text-indigo-900 flex items-center gap-2">
+            <Sparkles size={20} className="text-indigo-600" /> Global Early Bird Offer
+          </h2>
+          <p className="text-sm text-indigo-700 mt-1 font-medium">
+            Enable or disable Early Bird pricing across all events. When enabled, original prices will be shown cut out next to the early bird prices.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
+          <span className={`text-sm font-bold uppercase tracking-wider ${isEarlyBirdActive ? 'text-emerald-600' : 'text-slate-400'}`}>
+            {isEarlyBirdActive ? 'Active' : 'Closed'}
+          </span>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isEarlyBirdActive}
+              onChange={handleToggleEarlyBird}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
       </div>
 
       {/* Main Table */}
@@ -693,7 +738,7 @@ export default function CouponsPage() {
                   type="text" 
                   value={specialOfferDesc}
                   onChange={(e) => setSpecialOfferDesc(e.target.value)}
-                  placeholder="e.g. Get ₹100 discount on all event registrations – Limited time only!"
+                  placeholder="e.g. Get ₹100 discount on all event registrations - Limited time only!"
                   className="w-full bg-white border border-fuchsia-200 rounded-lg py-2 px-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-fuchsia-500 transition-all placeholder:text-slate-400"
                 />
               </div>

@@ -6,7 +6,7 @@
  * Adapted from the `ImageSphere` + snap-to-nearest logic in matdn/helmet's
  * CodropScene. What was kept: the Fibonacci-sphere tile layout, the inertial
  * drag/damping model, and the cost-minimising snap that rotates the closest
- * tile to face the camera — that snap is what makes a photograph feel
+ * tile to face the camera - that snap is what makes a photograph feel
  * *discovered* rather than advanced to.
  *
  * What was changed for this festival archive:
@@ -38,7 +38,7 @@ const SHELL_RADIUS = 4.1;
 /**
  * Sized against the camera, not by eye: the focused tile sits at the front of
  * the shell (2.5 units out), where the frustum is 2.23 units tall. At
- * TILE_HEIGHT * FOCUS_SCALE ≈ 1.05 it fills a little under half the viewport —
+ * TILE_HEIGHT * FOCUS_SCALE ≈ 1.05 it fills a little under half the viewport -
  * dominant, but with the rest of the archive still legible around it.
  */
 const TILE_HEIGHT = 0.62;
@@ -59,7 +59,7 @@ type TilePlacement = {
   itemIndex: number;
 };
 
-/** Deterministic 0..1 hash — keeps depth jitter stable across renders. */
+/** Deterministic 0..1 hash - keeps depth jitter stable across renders. */
 function hash01(i: number) {
   const v = Math.sin(i * 127.1 + 311.7) * 43758.5453;
   return v - Math.floor(v);
@@ -237,7 +237,7 @@ function ArchiveSphere({
     // with the base rotation below, the archive opens on photograph 01 dead
     // centre instead of on whichever tile happened to land facing the camera.
     // The shell can only be as tall as the snap can tilt. Tiles used to reach
-    // |y| = 0.82, which needs a pitch of 0.96 — past MAX_PITCH, so the last
+    // |y| = 0.82, which needs a pitch of 0.96 - past MAX_PITCH, so the last
     // photographs could never come to centre: they parked near the top or
     // bottom edge, half off-screen, while the caption said they had focus.
     const maxY = Math.sin(MAX_PITCH) * 0.95;
@@ -270,7 +270,7 @@ function ArchiveSphere({
 
       // One true radius for every tile. Depth used to be jittered per tile,
       // which let whichever tile happened to draw a near radius sit 3 units
-      // from a camera 6.6 out — it took focus at three times the size of every
+      // from a camera 6.6 out - it took focus at three times the size of every
       // other photograph, skewed by perspective. Uniform radius means the
       // subject is the same size wherever it comes from.
       return {
@@ -303,7 +303,7 @@ function ArchiveSphere({
     [placements],
   );
 
-  // Scratch objects — reused every frame so the render loop allocates nothing.
+  // Scratch objects - reused every frame so the render loop allocates nothing.
   const scratch = useMemo(
     () => ({
       euler: new THREE.Euler(),
@@ -455,7 +455,7 @@ type CameraRigProps = {
 /**
  * The camera holds a fixed distance. An earlier version dollied in and back out
  * across the section, which read as the gallery zooming itself in and out while
- * you were only trying to scroll through it — scroll now turns the archive and
+ * you were only trying to scroll through it - scroll now turns the archive and
  * does nothing else. The pointer still adds a shallow atmospheric drift.
  */
 function CameraRig({ pointerRef }: CameraRigProps) {
@@ -470,7 +470,7 @@ function CameraRig({ pointerRef }: CameraRigProps) {
     const targetX = pointerRef.current.x * parallax;
     const targetY = pointerRef.current.y * parallax * 0.6;
 
-    // The first frame lands on the mark rather than easing onto it — otherwise
+    // The first frame lands on the mark rather than easing onto it - otherwise
     // the archive opens on a zoom the visitor did not ask for.
     const lerp = placedRef.current
       ? 1 - Math.pow(0.92, Math.min(delta, 1 / 30) * 60)
@@ -542,7 +542,7 @@ export default function ArchiveScene({
 
   /**
    * Settle onto the nearest photograph. Ported from the helmet repo's
-   * cost-minimising snap — the small extra weight on pitch keeps the sphere
+   * cost-minimising snap - the small extra weight on pitch keeps the sphere
    * from tumbling vertically to reach a marginally closer tile.
    */
   const snapToNearest = useCallback(() => {
@@ -574,7 +574,7 @@ export default function ArchiveScene({
     snapActiveRef.current = true;
   }, [anglesFor]);
 
-  /** Bring one specific photograph forward — used by keyboard navigation. */
+  /** Bring one specific photograph forward - used by keyboard navigation. */
   const focusItem = useCallback(
     (itemIndex: number) => {
       const placement = placementsRef.current.find(
@@ -671,7 +671,7 @@ export default function ArchiveScene({
       // NOTE: pointer capture is intentionally NOT used here.
       // setPointerCapture redirects ALL subsequent pointer events (including
       // pointerup) to the capturing element, which prevents R3F from seeing
-      // the native pointerup on the <canvas> — so mesh onPointerUp handlers
+      // the native pointerup on the <canvas> - so mesh onPointerUp handlers
       // never fire, and tile-tap detection breaks. The onPointerLeave handler
       // already handles drags that leave the container.
     },

@@ -83,7 +83,7 @@ export default function Navbar() {
     };
   }, [pathname, navLoading]);
 
-  // Kick off the dynamic chunk request immediately — the import is non-blocking
+  // Kick off the dynamic chunk request immediately - the import is non-blocking
   // and the browser will parse + cache it in the background well before the
   // user has a chance to click MENU. 0ms means "next microtask" via setTimeout.
   useEffect(() => {

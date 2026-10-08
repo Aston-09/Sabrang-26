@@ -14,7 +14,7 @@ interface ProjectOverlayProps {
 
 /**
  * Title + subtitle, cross-fading with a blur when the active project changes,
- * and — the part that matters — physically coupled to the strip.
+ * and - the part that matters - physically coupled to the strip.
  *
  * The headline sits on its own plane in the composition and inherits the
  * carousel's angular velocity: while the strip turns, the plane rotates in
@@ -23,7 +23,7 @@ interface ProjectOverlayProps {
  * sign bolted to the rotating assembly, not a label that crossfades.
  *
  * Behind it, an oversized ghost of the same title occupies a much deeper
- * plane at a fraction of the parallax — background typography, so the title
+ * plane at a fraction of the parallax - background typography, so the title
  * reads as being *in* the environment rather than on top of it.
  *
  * Driven from a rAF loop reading the simulation refs directly: the transform
@@ -78,7 +78,7 @@ export default function ProjectOverlay({
 
   // The heading is the one thing here that must not crossfade. It flips,
   // character by character, from the item leaving the centre to the one
-  // arriving — so the title reads as the same object being re-lettered rather
+  // arriving - so the title reads as the same object being re-lettered rather
   // than as two labels dissolving into each other.
   //
   // `armed` exists because the flip has to start from the outgoing word: the

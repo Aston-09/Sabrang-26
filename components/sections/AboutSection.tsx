@@ -72,7 +72,7 @@ export default function AboutSection() {
           }}
         ></div>
 
-        {/* STEP 1: LEFT ALIGNED — Varun Jain Featured Artist */}
+        {/* STEP 1: LEFT ALIGNED - Varun Jain Featured Artist */}
         <div ref={step1Ref} className="about-card about-card--artist invisible" style={{ left: '5%' }}>
           <div className="artist-card-inner">
             <div className="artist-image-wrapper">
@@ -90,7 +90,7 @@ export default function AboutSection() {
               <span className="text-[var(--text-muted)] tracking-[4px] mb-4 block text-[0.75rem]" style={{ fontFamily: "var(--font-space-grotesk), sans-serif" }}>/ PHASE_01</span>
               <h2 className="about-heading">Varun Jain<br /><i>Live</i></h2>
               <p className="text-lg text-[var(--text-muted)] font-light leading-relaxed">
-                Get ready for an electrifying night as Varun Jain takes the stage at Sabrang &apos;26 — bringing soulful melodies and raw energy to the heart of the fest.
+                Get ready for an electrifying night as Varun Jain takes the stage at Sabrang &apos;26 - bringing soulful melodies and raw energy to the heart of the fest.
               </p>
             </div>
           </div>

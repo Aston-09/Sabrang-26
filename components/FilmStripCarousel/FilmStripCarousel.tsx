@@ -1,10 +1,10 @@
 'use client';
 
 // Root: DOM overlay + Canvas host. Public API:
-//   projects              — dynamic count
-//   loading               — swaps the pagination row for an inline loading state
-//   onProjectSelect       — fired when the cinematic expansion completes
-//   onActiveProjectChange — fired when the centred project changes
+//   projects              - dynamic count
+//   loading               - swaps the pagination row for an inline loading state
+//   onProjectSelect       - fired when the cinematic expansion completes
+//   onActiveProjectChange - fired when the centred project changes
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import FilmStrip, { type ExpandState } from './FilmStrip';

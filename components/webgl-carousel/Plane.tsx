@@ -19,7 +19,7 @@ const Plane = ({ texture, width, height, active, ...props }: PlaneProps) => {
   const { viewport, gl } = useThree();
   const tex = useTexture(texture);
 
-  // Configure texture for maximum sharpness (no colorSpace override — ShaderMaterial
+  // Configure texture for maximum sharpness (no colorSpace override - ShaderMaterial
   // outputs to gl_FragColor directly, so sRGB decode without re-encode would dim the image)
   useEffect(() => {
     if (tex) {

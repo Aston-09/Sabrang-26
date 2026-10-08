@@ -156,7 +156,7 @@ export default function ContactClient() {
             </div>
             <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row justify-between text-xs font-mono text-white/60 gap-2">
               <span>Support Email: <a href="mailto:sabrang@jklu.edu.in" className="text-purple-300 underline">sabrang@jklu.edu.in</a></span>
-              <span>Hours: Mon–Sat, 9:00 AM – 6:00 PM IST</span>
+              <span>Hours: Mon-Sat, 9:00 AM - 6:00 PM IST</span>
             </div>
           </div>
         </section>

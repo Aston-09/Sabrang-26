@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HeroColoursOverBlack — High-Performance Volumetric Fluid & Cloud Background
+ * HeroColoursOverBlack - High-Performance Volumetric Fluid & Cloud Background
  * Optimized for minimal GPU consumption, silky 60 FPS, and low power usage.
  */
 

@@ -7,7 +7,7 @@ import { verifyCashfreeSignature, cashfreeAppId, cashfreeSecretKey, isProd, isRa
 
 export async function POST(req: Request) {
   try {
-    // Rate limit webhook endpoint — legitimate Cashfree traffic is low volume;
+    // Rate limit webhook endpoint - legitimate Cashfree traffic is low volume;
     // this guards against DoS floods even before signature verification.
     const rawIp = req.headers.get('x-forwarded-for') || '127.0.0.1';
     const ip = rawIp.split(',')[0].trim();

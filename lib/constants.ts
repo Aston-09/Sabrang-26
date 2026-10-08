@@ -139,7 +139,7 @@ export const CURSOR_TRAIL_COLORS = [
 
 // Single source of truth for the cursor trail's timing, shared by every surface
 // that renders it. A tube is a chain of points lerping toward the one ahead, so
-// tail lifetime ≈ segments / 60fps: 12–45 lands the longest tail at ~0.75s.
+// tail lifetime ≈ segments / 60fps: 12-45 lands the longest tail at ~0.75s.
 export const CURSOR_TRAIL_MIN_SEGMENTS = 12;
 export const CURSOR_TRAIL_MAX_SEGMENTS = 45;
 

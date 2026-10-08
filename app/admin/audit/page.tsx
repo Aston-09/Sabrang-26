@@ -224,7 +224,7 @@ export default function AuditLogs() {
                     </td>
                     <td className="p-4 text-slate-500 font-mono text-[11px]">{log.targetEntity || 'N/A'}</td>
                     <td className="p-4 whitespace-normal min-w-[240px] max-w-md text-slate-600 leading-relaxed">
-                      {log.details || '—'}
+                      {log.details || '-'}
                     </td>
                   </tr>
                 ))}

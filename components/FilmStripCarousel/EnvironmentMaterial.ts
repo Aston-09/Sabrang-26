@@ -18,14 +18,14 @@ void main() {
 }
 `;
 
-// Sabrang's own palette — deep violet base, magenta key, cyan fill, gold
+// Sabrang's own palette - deep violet base, magenta key, cyan fill, gold
 // accent. Deliberately not the reference's steel blue.
 export const envFragmentShader = /* glsl */ `
 varying vec2 vUv;
 uniform float uTime;
 uniform vec2  uPointer;   // -1..1, damped cursor
 uniform float uVel;       // signed strip velocity, normalised
-uniform float uGlow;      // |velocity|, eased — the reel's light bleed
+uniform float uGlow;      // |velocity|, eased - the reel's light bleed
 uniform float uExpand;    // 0..1 frame-expansion progress
 uniform float uIntro;     // 0..1 entrance
 uniform float uAspect;
@@ -38,7 +38,7 @@ float mass(vec2 p, vec2 c, vec2 r) {
   return exp(-dot(d, d) * 1.5);
 }
 
-// cheap hash, used only as sub-LSB dither — dark wide gradients band badly
+// cheap hash, used only as sub-LSB dither - dark wide gradients band badly
 // on 8-bit displays and a static 1/255 jitter is the standard fix
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -71,7 +71,7 @@ void main() {
   float fill = mass(pFar, vec2(0.16, 0.74 + 0.015 * cos(uTime * 0.09)), vec2(0.44, 0.38));
   c += vec3(0.0, 0.898, 1.0) * fill * 0.075;
 
-  // violet mass hugging the top edge — gives the vignette something to bite
+  // violet mass hugging the top edge - gives the vignette something to bite
   float crown = mass(pFar, vec2(0.5, 1.02), vec2(0.7, 0.30));
   c += vec3(0.616, 0.306, 0.867) * crown * 0.06;
 
@@ -80,7 +80,7 @@ void main() {
   // inside a shaft of light rather than in front of one.
   // NB: squared by multiplication, not pow(). pow(x, 2.0) is UNDEFINED for
   // x < 0 in GLSL, and this offset is negative for every pixel above the
-  // band — on a driver that returns NaN there the whole backdrop goes black.
+  // band - on a driver that returns NaN there the whole backdrop goes black.
   float roll = ${Math.tan(GROUP_ROTATION_Z).toFixed(4)};
   float q = (pNear.y - 0.46 - (pNear.x - 0.5) * roll) / 0.22;
   float band = exp(-q * q);

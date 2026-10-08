@@ -52,7 +52,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         await audio.play();
         setIsPlaying(true);
       } catch {
-        // Browser prevented autoplay without gesture — start on very first interaction
+        // Browser prevented autoplay without gesture - start on very first interaction
         const handleFirstInteraction = async () => {
           if (!userDisabled && !isExcludedRoute && audioRef.current) {
             try {

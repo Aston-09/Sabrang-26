@@ -54,7 +54,7 @@ interface FilmStripProps {
   sim: { position: number; velocity: number; dragged?: boolean; mode?: string };
   step: (dt: number) => void;
   activeRef: React.MutableRefObject<number>;
-  // only `tail` now — the expansion reads the live camera's own fov/position
+  // only `tail` now - the expansion reads the live camera's own fov/position
   // rather than the breakpoint's nominal ones
   bp: { tail: number };
   reducedMotion: boolean;
@@ -64,7 +64,7 @@ interface FilmStripProps {
   onFrameClick: (index: number) => void;
 }
 
-// scratch objects — no per-frame allocation
+// scratch objects - no per-frame allocation
 const _sample: CurveSample = { px: 0, py: 0, pz: 0, tx: 0, ty: 0, tz: 0 };
 const _T = new THREE.Vector3();
 const _U = new THREE.Vector3();
@@ -105,7 +105,7 @@ export default function FilmStrip({
   const { size } = useThree();
   const aspect = size.height > 0 ? size.width / size.height : 1;
   // How far out frames stay rendered, and therefore where they must have
-  // faded to zero — capped at half the set so the wrap seam is never seen.
+  // faded to zero - capped at half the set so the wrap seam is never seen.
   const fadeSpan = Math.min(count / 2, bp.tail);
 
   const assets = useMemo(
@@ -152,14 +152,14 @@ export default function FilmStrip({
 
     // Entrance: the strip arrives from depth and unwinds. One damped scalar
     // drives Z, the unwind about the vertical axis and the smear, so they can
-    // never desync — and because it is a damp, an interaction during the
+    // never desync - and because it is a damp, an interaction during the
     // entrance simply blends in rather than fighting a keyframed timeline.
     const intro = (introRef.current = reducedMotion
       ? 1
       : damp(introRef.current, 1, INTRO_LAMBDA, dt));
     const introK = 1 - intro;
 
-    // expansion progress — a damped scalar is inherently interruptible:
+    // expansion progress - a damped scalar is inherently interruptible:
     // flipping the target mid-flight reverses from the current value
     const ex = expandRef.current;
     ex.p = damp(ex.p, ex.index !== null ? 1 : 0, EXPAND_LAMBDA, dt);
@@ -177,7 +177,7 @@ export default function FilmStrip({
 
     // velocity uniform: normalised, eased so distortion decays to zero at rest.
     // The entrance feeds the same channel, so the arrival smears exactly the
-    // way a hard flick does — one code path, one look.
+    // way a hard flick does - one code path, one look.
     const vNorm = THREE.MathUtils.clamp(sim.velocity / MAX_VELOCITY, -1, 1);
     distortRef.current = reducedMotion ? 0 : damp(distortRef.current, vNorm, DISTORT_LAMBDA, dt);
     const distort = distortRef.current + INTRO_DISTORT * introK;
@@ -220,7 +220,7 @@ export default function FilmStrip({
       // promotion glides from one cell to the next as the strip moves, and
       // the spring only ever sees a smooth target.
       //
-      // Applied to the image panel only (below) — NOT to `content`, which also
+      // Applied to the image panel only (below) - NOT to `content`, which also
       // holds the film border: scaling that lifts one cell's rails out of line
       // with its neighbours' and puts a visible step in the strip.
       const centreness = 1 - smoothstep(0, 1, Math.abs(rel));
@@ -230,7 +230,7 @@ export default function FilmStrip({
         promoteVel[i] = 0;
       } else {
         // Semi-implicit Euler. dt is clamped to 0.05 above, so wn*dt stays
-        // around 0.65 — well inside this integrator's stability limit of 2.
+        // around 0.65 - well inside this integrator's stability limit of 2.
         const accel =
           (pTarget - promote[i]) * PROMOTE_STIFFNESS - promoteVel[i] * PROMOTE_DAMPING;
         promoteVel[i] += accel * dt;
@@ -248,7 +248,7 @@ export default function FilmStrip({
       let dim = 1 - DIM_MAX * smoothstep(0, 1, depth);
       let sat = 1 - SAT_MAX * smoothstep(0.1, 1, depth);
       let alpha = wrapAlpha * (1 - DEPTH_ALPHA * depth);
-      // promoted frames climb back to full brightness/saturation — and stop
+      // promoted frames climb back to full brightness/saturation - and stop
       // there. Never above: see NEIGHBOUR_DIM's note on why brightening the
       // selection floods it rather than lighting it.
       dim = Math.min(1, dim + (1 - dim) * pr01);

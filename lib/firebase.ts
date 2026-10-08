@@ -84,7 +84,7 @@ if (app) {
   } else {
     // Server-side initialization (Node.js environment)
     // Only use the debug token in non-production environments.
-    // In production, the Admin SDK bypasses App Check natively — debug tokens must not be used.
+    // In production, the Admin SDK bypasses App Check natively - debug tokens must not be used.
     const isProductionEnv = process.env.NODE_ENV === 'production' ||
                             (process.env.NEXT_PUBLIC_CASHFREE_ENV || '').trim().toUpperCase() === 'PRODUCTION';
     if (debugToken && !isProductionEnv) {

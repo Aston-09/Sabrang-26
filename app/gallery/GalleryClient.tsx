@@ -49,19 +49,19 @@ const textureCache = new Map<string, Promise<Texture>>();
 // The source webps are ~600KB each and a tile never covers more than ~400px of
 // screen. Fetching all 50 at full size is 30MB of stalled requests, which is why
 // the tube came up black; Next's built-in optimiser cuts that by ~15x.
-// q must be one of next.config's `images.qualities` — anything else is a 400.
+// q must be one of next.config's `images.qualities` - anything else is a 400.
 const optimized = (src: string, w: number) =>
   `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=75`;
 
 // The lightbox goes full-screen, so it gets a real resolution rather than the
-// tube's thumbnail — but still optimised, or clicking a tile would stall on a
+// tube's thumbnail - but still optimised, or clicking a tile would stall on a
 // fresh 600KB original that nothing has warmed the cache with.
 const LIGHTBOX_IMAGES = GALLERY_IMAGES.map((image) => ({
   ...image,
   src: optimized(image.src, 1920),
 }));
 
-// 150 meshes mount at once but only 50 sources are distinct — without a cap
+// 150 meshes mount at once but only 50 sources are distinct - without a cap
 // every one of those first hits Next's image optimizer simultaneously, and
 // 50 concurrent cold Sharp resizes stall the server long enough that the
 // tube sits blank for seconds on first load.
@@ -207,7 +207,7 @@ function GridPlane({ targetCenterUv }: { targetCenterUv: React.RefObject<Vector2
                 uv.y += uTime * uScrollSpeed * uGridScale;
 
                 float fine = max(gridLine(uv.x, uLineWidth), gridLine(uv.y, uLineWidth));
-                // Every 5th line is drawn brighter — the flat single-density grid read
+                // Every 5th line is drawn brighter - the flat single-density grid read
                 // as noise; a coarse tier gives the eye something to sit on.
                 vec2 cuv = uv / 5.0;
                 float coarse = max(gridLine(cuv.x, uLineWidth), gridLine(cuv.y, uLineWidth));
@@ -264,7 +264,7 @@ function GalleryTileMesh({
         if (isMounted) setTexture(tex);
       })
       .catch(() => {
-        // graceful network fallback — the tile keeps its placeholder colour
+        // graceful network fallback - the tile keeps its placeholder colour
       });
     return () => {
       isMounted = false;
@@ -291,7 +291,7 @@ function GalleryTileMesh({
     >
       {/* The key is load-bearing: a material compiled without a map keeps its
           no-texture shader when one is assigned later, so every late tile came up
-          flat. Remounting on arrival gets a material built with the map — and
+          flat. Remounting on arrival gets a material built with the map - and
           sidesteps the reused-instance bug where the dropped `color` prop stuck at
           black and multiplied the textures away. DoubleSide because the far arc of
           the tube is back-facing and culling it leaves half the grid empty. */}
@@ -511,7 +511,7 @@ export default function GalleryClient() {
   }, []);
 
   // The layout's footer makes the document ~70px taller than the viewport, and the
-  // wheel feeds the tube without preventing the default scroll — so one flick both
+  // wheel feeds the tube without preventing the default scroll - so one flick both
   // spun the tube and scrolled the page, which tripped the navbar's hide-on-scroll
   // and took the menu button away. The gallery is a fixed scene; it never scrolls.
   useEffect(() => {
@@ -640,7 +640,7 @@ export default function GalleryClient() {
     // Capture is deferred to onPointerMove, once the drag threshold is actually
     // crossed. Capturing here unconditionally retargets every subsequent event
     // (including the native "click") from the canvas to this div, so R3F's
-    // raycasted onClick on a tile mesh never fires — a plain tap looked like it
+    // raycasted onClick on a tile mesh never fires - a plain tap looked like it
     // did nothing.
   }, []);
 

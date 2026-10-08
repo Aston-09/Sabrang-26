@@ -344,7 +344,7 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
     try {
       const result = await sendBrevoEmail({
         to: [{ email: to, name }],
-        subject: 'Welcome to Sabrang 2026 – Registration Confirmed!',
+        subject: 'Welcome to Sabrang 2026 - Registration Confirmed!',
         htmlContent,
         textContent: `Hi ${name}, your registration for Sabrang 2026 is confirmed! Your receipt is attached.`,
         attachment: [

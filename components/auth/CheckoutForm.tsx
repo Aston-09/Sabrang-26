@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, limit, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Check, ChevronRight, ArrowLeft, Upload, AlertTriangle, Loader2, CheckCircle2, XCircle, ShieldCheck, Download, ExternalLink, RefreshCw, Users, Sparkles, Plus, Minus, Calendar } from "lucide-react";
 import {
@@ -133,10 +133,28 @@ export default function CheckoutForm() {
   } | null>(null);
   const [copiedOffer, setCopiedOffer] = useState(false);
   const [cartLoadedFromUrl, setCartLoadedFromUrl] = useState(false);
+  const [isEarlyBirdActive, setIsEarlyBirdActive] = useState(false);
   const [specialOffer, setSpecialOffer] = useState<{
     code: string;
     desc: string;
   } | null>(null);
+
+  useEffect(() => {
+    const unsubEarlyBird = onSnapshot(
+      doc(db, "settings", "earlyBird"),
+      (snap) => {
+        if (snap.exists()) {
+          setIsEarlyBirdActive(snap.data()?.active === true);
+        } else {
+          setIsEarlyBirdActive(false);
+        }
+      },
+      (err) => {
+        console.warn("earlyBird listener error:", err?.message);
+      }
+    );
+    return () => unsubEarlyBird();
+  }, []);
 
   useEffect(() => {
     async function fetchSpecialOffer() {
@@ -153,7 +171,7 @@ export default function CheckoutForm() {
           const data = doc.data();
           setSpecialOffer({
             code: doc.id,
-            desc: data.specialOfferDesc || "Get an exclusive discount on all event registrations – Limited time only!",
+            desc: data.specialOfferDesc || "Get an exclusive discount on all event registrations - Limited time only!",
           });
         } else {
           setSpecialOffer(null);
@@ -396,7 +414,7 @@ export default function CheckoutForm() {
     const rawTotal = calculateTotalRegistrationFee(selectedEvents, teamMembers, {
       count: visitorCount,
       days: visitorDays,
-    });
+    }, isEarlyBirdActive);
     
     if (promoApplied && couponData?.valid) {
       return Math.max(0, couponData.finalPrice);
@@ -724,7 +742,7 @@ export default function CheckoutForm() {
           <div className="space-y-3 mb-8 p-4 rounded-xl bg-violet-950/20 border border-violet-500/30">
             <label className="text-sm text-white/80 text-violet-300 uppercase tracking-widest flex justify-between">
               <span>
-                Vaad Vivaad — Chosen MP / Journalist <span className="text-violet-400">*</span>
+                Vaad Vivaad - Chosen MP / Journalist <span className="text-violet-400">*</span>
               </span>
             </label>
             <p className="text-xs text-white/70 leading-relaxed">
@@ -1226,6 +1244,31 @@ export default function CheckoutForm() {
                 </span>
               </div>
 
+                            {/* Early Bird Live Banner */}
+              {isEarlyBirdActive && (
+                <div className="bg-gradient-to-r from-emerald-950/60 via-[#0a1a14] to-emerald-950/60 border border-emerald-500/40 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_25px_rgba(16,185,129,0.15)]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+                      <span className="font-black text-xs uppercase tracking-wider text-emerald-300">
+                        EARLY BIRD OFFER ACTIVE
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-emerald-500 text-black">
+                        LIVE
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-100/70">
+                      Limited period early bird discounts applied across flagship & competition events. Cut-rate passes active below!
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold tracking-wider">
+                      Auto-Applied
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Special Offer Card */}
               {specialOffer && (
                 <div className="bg-[#140c21] border border-purple-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
@@ -1264,22 +1307,22 @@ export default function CheckoutForm() {
 
               <div className="space-y-8">
                 {([
-                  "Flagship Events – Team",
-                  "Flagship Events – Solo / Duo",
-                  "Non-Flagship – Esports",
-                  "Non-Flagship – Other Events",
-                  "Activities – Gifts & Hampers",
+                  "Flagship Events - Team",
+                  "Flagship Events - Solo / Duo",
+                  "Non-Flagship - Esports",
+                  "Non-Flagship - Other Events",
+                  "Activities - Gifts & Hampers",
                   "General Entry",
                 ] as SabrangEvent["category"][]).map((category) => {
                   const categoryEvents = EVENTS.filter((e) => e.category === category);
                   if (categoryEvents.length === 0) return null;
 
                   const categoryLabel = 
-                    category === "Flagship Events – Team" ? "Flagship" :
-                    category === "Flagship Events – Solo / Duo" ? "Flagship Solo / Duo" :
-                    category === "Non-Flagship – Esports" ? "E-Sports" :
-                    category === "Non-Flagship – Other Events" ? "Competitions & Events" :
-                    category === "Activities – Gifts & Hampers" ? "Activities & Hampers" :
+                    category === "Flagship Events - Team" ? "Flagship" :
+                    category === "Flagship Events - Solo / Duo" ? "Flagship Solo / Duo" :
+                    category === "Non-Flagship - Esports" ? "E-Sports" :
+                    category === "Non-Flagship - Other Events" ? "Competitions & Events" :
+                    category === "Activities - Gifts & Hampers" ? "Activities & Hampers" :
                     "General Visitor Pass";
 
                   return (
@@ -1313,13 +1356,29 @@ export default function CheckoutForm() {
                                     {event.title}
                                   </h5>
                                   <div className="flex flex-wrap items-center gap-3">
-                                    <span className="font-sans text-sm font-bold text-cyan-400">
-                                      {event.id === "visitor"
-                                        ? (isSelected
-                                            ? `₹${calculateVisitorPassFee(visitorCount, visitorDays.length)} (₹69/day/person)`
-                                            : "₹69 per person per day")
-                                        : event.pricingLabel}
-                                    </span>
+                                    {event.id === "visitor" ? (
+                                      <span className="font-sans text-sm font-bold text-cyan-400">
+                                        {isSelected
+                                          ? `₹${calculateVisitorPassFee(visitorCount, visitorDays.length)} (₹99/day/person)`
+                                          : "₹99 per person per day"}
+                                      </span>
+                                    ) : isEarlyBirdActive && event.earlyBirdPricingLabel ? (
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-sans text-sm font-bold text-emerald-400">
+                                          {event.earlyBirdPricingLabel}
+                                        </span>
+                                        <span className="font-sans text-xs text-white/40 line-through">
+                                          {event.pricingLabel}
+                                        </span>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                          Early Bird
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="font-sans text-sm font-bold text-cyan-400">
+                                        {event.pricingLabel}
+                                      </span>
+                                    )}
                                     {event.id === "visitor" ? (
                                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm text-white/80 bg-white/10 text-white/70 border border-white/5">
                                         <Users className="w-3 h-3 text-white/40" />
@@ -1432,7 +1491,7 @@ export default function CheckoutForm() {
                                   {/* Calculated Subtotal pill */}
                                   <div className="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 flex justify-between items-center text-xs">
                                     <span className="text-white/70 font-sans text-[11px]">
-                                      {visitorCount} visitor{visitorCount > 1 ? "s" : ""} × {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} @ ₹69/person/day
+                                      {visitorCount} visitor{visitorCount > 1 ? "s" : ""} × {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} @ ₹99/person/day
                                     </span>
                                     <span className="font-sans font-bold text-cyan-400 text-sm">
                                       ₹{calculateVisitorPassFee(visitorCount, visitorDays.length)}
@@ -1615,7 +1674,7 @@ export default function CheckoutForm() {
                   const itemPrice = calculateEventItemPrice(ev, totalMembers, {
                     count: visitorCount,
                     days: visitorDays,
-                  });
+                  }, isEarlyBirdActive);
 
                   return (
                     <div key={eventId} className="flex justify-between items-start text-white/90 py-1.5 border-b border-white/5 last:border-0">
@@ -1629,7 +1688,7 @@ export default function CheckoutForm() {
                         )}
                         {ev.isTeam && ev.extraMemberFee > 0 && totalMembers > ev.baseIncludedMembers && (
                           <div className="text-[11px] text-violet-400 font-sans mt-0.5">
-                            {totalMembers} members ({ev.baseIncludedMembers} base + {totalMembers - ev.baseIncludedMembers} extra @ ₹{ev.extraMemberFee})
+                            {totalMembers} members ({ev.baseIncludedMembers} base + {totalMembers - ev.baseIncludedMembers} extra @ ₹{isEarlyBirdActive && ev.earlyBirdExtraMemberFee !== undefined ? ev.earlyBirdExtraMemberFee : ev.extraMemberFee})
                           </div>
                         )}
                         {ev.isTeam && ev.extraMemberFee === 0 && (
@@ -1822,7 +1881,7 @@ export default function CheckoutForm() {
                 const price = calculateEventItemPrice(ev, totalMembers, {
                   count: visitorCount,
                   days: visitorDays,
-                });
+                }, isEarlyBirdActive);
 
                 return (
                   <div key={id} className="flex justify-between items-start text-xs py-2 border-b border-white/5 last:border-0">

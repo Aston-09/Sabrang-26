@@ -17,7 +17,7 @@ export default function TubesCursor() {
 
   useEffect(() => {
     if (!canvasRef.current) return;
-    // Skip entirely on touch/coarse-pointer devices — the trail is invisible
+    // Skip entirely on touch/coarse-pointer devices - the trail is invisible
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const canvas = canvasRef.current;
@@ -128,7 +128,7 @@ export default function TubesCursor() {
         pointerEvents: "none",
         zIndex: 9999,
         mixBlendMode: "screen",
-        // Hide on excluded pages without unmounting — keeps the canvas ref
+        // Hide on excluded pages without unmounting - keeps the canvas ref
         // attached so the effect always initialises successfully on first mount.
         visibility: hidden ? "hidden" : "visible",
       }}

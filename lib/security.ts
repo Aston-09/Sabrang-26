@@ -47,7 +47,7 @@ export function isRateLimited(ip: string, limit: number = 5, windowMs: number = 
  * XSS & Script injection sanitation helper.
  * Strips HTML tags then escapes special characters.
  *
- * This function is idempotent — calling it twice on the same string
+ * This function is idempotent - calling it twice on the same string
  * produces the same result. Tag-stripping removes < and > first; only then are
  * residual special chars (& " ') escaped. This avoids double-encoding issues
  * like &amp; → &amp;amp; on a second pass.

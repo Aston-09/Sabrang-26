@@ -67,7 +67,7 @@ export default function TermsPage() {
               <p>
                 By accessing this website (<Link href="/" className="text-purple-400 underline">https://sabrang.jklu.edu.in</Link>),
                 registering for any event, purchasing a fest pass, or entering the university campus during the
-                festival dates (October 23–25, 2026), you acknowledge that you have read, understood, and agree to be
+                festival dates (October 23-25, 2026), you acknowledge that you have read, understood, and agree to be
                 bound by these Terms and Conditions.
               </p>
             </section>

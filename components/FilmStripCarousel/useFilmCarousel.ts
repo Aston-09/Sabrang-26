@@ -1,4 +1,4 @@
-// All interaction state lives in refs — no React state during a drag.
+// All interaction state lives in refs - no React state during a drag.
 // React state is only activeIndex, pushed when the integer actually changes.
 import { useCallback, useRef, useState } from 'react';
 import { getActiveIndex, glideDistance, glideVelocity, wrapRelative } from './carouselMath';
@@ -14,7 +14,7 @@ import {
 const clampVelocity = (v: number) => Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, v));
 
 interface SimState {
-  position: number; // continuous float — the whole engine
+  position: number; // continuous float - the whole engine
   target: number;
   velocity: number; // units per 60fps-frame
   mode: 'snap' | 'drag' | 'momentum';
@@ -89,7 +89,7 @@ export function useFilmCarousel(
   //
   // Deliberately does NOT capture the pointer here. R3F binds its listeners to
   // the div it renders inside this wrapper, and a capture on the wrapper
-  // retargets every later pointer event to the wrapper itself — taking that div
+  // retargets every later pointer event to the wrapper itself - taking that div
   // out of the event path, so the scene never sees pointerup and no frame click
   // can ever fire. Capture is taken in onPointerMove instead, at the moment the
   // press becomes a drag (see below): a click keeps the normal event path, a
@@ -116,7 +116,7 @@ export function useFilmCarousel(
   // drag the first one started, jumping the strip to its own clientX. It also
   // guards the capture call: a constructed PointerEvent carries pointerId 0,
   // which belongs to no live pointer, so capturing it throws NotFoundError and
-  // takes the whole menu down — the site's idle cursor effect used to dispatch
+  // takes the whole menu down - the site's idle cursor effect used to dispatch
   // exactly that before TubesCursor was scoped to its own canvas.
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -162,7 +162,7 @@ export function useFilmCarousel(
     [sim]
   );
 
-  // Wheel input rides the momentum glide, same as a drag release — the inertia
+  // Wheel input rides the momentum glide, same as a drag release - the inertia
   // is the point. What changed is where it aims: rather than adding a fixed
   // velocity per event, this solves for the velocity that brings the glide to
   // rest exactly `steps` frames past wherever it was already going to stop.
@@ -225,7 +225,7 @@ export function useFilmCarousel(
 
   // Advance exactly one frame. Chaining off `target` rather than `position`
   // while snapping is what makes repeated calls additive instead of racing the
-  // spring — two fast wheel notches land two frames along, never one or three.
+  // spring - two fast wheel notches land two frames along, never one or three.
   const shift = useCallback(
     (dir: 1 | -1) => {
       if (sim.mode === 'drag') return;

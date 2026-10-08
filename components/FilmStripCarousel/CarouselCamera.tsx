@@ -23,8 +23,8 @@ interface CarouselCameraProps {
 }
 
 /**
- * Responsive camera controller — updates in place on breakpoint change, never
- * remounts the canvas — plus the cinematic rig on top.
+ * Responsive camera controller - updates in place on breakpoint change, never
+ * remounts the canvas - plus the cinematic rig on top.
  *
  * The rig is an operator, not an effect: it sways with the cursor, trails a
  * fast scroll (so the strip momentarily leads the frame the way a real pan
@@ -67,7 +67,7 @@ export default function CarouselCamera({
       dt
     );
 
-    // Pointer sway falls off as a frame expands — during the push-in the
+    // Pointer sway falls off as a frame expands - during the push-in the
     // camera commits to the frame instead of continuing to wander.
     const settle = 1 - p;
     const px = state.pointer.x;
@@ -83,7 +83,7 @@ export default function CarouselCamera({
     camera.position.z = damp(camera.position.z, tz, CAM_LAMBDA, dt);
 
     // Aim slightly back toward centre so the sway becomes a small yaw rather
-    // than a pure truck — that yaw is what makes the strip's depth readable.
+    // than a pure truck - that yaw is what makes the strip's depth readable.
     look.current.set(
       camera.position.x * 0.35,
       camera.position.y * 0.35,

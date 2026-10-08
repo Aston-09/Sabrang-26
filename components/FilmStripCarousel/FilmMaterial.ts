@@ -2,7 +2,7 @@
 //
 // The film path is evaluated PER VERTEX in the vertex shader (see
 // sampleFilmCurve for the CPU mirror and the shape rationale). Geometry is
-// therefore flat — a plain PlaneGeometry — and every vertex is displaced onto
+// therefore flat - a plain PlaneGeometry - and every vertex is displaced onto
 // the true curve. Because the curve is a pure function of arc length, frame i's
 // right edge and frame i+1's left edge evaluate the same `s` and land on the
 // exact same point: seams are exact even where curvature changes, which a
@@ -36,7 +36,7 @@ export function createFilmGeometry(width: number, height: number): THREE.PlaneGe
 // --- shared GLSL ---------------------------------------------------------
 // filmVertex() takes a position in the frame's own flat local space and
 // returns it displaced onto the curve, still expressed in that frame's local
-// space — so the CPU-side group transform (placed at the curve point, oriented
+// space - so the CPU-side group transform (placed at the curve point, oriented
 // by the tangent) stays correct and raycasting keeps working.
 const CURVE_GLSL = /* glsl */ `
 uniform float uS0;
@@ -64,7 +64,7 @@ vec3 filmToLocal(vec3 v, vec3 T, vec3 U, vec3 N) {
 
 // Split into position and normal rather than one out-param call, because the
 // two stock chunks they patch into (begin_vertex / beginnormal_vertex) are not
-// always both present — MeshBasicMaterial only emits beginnormal_vertex inside
+// always both present - MeshBasicMaterial only emits beginnormal_vertex inside
 // an "#if defined(USE_ENVMAP) || defined(USE_SKINNING)" block.
 vec3 filmPosition(float localX, float localY) {
   vec3 p0, T0, U0, N0;
@@ -84,14 +84,14 @@ vec3 filmNormal(float localX) {
 `;
 
 // Patch a stock Three material (border / backing) to ride the curve. The
-// material keeps its normal lighting pipeline — only the vertex position and,
+// material keeps its normal lighting pipeline - only the vertex position and,
 // for lit materials, the object normal are replaced.
 //
 // `lit` must be false for materials whose beginnormal_vertex chunk is
 // conditionally compiled (MeshBasicMaterial); patching it there would put the
 // code inside a dead #if.
 // Pure string transform, exported so filmCurve.check.ts can validate the
-// GLSL it produces — nothing else in the pipeline typechecks a shader.
+// GLSL it produces - nothing else in the pipeline typechecks a shader.
 export function patchFilmVertexShader(source: string, lit: boolean): string {
   let vs = source
     .replace('#include <common>', `#include <common>\n${CURVE_GLSL}`)
@@ -147,8 +147,8 @@ let cachedFilmTextures: { map: THREE.CanvasTexture; bump: THREE.CanvasTexture } 
 let cachedShadowTexture: THREE.CanvasTexture | null = null;
 
 // Colour map: opaque film, transparent image window + holes, with a baked
-// bevel — light stroke on the lower-inner edge of each hole, dark on the
-// upper edge, and rail edge lines — so edges read chamfered even before
+// bevel - light stroke on the lower-inner edge of each hole, dark on the
+// upper edge, and rail edge lines - so edges read chamfered even before
 // the bump map contributes.
 export function createFilmTextures(): {
   map: THREE.CanvasTexture;
@@ -187,7 +187,7 @@ export function createFilmTextures(): {
   ctx.fillRect(0, H - 3, W, 3);
 
   // Wear: a few hairline scratches down the length plus scattered dust.
-  // Kept below ~5% contrast — the read should be "premium film stock", and
+  // Kept below ~5% contrast - the read should be "premium film stock", and
   // anything visible enough to notice individually reads as damage instead.
   // Deterministic so the strip is identical on every reload.
   let seed = 0x5abfa17;
@@ -214,7 +214,7 @@ export function createFilmTextures(): {
   ctx.clearRect(winX, winY, winW, winH);
 
   // Hole bevels: dark upper lip, lit lower lip (key light sits high).
-  // The lit lip carries most of the perforation's read — the holes themselves
+  // The lit lip carries most of the perforation's read - the holes themselves
   // are cut through to the environment behind, so against a dark backdrop it
   // is this rim, not the hole, that tells the eye a hole is there. It is
   // therefore drawn well above "subtle".
@@ -365,13 +365,13 @@ void main() {
   c *= mix(0.42, 1.0, gate);
   c += vec3(0.58, 0.55, 0.50) * lip * 0.10;
 
-  // Emulsion grain, locked to the frame rather than to the screen — it rides
+  // Emulsion grain, locked to the frame rather than to the screen - it rides
   // the image the way real grain does, so it survives the strip moving.
   float gr = fract(sin(dot(vUv * vec2(720.0, 400.0), vec2(12.9898, 78.233))) * 43758.5453);
   c *= 1.0 + (gr - 0.5) * 0.035;
 
   // No specular term. There was a Blinn sheen here, but the panel is FLAT: over
-  // one cell dot(n, h) barely changes, so it was never a highlight that moved —
+  // one cell dot(n, h) barely changes, so it was never a highlight that moved -
   // it was a constant ~0.13 of white added to every texel, peaking on the cell
   // facing the camera. That is a white veil over whichever frame is selected,
   // which is the opposite of the intent. The strip's depth now comes from the
@@ -454,7 +454,7 @@ export function createReactiveBorderMaterial(): THREE.ShaderMaterial {
   });
 }
 
-// Cover-fit a texture into the 4:3 image window — no letterbox, no stretch.
+// Cover-fit a texture into the 4:3 image window - no letterbox, no stretch.
 export function coverFitTexture(tex: THREE.Texture): void {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;

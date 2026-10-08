@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AboutSections — The Sabrang 2026 Spectrum Narrative Sections
+ * AboutSections - The Sabrang 2026 Spectrum Narrative Sections
  *
  * SECTION 02: THE CORE SPECTRUMS (The Four Foundation Pillars)
  * SECTION 04: WHY IS SABRANG OP? (Bespoke Kinetic Spectrum Console & Editorial Metrics)
@@ -72,7 +72,7 @@ export const SABRANG_PILLARS: PillarData[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SECTION 02 — THE FOUR PILLARS OF SABRANG (The Core Spectrums)
+// SECTION 02 - THE FOUR PILLARS OF SABRANG (The Core Spectrums)
 // ─────────────────────────────────────────────────────────────────────────────
 export function CoreSpectrumsSection() {
   const [activePillarId, setActivePillarId] = useState<string | null>(null);
@@ -247,7 +247,7 @@ export function AboutContentSections() {
 
 
       {/* ───────────────────────────────────────────────────────────────── */}
-      {/* SECTION 05 — BEYOND THE COMPETITIONS (Space Between Wavelengths)  */}
+      {/* SECTION 05 - BEYOND THE COMPETITIONS (Space Between Wavelengths)  */}
       {/* ───────────────────────────────────────────────────────────────── */}
       <section className="relative w-full py-24 sm:py-32 px-6 sm:px-12 md:px-20 bg-black/40 backdrop-blur-[2px] border-t border-white/10 overflow-hidden select-none">
         <div className="pointer-events-none absolute inset-0" aria-hidden>

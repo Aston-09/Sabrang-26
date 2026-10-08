@@ -210,7 +210,7 @@ export default function SystemErrors() {
                     <td className="p-4 font-semibold text-slate-900">{log.performedBy || 'System'}</td>
                     <td className="p-4 text-slate-500 font-mono text-[11px]">{log.targetEntity || 'N/A'}</td>
                     <td className="p-4 whitespace-normal min-w-[280px] max-w-lg text-rose-700 font-mono text-[11px] leading-relaxed bg-rose-50/40 rounded">
-                      {log.details || '—'}
+                      {log.details || '-'}
                     </td>
                   </tr>
                 ))}

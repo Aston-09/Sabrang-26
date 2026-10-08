@@ -1,5 +1,5 @@
 /**
- * Sabrang 2026 — Official Events Catalog & Authoritative Pricing Matrix
+ * Sabrang 2026 - Official Events Catalog & Authoritative Pricing Matrix
  * Single source of truth for events, team rules, prize pools, and registration pricing.
  */
 
@@ -8,21 +8,24 @@ export interface SabrangEvent {
   title: string;
   subtitle: string;
   category: 
-    | "Flagship Events – Team"
-    | "Flagship Events – Solo / Duo"
-    | "Non-Flagship – Esports"
-    | "Non-Flagship – Other Events"
-    | "Activities – Gifts & Hampers"
+    | "Flagship Events - Team"
+    | "Flagship Events - Solo / Duo"
+    | "Non-Flagship - Esports"
+    | "Non-Flagship - Other Events"
+    | "Activities - Gifts & Hampers"
     | "General Entry";
   minTeam: number;
   maxTeam: number;
   baseIncludedMembers: number;
   basePrice: number;
+  earlyBirdPrice?: number;
   price: number;
   extraMemberFee: number;
+  earlyBirdExtraMemberFee?: number;
   isTeam: boolean;
   type: "generic" | "bgmi" | "valorant" | "freefire" | "visitor";
   pricingLabel: string;
+  earlyBirdPricingLabel?: string;
   prizes: {
     winnerCash?: number;
     runnerUpCash?: number;
@@ -75,12 +78,12 @@ export const VAAD_VIVAAD_REPRESENTATIVES = [
 ] as const;
 
 const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
-  // --- Flagship Events – Team ---
+  // --- Flagship Events - Team ---
   {
     id: "panache",
     title: "Panache",
     subtitle: "Haute Couture Runway Show",
-    category: "Flagship Events – Team",
+    category: "Flagship Events - Team",
     minTeam: 6,
     maxTeam: 20,
     baseIncludedMembers: 1,
@@ -88,6 +91,9 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     extraMemberFee: 599,
     isTeam: true,
     type: "generic",
+    earlyBirdPricingLabel: "₹399 per head",
+    earlyBirdExtraMemberFee: 399,
+    earlyBirdPrice: 399,
     pricingLabel: "₹599 per head",
     prizes: {
       winnerCash: 21000,
@@ -99,7 +105,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "sync",
     title: "SYNC",
     subtitle: "Group Dance Showdown",
-    category: "Flagship Events – Team",
+    category: "Flagship Events - Team",
     minTeam: 8,
     maxTeam: 25,
     baseIncludedMembers: 1,
@@ -107,6 +113,9 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     extraMemberFee: 599,
     isTeam: true,
     type: "generic",
+    earlyBirdPricingLabel: "₹399 per head",
+    earlyBirdExtraMemberFee: 399,
+    earlyBirdPrice: 399,
     pricingLabel: "₹599 per head",
     prizes: {
       winnerCash: 21000,
@@ -118,7 +127,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "bandjam",
     title: "Band Jam",
     subtitle: "Battle of the Bands",
-    category: "Flagship Events – Team",
+    category: "Flagship Events - Team",
     minTeam: 4,
     maxTeam: 10,
     baseIncludedMembers: 1,
@@ -126,6 +135,9 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     extraMemberFee: 599,
     isTeam: true,
     type: "generic",
+    earlyBirdPricingLabel: "₹399 per head",
+    earlyBirdExtraMemberFee: 399,
+    earlyBirdPrice: 399,
     pricingLabel: "₹599 per head",
     prizes: {
       winnerCash: 15000,
@@ -134,20 +146,22 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     },
   },
 
-  // --- Flagship Events – Solo / Duo ---
+  // --- Flagship Events - Solo / Duo ---
   {
     id: "step_up",
     title: "Step Up",
     subtitle: "Solo Dance Competition",
-    category: "Flagship Events – Solo / Duo",
+    category: "Flagship Events - Solo / Duo",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 699,
+    basePrice: 649,
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
-    pricingLabel: "₹699 per head",
+    earlyBirdPricingLabel: "₹449 per head",
+    earlyBirdPrice: 449,
+    pricingLabel: "₹649 per head",
     prizes: {
       winnerCash: 9000,
       runnerUpCash: 6000,
@@ -158,15 +172,17 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "persona",
     title: "Persona",
     subtitle: "Solo/Duo Performance",
-    category: "Flagship Events – Solo / Duo",
+    category: "Flagship Events - Solo / Duo",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 699,
+    basePrice: 649,
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
-    pricingLabel: "₹699 per head",
+    earlyBirdPricingLabel: "₹449 per head",
+    earlyBirdPrice: 449,
+    pricingLabel: "₹649 per head",
     prizes: {
       winnerCash: 9000,
       runnerUpCash: 6000,
@@ -177,15 +193,18 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "echoes_of_noor",
     title: "Echoes of Noor",
     subtitle: "Sufi Night & Acoustic Melodies",
-    category: "Flagship Events – Solo / Duo",
+    category: "Flagship Events - Solo / Duo",
     minTeam: 1,
     maxTeam: 2,
     baseIncludedMembers: 1,
-    basePrice: 699,
-    extraMemberFee: 699,
+    basePrice: 649,
+    extraMemberFee: 649,
     isTeam: true,
     type: "generic",
-    pricingLabel: "₹699 per head",
+    earlyBirdPricingLabel: "₹449 per head",
+    earlyBirdExtraMemberFee: 449,
+    earlyBirdPrice: 449,
+    pricingLabel: "₹649 per head",
     prizes: {
       winnerCash: 9000,
       runnerUpCash: 6000,
@@ -196,15 +215,18 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "versevaad",
     title: "Verse Vaad",
     subtitle: "Poetry Slam & Literary Debates",
-    category: "Flagship Events – Solo / Duo",
+    category: "Flagship Events - Solo / Duo",
     minTeam: 1,
     maxTeam: 2,
     baseIncludedMembers: 1,
-    basePrice: 699,
-    extraMemberFee: 699,
+    basePrice: 649,
+    extraMemberFee: 649,
     isTeam: true,
     type: "generic",
-    pricingLabel: "₹699 per head",
+    earlyBirdPricingLabel: "₹449 per head",
+    earlyBirdExtraMemberFee: 449,
+    earlyBirdPrice: 449,
+    pricingLabel: "₹649 per head",
     prizes: {
       winnerCash: 9000,
       runnerUpCash: 6000,
@@ -212,12 +234,12 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     },
   },
 
-  // --- Non-Flagship – Esports ---
+  // --- Non-Flagship - Esports ---
   {
     id: "bgmi",
     title: "BGMI",
     subtitle: "Battlegrounds Mobile India Tournament",
-    category: "Non-Flagship – Esports",
+    category: "Non-Flagship - Esports",
     minTeam: 4,
     maxTeam: 5,
     baseIncludedMembers: 5,
@@ -237,7 +259,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "freefire",
     title: "Free Fire",
     subtitle: "Free Fire Mobile Esports Tournament",
-    category: "Non-Flagship – Esports",
+    category: "Non-Flagship - Esports",
     minTeam: 4,
     maxTeam: 5,
     baseIncludedMembers: 5,
@@ -257,7 +279,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "valorant",
     title: "Valorant",
     subtitle: "5v5 PC Tactical FPS Tournament",
-    category: "Non-Flagship – Esports",
+    category: "Non-Flagship - Esports",
     minTeam: 5,
     maxTeam: 5,
     baseIncludedMembers: 5,
@@ -274,20 +296,23 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     },
   },
 
-  // --- Non-Flagship – Other Events ---
+  // --- Non-Flagship - Other Events ---
   {
     id: "rang_manch",
     title: "Rang Manch",
     subtitle: "Stage Play & Theatrical Drama",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 8,
     maxTeam: 15,
     baseIncludedMembers: 1,
-    basePrice: 499,
-    extraMemberFee: 499,
+    basePrice: 299,
+    extraMemberFee: 299,
     isTeam: true,
     type: "generic",
-    pricingLabel: "₹499 per head",
+    earlyBirdPricingLabel: "₹199 per head",
+    earlyBirdExtraMemberFee: 199,
+    earlyBirdPrice: 199,
+    pricingLabel: "₹299 per head",
     prizes: {
       winnerCash: 9000,
       runnerUpCash: 6000,
@@ -298,7 +323,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "courtroom",
     title: "Court Room",
     subtitle: "Mock Trial & Legal Battle",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 2,
     maxTeam: 4,
     baseIncludedMembers: 1,
@@ -317,7 +342,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "bidding",
     title: "Bidding Before Wicket",
     subtitle: "IPL Mock Cricket Auction",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 3,
     maxTeam: 5,
     baseIncludedMembers: 1,
@@ -336,7 +361,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "dumb_show",
     title: "Dumb Show",
     subtitle: "Mime & Dumb Charades",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 3,
     maxTeam: 3,
     baseIncludedMembers: 1,
@@ -355,7 +380,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "vaad_vivaad",
     title: "Vaad Vivaad",
     subtitle: "Conventional Debate Competition (Solo)",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
@@ -374,15 +399,17 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "face_off",
     title: "Face Off",
     subtitle: "Street Dance Face Off (Solo)",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 299,
+    basePrice: 499,
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
-    pricingLabel: "₹299 per head",
+    earlyBirdPricingLabel: "₹299 per head",
+    earlyBirdPrice: 299,
+    pricingLabel: "₹499 per head",
     prizes: {
       totalCash: 12000,
       remarks: "2 styles, no runner-up; ₹6,000 per category",
@@ -392,7 +419,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "anime_quiz",
     title: "Anime Quiz",
     subtitle: "Ultimate Otaku Trivia Challenge",
-    category: "Non-Flagship – Other Events",
+    category: "Non-Flagship - Other Events",
     minTeam: 2,
     maxTeam: 2,
     baseIncludedMembers: 1,
@@ -408,12 +435,12 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     },
   },
 
-  // --- Activities – Gifts & Hampers (No Cash Prize) ---
+  // --- Activities - Gifts & Hampers (No Cash Prize) ---
   {
     id: "art_relay",
     title: "Art Relay",
     subtitle: "Collaborative Fine Arts Challenge",
-    category: "Activities – Gifts & Hampers",
+    category: "Activities - Gifts & Hampers",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
@@ -430,7 +457,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "clay_modelling",
     title: "Clay Modelling",
     subtitle: "Sculptural Creativity & Craft",
-    category: "Activities – Gifts & Hampers",
+    category: "Activities - Gifts & Hampers",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
@@ -447,7 +474,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     id: "chai_pe_charcha",
     title: "Chai Pe Charcha",
     subtitle: "Conversations & Open Mic Session",
-    category: "Activities – Gifts & Hampers",
+    category: "Activities - Gifts & Hampers",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
@@ -470,62 +497,34 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 69,
+    basePrice: 99,
     extraMemberFee: 0,
     isTeam: false,
     type: "visitor",
-    pricingLabel: "₹69 per pass",
-    prizes: { remarks: "Standard Visitor Pass" },
+    pricingLabel: "₹99 per pass",
+    prizes: { remarks: "Standard Visitor Pass (Pro-Nite not included)" },
   },
   {
     id: "pronite_outsider",
-    title: "PRO-NITE – Outsiders",
-    subtitle: "Full-day access, including PRO-NITE – Days 1 & 2",
+    title: "PRO-NITE - Outsiders",
+    subtitle: "Full-day access, including PRO-NITE - Days 1 & 2",
     category: "General Entry",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 299,
+    basePrice: 599,
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
-    pricingLabel: "₹299 per pass",
+    earlyBirdPricingLabel: "₹499 per pass",
+    earlyBirdPrice: 499,
+    pricingLabel: "₹599 per pass",
     prizes: { remarks: "Outsider pass" },
   },
   {
     id: "pronite_jklu",
-    title: "PRO-NITE – JKLU",
-    subtitle: "Full-day access, including PRO-NITE – Days 1 & 2",
-    category: "General Entry",
-    minTeam: 1,
-    maxTeam: 1,
-    baseIncludedMembers: 1,
-    basePrice: 149,
-    extraMemberFee: 0,
-    isTeam: false,
-    type: "generic",
-    pricingLabel: "₹149 per pass",
-    prizes: { remarks: "JKLU student pass" },
-  },
-  {
-    id: "concert_outsider",
-    title: "Concert – Outsiders",
-    subtitle: "Concert access",
-    category: "General Entry",
-    minTeam: 1,
-    maxTeam: 1,
-    baseIncludedMembers: 1,
-    basePrice: 499,
-    extraMemberFee: 0,
-    isTeam: false,
-    type: "generic",
-    pricingLabel: "₹499 per pass",
-    prizes: { remarks: "Outsider pass" },
-  },
-  {
-    id: "concert_jklu",
-    title: "Concert – JKLU",
-    subtitle: "Concert access",
+    title: "PRO-NITE - JKLU",
+    subtitle: "Full-day access, including PRO-NITE - Days 1 & 2",
     category: "General Entry",
     minTeam: 1,
     maxTeam: 1,
@@ -534,6 +533,8 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
+    earlyBirdPricingLabel: "₹299 per pass",
+    earlyBirdPrice: 299,
     pricingLabel: "₹299 per pass",
     prizes: { remarks: "JKLU student pass" },
   }
@@ -568,7 +569,7 @@ export interface VisitorPassConfig {
 export function calculateVisitorPassFee(count: number, daysCount: number): number {
   const people = Math.max(1, count || 1);
   const days = Math.max(1, daysCount || 1);
-  return people * days * 69;
+  return people * days * 99;
 }
 
 /**
@@ -578,7 +579,8 @@ export function calculateVisitorPassFee(count: number, daysCount: number): numbe
 export function calculateEventItemPrice(
   event: SabrangEvent,
   totalMembers: number = 1,
-  visitorConfig?: VisitorPassConfig
+  visitorConfig?: VisitorPassConfig,
+  isEarlyBird?: boolean
 ): number {
   if (event.id === "visitor") {
     const count = visitorConfig?.count ?? totalMembers ?? 1;
@@ -587,20 +589,22 @@ export function calculateEventItemPrice(
   }
 
   if (!event.isTeam) {
-    return event.basePrice;
+    return (isEarlyBird && event.earlyBirdPrice !== undefined) ? event.earlyBirdPrice : event.basePrice;
   }
   // Esports are flat per team
   if (event.type === "bgmi" || event.type === "freefire" || event.type === "valorant") {
-    return event.basePrice;
+    return (isEarlyBird && event.earlyBirdPrice !== undefined) ? event.earlyBirdPrice : event.basePrice;
   }
   // Fixed team (e.g. Dumb Show 3)
   if (event.extraMemberFee === 0) {
-    return event.basePrice;
+    return (isEarlyBird && event.earlyBirdPrice !== undefined) ? event.earlyBirdPrice : event.basePrice;
   }
   // Base covers up to baseIncludedMembers
   const members = Math.max(1, totalMembers);
   const extraCount = Math.max(0, members - event.baseIncludedMembers);
-  return event.basePrice + extraCount * event.extraMemberFee;
+  const base = (isEarlyBird && event.earlyBirdPrice !== undefined) ? event.earlyBirdPrice : event.basePrice;
+  const extra = (isEarlyBird && event.earlyBirdExtraMemberFee !== undefined) ? event.earlyBirdExtraMemberFee : event.extraMemberFee;
+  return base + extraCount * extra;
 }
 
 /**
@@ -610,7 +614,8 @@ export function calculateEventItemPrice(
 export function calculateTotalRegistrationFee(
   selectedEventIds: string[],
   teamMembersMap?: Record<string, any[] | undefined>,
-  visitorConfig?: VisitorPassConfig
+  visitorConfig?: VisitorPassConfig,
+  isEarlyBird?: boolean
 ): number {
   if (!Array.isArray(selectedEventIds) || selectedEventIds.length === 0) {
     return 0;
@@ -623,14 +628,14 @@ export function calculateTotalRegistrationFee(
     if (!event) continue;
 
     if (eventId === "visitor") {
-      total += calculateEventItemPrice(event, 1, visitorConfig);
+      total += calculateEventItemPrice(event, 1, visitorConfig, isEarlyBird);
       continue;
     }
 
     const groupMembers = teamMembersMap?.[event.type];
     const totalMembers = 1 + (Array.isArray(groupMembers) ? groupMembers.length : 0);
 
-    total += calculateEventItemPrice(event, totalMembers);
+    total += calculateEventItemPrice(event, totalMembers, visitorConfig, isEarlyBird);
   }
 
   return total;
@@ -664,3 +669,4 @@ export function getGroupTeamRequirements(
 
   return { min, max };
 }
+

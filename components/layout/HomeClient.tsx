@@ -43,7 +43,7 @@ export default function HomeClient() {
     <main className="hero-theme relative w-full">
       <HeroScene />
 
-      {/* Register Now — fixed at z-[45]: above film strip overlay (z-40),
+      {/* Register Now - fixed at z-[45]: above film strip overlay (z-40),
           below navbar header (z-50). Guaranteed clickable with no overlay interference. */}
       <Link
         ref={btnRef}
@@ -68,7 +68,7 @@ export default function HomeClient() {
       <div className="relative w-full">
         <HeroSection />
 
-        {/* Scroll Triggers (Main Hero Logic) — the pin adds the real scroll
+        {/* Scroll Triggers (Main Hero Logic) - the pin adds the real scroll
             length, see HERO_PIN_END. The page ends when the pin releases,
             with PHASE_03 still on screen. */}
         <div id="scroll-trigger" className="relative w-full z-10 pointer-events-none -mt-[100vh]">

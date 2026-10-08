@@ -285,7 +285,7 @@ export default function EventsFilterDropdown({ items, focusedIndex, onSelect }: 
               animate="visible"
               exit="exit"
             >
-              {/* Scrollable list — wheel events stopped here so gallery doesn't react */}
+              {/* Scrollable list - wheel events stopped here so gallery doesn't react */}
               <motion.ul
                 ref={listRef}
                 role="listbox"

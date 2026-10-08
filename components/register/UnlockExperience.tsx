@@ -189,7 +189,7 @@ export default function UnlockExperience({
 
         {/* Small box */}
         <div className="mt-16 md:mt-24 mb-12 text-white px-4 py-1.5 font-black text-sm md:text-base tracking-[0.2em] uppercase relative z-30">
-          LIMITED PASSES · OCT 23–25 · JKLU
+          LIMITED PASSES · OCT 23-25 · JKLU
         </div>
 
         {/* Ticket Stub Pass Button (Pointer Events Auto to allow clicking) */}

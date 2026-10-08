@@ -132,7 +132,7 @@ export default function RefundPolicyPage() {
                 <p className="font-bold text-white">Payment Helpdesk & Dispute Resolution</p>
                 <p>{SITE_CONFIG.university.name}</p>
                 <p>Email: <a href="mailto:sabrang@jklu.edu.in" className="text-purple-400 underline">sabrang@jklu.edu.in</a></p>
-                <p>Response Time: Within 24–48 business hours</p>
+                <p>Response Time: Within 24-48 business hours</p>
               </div>
             </section>
           </div>

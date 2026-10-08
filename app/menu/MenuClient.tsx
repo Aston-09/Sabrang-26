@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { NAV_PROJECTS } from "@/components/FilmStripCarousel/projects";
 import type { Project } from "@/components/FilmStripCarousel/types";
 
-// Same lazy boundary Navbar uses — keeps three.js out of the /menu entry bundle.
+// Same lazy boundary Navbar uses - keeps three.js out of the /menu entry bundle.
 const FilmStripCarousel = dynamic(
   () => import("@/components/FilmStripCarousel/FilmStripCarousel"),
   { ssr: false }

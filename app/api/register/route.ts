@@ -37,7 +37,7 @@ function decodeHtmlEntities(str: string): string {
 export async function POST(req: Request) {
   try {
     const rawIp = req.headers.get('x-forwarded-for') || '127.0.0.1';
-    const ip = rawIp.split(',')[0].trim(); // Take only the first (leftmost) IP — prevent x-forwarded-for spoofing
+    const ip = rawIp.split(',')[0].trim(); // Take only the first (leftmost) IP - prevent x-forwarded-for spoofing
 
     // Rate limit is applied AFTER we know the action, so lightweight lookups
     // (pincode/coupon) don't exhaust the quota that CREATE_ORDER needs.
@@ -112,7 +112,13 @@ export async function POST(req: Request) {
         ? data.selectedEvents
         : (data.eventId ? [data.eventId] : []);
 
-      let basePrice = calculateTotalRegistrationFee(eventList, data.teamMembers, data.visitorConfig);
+      
+      // Fetch Early Bird Settings
+      const settingsRef = adminDb.collection('settings').doc('earlyBird');
+      const settingsSnap = await settingsRef.get();
+      const isEarlyBird = settingsSnap.exists ? settingsSnap.data()?.active : false;
+
+      let basePrice = calculateTotalRegistrationFee(eventList, data.teamMembers, data.visitorConfig, isEarlyBird);
       if (basePrice <= 0 && typeof data.basePrice === 'number' && data.basePrice > 0) {
         basePrice = data.basePrice;
       }
@@ -162,7 +168,7 @@ export async function POST(req: Request) {
 
 
     if (action === 'CREATE_ORDER') {
-      // CREATE_ORDER: strict — max 5 per minute per IP to prevent order spam
+      // CREATE_ORDER: strict - max 5 per minute per IP to prevent order spam
       if (isRateLimited(`${ip}:order`, 5, 60 * 1000)) {
         return NextResponse.json({ error: 'Too many payment attempts. Please wait a minute and try again.' }, { status: 429 });
       }
@@ -180,7 +186,13 @@ export async function POST(req: Request) {
           ? data.selectedEvents
           : (data.eventId ? [data.eventId] : []);
 
-        let basePrice = calculateTotalRegistrationFee(eventList, data.teamMembers, data.visitorConfig);
+        
+      // Fetch Early Bird Settings
+      const settingsRef = adminDb.collection('settings').doc('earlyBird');
+      const settingsSnap = await settingsRef.get();
+      const isEarlyBird = settingsSnap.exists ? settingsSnap.data()?.active : false;
+
+      let basePrice = calculateTotalRegistrationFee(eventList, data.teamMembers, data.visitorConfig, isEarlyBird);
         if (basePrice <= 0) {
           basePrice = 500;
         }
@@ -236,7 +248,7 @@ export async function POST(req: Request) {
           ? ((isProd) ? `https://${host}` : `http://${host}`)
           : (process.env.NEXT_PUBLIC_SITE_URL || 'https://sabrang.jklu.edu.in');
 
-        // Decode HTML entities that sanitizeInput may have introduced — Cashfree
+        // Decode HTML entities that sanitizeInput may have introduced - Cashfree
         // rejects encoded strings like &amp; or &#039; in customer name/email.
         const cashfreeName = decodeHtmlEntities(data.name || '');
         const cashfreeEmail = decodeHtmlEntities(data.email || '');
@@ -263,7 +275,7 @@ export async function POST(req: Request) {
           payment_session_id: response.data.payment_session_id 
         });
       } catch (err: any) {
-        // Log full Cashfree error server-side only — never expose API response bodies to the client
+        // Log full Cashfree error server-side only - never expose API response bodies to the client
         console.error("CREATE_ORDER error detail:", err.response?.data || err);
         return NextResponse.json({ error: 'Payment session could not be created. Please try again.' }, { status: 500 });
       }

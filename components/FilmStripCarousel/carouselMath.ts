@@ -1,4 +1,4 @@
-// Pure carousel math. No R3F imports — unit-testable.
+// Pure carousel math. No R3F imports - unit-testable.
 import {
   CURVE_THETA_MAX,
   MOMENTUM_DECAY,
@@ -18,7 +18,7 @@ export function glideDistance(velocity: number): number {
 
 /**
  * Velocity that brings a glide to rest exactly `steps` frames past where it is
- * already headed — the inverse of glideDistance.
+ * already headed - the inverse of glideDistance.
  *
  * Aiming at a landing point is what makes the wheel deterministic: the result
  * depends only on the current position and the intended destination, never on
@@ -60,8 +60,8 @@ export interface CurveSample {
 /**
  * The film path, parameterised by ARC LENGTH `s` (world units along the film).
  *
- * Shape: a circular arc through the hero region that hands off — C¹
- * continuous — to a straight tangent line once the heading reaches
+ * Shape: a circular arc through the hero region that hands off - C¹
+ * continuous - to a straight tangent line once the heading reaches
  * CURVE_THETA_MAX. So the strip curves toward the camera in the middle and
  * then runs off straight into the distance instead of closing into a loop.
  * A gentle sine in Y gives the wave. Both tails recede forever, which is what

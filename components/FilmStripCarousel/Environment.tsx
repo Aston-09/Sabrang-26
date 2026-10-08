@@ -1,10 +1,10 @@
-// The world the strip lives in — one backdrop plane, four depth layers.
+// The world the strip lives in - one backdrop plane, four depth layers.
 //
 // Why a single shader rather than stacked meshes: every layer here is a soft
 // light mass with no silhouette, so parallaxing them is just an offset applied
 // to a sample coordinate. Real geometry per layer would cost four draw calls
 // and a depth sort to render the same pixels. The layers are still genuinely
-// independent — each has its own parallax factor — they just share a program.
+// independent - each has its own parallax factor - they just share a program.
 //
 // The reel writes into this: `uGlow` and `uVel` come from the carousel
 // simulation, so the light behind the film brightens and smears when the film
@@ -21,7 +21,7 @@ interface EnvironmentProps {
   sim: { position: number; velocity: number };
   expandRef: React.MutableRefObject<{ p: number }>;
   introRef: React.MutableRefObject<number>;
-  cameraZ: number; // nominal, not live — see the scale memo
+  cameraZ: number; // nominal, not live - see the scale memo
   fov: number;
 }
 

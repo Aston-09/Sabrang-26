@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 
 /**
  * Checks whether an element or any of its ancestors (up to <body>) has
- * genuine horizontal scroll capacity — i.e. content wider than the box
+ * genuine horizontal scroll capacity - i.e. content wider than the box
  * and an overflow setting that would make it scrollable.
  */
 function isInsideHorizontalScroller(el: Element | null): boolean {
@@ -45,7 +45,7 @@ export default function SmoothScroll({
       // (e.g. data tables, carousels with overflow-x: scroll).
       if (isInsideHorizontalScroller(e.target as Element)) return;
 
-      // Block the event — prevents browser back/forward navigation swipe.
+      // Block the event - prevents browser back/forward navigation swipe.
       e.preventDefault();
     };
 

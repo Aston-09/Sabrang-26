@@ -13,12 +13,12 @@ const WORKER_RETRY_DELAY_MS = 3 * 60 * 1000; // 3 minutes
 export function startEmailWorker() {
   // Prevent double-start in dev hot reloads or duplicate module loads
   if ((global as any).__emailWorkerStarted) {
-    console.log('[EmailWorker] Already running — skipping initialization.');
+    console.log('[EmailWorker] Already running - skipping initialization.');
     return;
   }
 
   if (!adminDb || adminApp?.name === 'client-admin-fallback' || adminApp?.name === 'build-fallback') {
-    console.log('[EmailWorker] Firebase Admin DB not initialized with real credentials — skipping email worker.');
+    console.log('[EmailWorker] Firebase Admin DB not initialized with real credentials - skipping email worker.');
     return;
   }
 
@@ -38,7 +38,7 @@ export function startEmailWorker() {
         const changes = snapshot.docChanges();
 
         for (const change of changes) {
-          // Only react to genuinely new documents — not field modifications
+          // Only react to genuinely new documents - not field modifications
           if (change.type !== 'added') continue;
 
           const doc = change.doc;
@@ -65,18 +65,18 @@ export function startEmailWorker() {
 
           if (deferMs > 0) {
             console.log(
-              `[EmailWorker] Doc ${docId} — deferring ${Math.round(deferMs / 1000)}s ` +
+              `[EmailWorker] Doc ${docId} - deferring ${Math.round(deferMs / 1000)}s ` +
               `before fallback attempt.`
             );
             setTimeout(() => processDoc(registrationsRef, docId), deferMs + 5000);
           } else {
-            // Doc is old enough — process immediately
+            // Doc is old enough - process immediately
             processDoc(registrationsRef, docId);
           }
         }
       },
       (error) => {
-        // Listener errors are non-fatal — log and continue
+        // Listener errors are non-fatal - log and continue
         console.error('[EmailWorker] Firestore listener error:', error);
       }
     );
@@ -84,7 +84,7 @@ export function startEmailWorker() {
     console.log('[EmailWorker] Listener attached. Waiting for new registrations...');
   } catch (err) {
     // Any startup error must NEVER crash the Next.js server
-    console.error('[EmailWorker] Failed to start — site continues normally:', err);
+    console.error('[EmailWorker] Failed to start - site continues normally:', err);
     (global as any).__emailWorkerStarted = false;
   }
 }
@@ -119,7 +119,7 @@ async function processDoc(
       return;
     }
 
-    console.log(`[EmailWorker] Processing: ${data.name} (${data.email}) — ID: ${docId}`);
+    console.log(`[EmailWorker] Processing: ${data.name} (${data.email}) - ID: ${docId}`);
 
     // Generate the PDF receipt
     const pdfBytes = await generatePDF(

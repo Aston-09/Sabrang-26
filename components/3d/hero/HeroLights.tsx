@@ -6,7 +6,7 @@ import * as THREE from 'three'
 
 /**
  * Direct lighting is deliberately minimal: nearly all of the prism's look comes
- * from the captured chamber environment map. These are specular accents only —
+ * from the captured chamber environment map. These are specular accents only -
  * teal, deep violet, and a single white key, matching the chamber palette.
  */
 export default function HeroLights() {

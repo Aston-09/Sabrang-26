@@ -122,7 +122,7 @@ export default function Dashboard() {
               >
                 <div className="flex-shrink-0 flex flex-col items-center justify-center p-3 border border-white/10 sm:border-slate-200 rounded-xl bg-neutral-950 sm:bg-slate-50">
                   {/* Plain img: qrDataUrl is a client-generated data: URI, which
-                      the image optimizer cannot process — next/image would only
+                      the image optimizer cannot process - next/image would only
                       add a wrapper and an `unoptimized` escape hatch. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

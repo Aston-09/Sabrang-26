@@ -4,8 +4,8 @@
 // published source. Two additions, both needed to use it as a navigation item
 // rather than a display flourish, both optional so the documented behaviour is
 // unchanged when they are omitted:
-//   onClick   — the swap is hover/focus driven, so the click is still free
-//   ariaLabel — the default label follows the visible word, which would read
+//   onClick   - the swap is hover/focus driven, so the click is still free
+//   ariaLabel - the default label follows the visible word, which would read
 //               the hover state ("Enter") to a screen reader instead of the
 //               destination. A menu item must announce where it goes.
 
@@ -47,7 +47,7 @@ export interface FlippingWordSwapProps {
   ariaLabel?: string;
   /**
    * Drives the swap from outside instead of from hover/focus. Passing this at
-   * all makes the component controlled — the pointer no longer flips it — so
+   * all makes the component controlled - the pointer no longer flips it - so
    * the swap can express something the page decides rather than something the
    * cursor does. The carousel uses it to flip the heading from the outgoing
    * menu item to the incoming one.

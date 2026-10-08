@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * GALLERY HIGHLIGHTS — the section shell.
+ * GALLERY HIGHLIGHTS - the section shell.
  *
  * Owns the four beats of the experience: the editorial introduction, the dark
  * chamber the page scrolls into, the metadata that accompanies whichever
@@ -9,7 +9,7 @@
  *
  * The WebGL archive is loaded only where it can actually run. Without WebGL,
  * or when the visitor prefers reduced motion, the same photographs render as a
- * quiet static archive instead — never an empty black rectangle.
+ * quiet static archive instead - never an empty black rectangle.
  */
 
 import dynamic from "next/dynamic";
@@ -40,13 +40,16 @@ function supportsWebGL() {
 }
 
 /** Shared by the static archive and, on failure, by the 3D scene's placeholders. */
-function ArchivePlate({ item, index }: { item: GalleryItem; index: number }) {
+function ArchivePlate({ item, index, onSelect }: { item: GalleryItem; index: number; onSelect?: () => void }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
   return (
-    <figure className="group relative overflow-hidden bg-[#0e1018] outline outline-white/10">
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
+    <figure
+      onClick={onSelect}
+      className="group relative overflow-hidden bg-[#0e1018] outline outline-white/10 rounded-xl cursor-pointer hover:outline-amber-400/50 transition-all duration-300 hover:scale-[1.02] shadow-lg"
+    >
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
         <span className="text-4xl font-black tracking-tighter text-white/85">
           {String(index + 1).padStart(2, "0")}
         </span>
@@ -56,9 +59,6 @@ function ArchivePlate({ item, index }: { item: GalleryItem; index: number }) {
       </div>
 
       {!failed && (
-        // Plain img: these files are dropped in by hand and may not exist yet,
-        // so a 404 has to degrade to the plate underneath rather than throw.
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={item.image}
           alt={item.alt}
@@ -73,13 +73,24 @@ function ArchivePlate({ item, index }: { item: GalleryItem; index: number }) {
 
       {failed && <div className="aspect-[3/4] w-full" />}
 
-      <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4">
-        <p className="text-sm font-bold uppercase tracking-tight text-white">
+      <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent p-4 flex flex-col gap-1 z-10">
+        <p className="text-sm font-bold uppercase tracking-tight text-white group-hover:text-amber-200 transition-colors">
           {item.title}
         </p>
-        <p className="text-xs text-slate-300 line-clamp-1 truncate mt-0.5">
-          {item.description}
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            {typeof item.totalCash === "number"
+              ? `₹${item.totalCash.toLocaleString("en-IN")}`
+              : item.totalCash || (item.prizesRemarks || "Prize Pool")}
+          </span>
+          <span className="text-[10px] text-white/50 uppercase tracking-wider">
+            {item.minTeam === 1 && item.maxTeam === 1
+              ? "Solo"
+              : item.minTeam
+              ? `${item.minTeam}-${item.maxTeam} Mem`
+              : ""}
+          </span>
+        </div>
       </figcaption>
     </figure>
   );
@@ -87,7 +98,7 @@ function ArchivePlate({ item, index }: { item: GalleryItem; index: number }) {
 
 /**
  * One heading, rendered either as an overlay on the pinned stage or in normal
- * flow above the static archive — never twice, never in two different voices.
+ * flow above the static archive - never twice, never in two different voices.
  *
  * The optional `dropdownProps` attach the EventsFilterDropdown to the right
  * edge of the heading bar so both elements share the same baseline.
@@ -161,7 +172,7 @@ function ArchiveHeading({
   );
 }
 
-function StaticArchive({ items }: { items: GalleryItem[] }) {
+function StaticArchive({ items, onSelect }: { items: GalleryItem[]; onSelect: (item: GalleryItem) => void }) {
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-12">
       <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
@@ -188,7 +199,7 @@ function StaticArchive({ items }: { items: GalleryItem[] }) {
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {items.map((item, index) => (
-          <ArchivePlate key={item.id} item={item} index={index} />
+          <ArchivePlate key={item.id} item={item} index={index} onSelect={() => onSelect(item)} />
         ))}
       </div>
     </div>
@@ -248,7 +259,7 @@ export default function GalleryHighlights({
   );
 
   /**
-   * One gesture, one photograph — a hard flick and a gentle nudge both advance
+   * One gesture, one photograph - a hard flick and a gentle nudge both advance
    * exactly one, so the archive never overshoots what the user aimed at.
    *
    * Distance-based stepping is wrong for this surface. A mouse notch is a fixed
@@ -341,7 +352,7 @@ export default function GalleryHighlights({
                   },
                 }}
               />
-              <StaticArchive items={items} />
+              <StaticArchive items={items} onSelect={(item) => setExpandedItem(item)} />
             </>
           ) : (
             <div ref={stageRef} className="relative h-full">
@@ -363,7 +374,7 @@ export default function GalleryHighlights({
                       focusRequestRef={focusRequestRef}
                       onTileTap={(itemIndex) => {
                         // Open modal immediately for any tapped tile.
-                        // (No focusedIndex guard — the snap is async so state
+                        // (No focusedIndex guard - the snap is async so state
                         // hasn't updated yet when this fires.)
                         setExpandedItem(items[itemIndex]);
                       }}
@@ -391,15 +402,14 @@ export default function GalleryHighlights({
                   />
                 </div>
 
-                {/* SPOTLIGHT METADATA — centered poster info + navigation */}
+                {/* SPOTLIGHT METADATA - centered poster info + navigation */}
                 <div
                   aria-live="polite"
                   className={`pointer-events-none absolute inset-x-0 bottom-0 pb-16 sm:pb-14 md:pb-10 transition-opacity duration-500 flex flex-col items-center gap-3 px-4 ${ready ? "opacity-100" : "opacity-0"
                     }`}
                 >
 
-
-                  {/* Navigation Buttons — centered */}
+                  {/* Navigation Buttons - centered */}
                   <div className="pointer-events-auto flex items-center gap-3 sm:gap-4 md:gap-6 z-20">
                     <button
                       onClick={() => step(-1)}
@@ -432,7 +442,7 @@ export default function GalleryHighlights({
           <ul className="sr-only">
             {items.map((item) => (
               <li key={item.id}>
-                {item.title} — {item.category}, {item.venue}, {item.year}.{" "}
+                {item.title} - {item.category}, {item.venue}, {item.year}.{" "}
                 {item.alt}
               </li>
             ))}

@@ -646,7 +646,7 @@ export default function Registrations() {
                           <div className="font-semibold text-slate-800">{reg.registeredAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>
                           <div className="text-[10px] text-slate-400">{reg.registeredAt.toDate().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
-                      ) : '—'}
+                      ) : '-'}
                     </td>
                     <td className="p-4">
                       <span className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${

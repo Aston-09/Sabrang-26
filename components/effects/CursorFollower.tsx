@@ -25,7 +25,7 @@ export default function CursorFollower() {
       mouseX = e.clientX;
       mouseY = e.clientY;
 
-      // Hover detection — expand white circle over interactive elements
+      // Hover detection - expand white circle over interactive elements
       const target = e.target as HTMLElement | null;
       const interactive = !!(
         target?.closest?.('a, button, input, select, textarea, [role="button"]')

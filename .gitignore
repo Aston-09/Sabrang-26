@@ -132,6 +132,9 @@ Sabrang-26-HERO-BACKUP/
 # Search Console and Analytics Exports
 *-Coverage-*/
 
-
 # Cloudinary
 cloudinary-mapping.json
+
+# Local scripts & scratch
+scripts/
+scratch/

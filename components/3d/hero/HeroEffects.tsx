@@ -7,7 +7,7 @@ import { BlendFunction } from 'postprocessing'
 import type { HeroQuality } from './heroTier'
 
 /**
- * Restrained. The reference chamber is dark and clean — the chromatic
+ * Restrained. The reference chamber is dark and clean - the chromatic
  * separation lives in the prism's dispersion and the inner screen shader,
  * not in a full-screen filter, and bloom only picks up genuine highlights.
  *

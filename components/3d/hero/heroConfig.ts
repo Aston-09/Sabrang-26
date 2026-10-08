@@ -2,7 +2,7 @@
 
 /**
  * Live-tunable knobs for the hero WebGL scene.
- * Read every frame by the R3F loop, so mutating a value is enough — no re-render.
+ * Read every frame by the R3F loop, so mutating a value is enough - no re-render.
  *
  * The debug panel is opt-in: append `?debug=hero` to the URL. It is never mounted
  * otherwise, so production ships nothing but this plain object.
