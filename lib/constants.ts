@@ -648,8 +648,6 @@ export interface TeamMember {
 }
 
 export const TEAM_IMAGES: Record<string, string> = {
-  "Abhirama Shreyas":
-    "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084232/sabrang-2026/team/abhirama-shreyas.png",
   "Aditya Nayak":
     "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787084234/sabrang-2026/team/aditya-nayak.png",
   "Ambika Dalmia":
@@ -836,8 +834,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
       linkedin: "https://www.linkedin.com/in/khushi-soni--ks0906",
     },
   },
-  { name: "Abhirama Sreyas", role: "DECOR Core" },
-  { name: "Mahi Tripathi", role: "DECOR Core" },
   {
     name: "Kunal Kasliwal",
     role: "Transport Core",

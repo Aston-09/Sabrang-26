@@ -164,13 +164,19 @@ export default function PosterDetailModal({
           </div>
 
           <div className="mt-5 pt-3 border-t border-white/10 flex flex-wrap items-center gap-2.5">
-            <Link
-              href={`/register?event=${item.eventId || ""}`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.35)] active:scale-95"
-            >
-              <span>Register Now</span>
-              <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
-            </Link>
+            {item.category === "Activities - Gifts & Hampers" ? (
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 text-white/50 text-xs font-bold uppercase tracking-wider cursor-not-allowed">
+                <span>Opening Soon</span>
+              </span>
+            ) : (
+              <Link
+                href={`/register?event=${item.eventId || ""}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.35)] active:scale-95"
+              >
+                <span>Register Now</span>
+                <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
+              </Link>
+            )}
             <a
               href="/docs/Sabrang_2026_Event_Rulebook.pdf"
               target="_blank"

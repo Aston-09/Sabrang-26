@@ -1311,7 +1311,7 @@ export default function CheckoutForm() {
                   "Flagship Events - Solo / Duo",
                   "Non-Flagship - Esports",
                   "Non-Flagship - Other Events",
-                  "Activities - Gifts & Hampers",
+                  // "Activities - Gifts & Hampers",
                   "General Entry",
                 ] as SabrangEvent["category"][]).map((category) => {
                   const categoryEvents = EVENTS.filter((e) => e.category === category);

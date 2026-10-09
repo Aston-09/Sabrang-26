@@ -435,7 +435,8 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     },
   },
 
-  // --- Activities - Gifts & Hampers (No Cash Prize) ---
+  // --- Activities - Gifts & Hampers (Temporarily Commented Out) ---
+  /*
   {
     id: "art_relay",
     title: "Art Relay",
@@ -487,6 +488,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
       remarks: "Gifts & Hampers",
     },
   },
+  */
 
   // --- General Entry ---
   {
