@@ -112,7 +112,7 @@ function EventRow({ evt }: { evt: ScheduleEvent }) {
 
 function DayColumn({ day, events }: { day: ScheduleData[0], events: ScheduleEvent[] }) {
   return (
-    <div className="flex flex-col h-full min-w-[300px] flex-1">
+    <div className="flex flex-col h-auto lg:h-full w-full lg:min-w-[300px] flex-1">
       {/* Header */}
       <div className="bg-[#0a0f18] border border-[#1e293b] rounded-t-[6px] p-3 text-center mb-0">
         <h2 className="text-slate-200 font-bold text-[13px] tracking-wider uppercase font-sans">
@@ -197,8 +197,8 @@ export default function FuturisticSchedule({ schedule }: { schedule?: ScheduleDa
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-10">
-          <div className="flex flex-col lg:flex-row gap-5 items-stretch h-full">
+        <div className="flex-1 w-full overflow-y-auto overflow-x-hidden no-scrollbar pb-10">
+          <div className="flex flex-col lg:flex-row gap-5 items-stretch h-auto lg:h-full w-full">
             {filtered?.map((day, idx) => (
               <DayColumn key={idx} day={day} events={day.events} />
             ))}

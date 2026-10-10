@@ -708,6 +708,12 @@ export const TEAM_IMAGES: Record<string, string> = {
     "https://res.cloudinary.com/eprhemvt/image/upload/v1790502169/Diya_Shah.png",
   "Bhavisha Sabnani":
     "https://res.cloudinary.com/eprhemvt/image/upload/v1790502168/Bhavisha_Sabnani.png",
+  "Swadha Saxena":
+    "https://res.cloudinary.com/eprhemvt/image/upload/v1791639125/photot.jpg",
+  "Gauri Singhi":
+    "https://res.cloudinary.com/eprhemvt/image/upload/v1791639170/ss.jpg",
+  "Gyan":
+    "https://res.cloudinary.com/eprhemvt/image/upload/v1791639466/8252ec9a-1263-4002-95d1-90682a29606c.png",
 };
 
 export const TEAM_MEMBERS: TeamMember[] = [
@@ -903,6 +909,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     },
   },
   { name: "Vaibhav Sharma", role: "Media & Reports Core" },
+  { name: "Swadha Saxena", role: "Media & Reports Core" },
   { name: "Jayash Gahlot", role: "Registrations Core" },
   {
     name: "Ankit Joshi",
@@ -916,6 +923,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
   { name: "Bhavisha Sabnani", role: "Sponsorship & Promotions Core" },
   { name: "Diya Shah", role: "Sponsorship & Promotions Core" },
   { name: "Ayush Gaur", role: "Design Core" },
+  { name: "Gauri Singhi", role: "Decor Core" },
+  { name: "Gyan", role: "Decor Core" },
 ];
 
 export interface DevTeamMember {
