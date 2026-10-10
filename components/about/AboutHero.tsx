@@ -208,7 +208,7 @@ export default function AboutHero() {
               willChange: "transform",
             }}
           >
-            <div
+            <h1
               ref={headingRef}
               style={{
                 display: "flex",
@@ -247,7 +247,7 @@ export default function AboutHero() {
                   </span>
                 )
               )}
-            </div>
+            </h1>
           </div>
 
           {/* Subtitle Badge / Tagline */}
