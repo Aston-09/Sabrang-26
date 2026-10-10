@@ -122,6 +122,21 @@ const CustomMailIcon = ({ className = '', size = 16 }: { className?: string; siz
 // REGISTRATIONS VIEW Component
 // ============================================================================
 
+const getEventTitles = (reg: any): { full: string; short: string; list: string[] } => {
+  let eventIds: string[] = [];
+  if (Array.isArray(reg.selectedEvents)) eventIds = reg.selectedEvents;
+  else if (Array.isArray(reg.events)) eventIds = reg.events;
+  else if (reg.eventId) eventIds = [reg.eventId];
+  else if (reg.event) eventIds = [reg.event];
+
+  if (eventIds.length === 0) return { full: 'N/A', short: 'N/A', list: [] };
+
+  const titles = eventIds.map(id => OFFICIAL_EVENTS.find(e => e.id === id)?.title || id);
+  const full = titles.join(', ');
+  
+  return { full, short: full, list: titles };
+};
+
 export default function Registrations() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -617,6 +632,7 @@ export default function Registrations() {
                   <th className="p-4 cursor-pointer hover:text-slate-900" onClick={() => handleSort('registeredAt')}>
                     Registered {sortField === 'registeredAt' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </th>
+                  <th className="p-4">Events</th>
                   <th className="p-4">Entry Status</th>
                   <th className="p-4">Email Status</th>
                   <th className="p-4 text-right">Action</th>
@@ -647,6 +663,19 @@ export default function Registrations() {
                           <div className="text-[10px] text-slate-400">{reg.registeredAt.toDate().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
                       ) : '-'}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-1 max-w-[250px]">
+                        {getEventTitles(reg).list.length === 0 ? (
+                          <span className="text-slate-400">N/A</span>
+                        ) : (
+                          getEventTitles(reg).list.map((title, i) => (
+                            <span key={i} className="inline-block px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-md text-[10px] whitespace-nowrap">
+                              {title}
+                            </span>
+                          ))
+                        )}
+                      </div>
                     </td>
                     <td className="p-4">
                       <span className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-semibold border ${
@@ -746,11 +775,129 @@ export default function Registrations() {
                 <p className="text-[11px] font-medium text-slate-500 mb-1">Gender</p>
                 <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">{selectedReg.gender || 'N/A'}</p>
               </div>
-              <div className="col-span-2 sm:col-span-1">
-                <p className="text-[11px] font-medium text-slate-500 mb-1">Course</p>
-                <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">{selectedReg.course || 'N/A'}</p>
-              </div>
               
+              {/* Additional Information */}
+              <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+                <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Additional Information</p>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-[11px] font-medium text-slate-500 mb-1">Registration / Roll No.</p>
+                <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">{selectedReg.rollNumber || selectedReg.registrationNumber || 'N/A'}</p>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-[11px] font-medium text-slate-500 mb-1">Registered At</p>
+                <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                  {selectedReg.registeredAt?.toDate ? selectedReg.registeredAt.toDate().toLocaleString('en-IN') : 'N/A'}
+                </p>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-[11px] font-medium text-slate-500 mb-1">Address / Locality</p>
+                <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">{selectedReg.address || 'N/A'}</p>
+              </div>
+              <div className="col-span-2 sm:col-span-2">
+                <p className="text-[11px] font-medium text-slate-500 mb-1">Enrolled Events</p>
+                <div className="flex flex-wrap gap-1 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                  {getEventTitles(selectedReg).list.length === 0 ? (
+                    <span className="text-slate-400 font-semibold text-xs">N/A</span>
+                  ) : (
+                    getEventTitles(selectedReg).list.map((title, i) => (
+                      <span key={i} className="inline-block px-2 py-0.5 bg-white border border-slate-200 text-slate-700 rounded-md text-[10px] whitespace-nowrap font-medium">
+                        {title}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Other Specific Fields */}
+              {(selectedReg.teamName || selectedReg.bgmi_teamName || selectedReg.valorant_teamName || selectedReg.freefire_teamName || selectedReg.generic_teamName) && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">Team Name</p>
+                  <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg break-all">
+                    {selectedReg.teamName || selectedReg.bgmi_teamName || selectedReg.valorant_teamName || selectedReg.freefire_teamName || selectedReg.generic_teamName}
+                  </p>
+                </div>
+              )}
+              {selectedReg.generic_vaadVivaadRepresentative && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">Vaad Vivaad Representative</p>
+                  <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                    {selectedReg.generic_vaadVivaadRepresentative}
+                  </p>
+                </div>
+              )}
+              {selectedReg.bgmi_leaderIgn && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">BGMI Leader IGN</p>
+                  <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                    {selectedReg.bgmi_leaderIgn}
+                  </p>
+                </div>
+              )}
+              {selectedReg.bgmi_leaderUid && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">BGMI Leader UID</p>
+                  <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                    {selectedReg.bgmi_leaderUid}
+                  </p>
+                </div>
+              )}
+              {selectedReg.valorant_leaderRiotId && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">Valorant Leader Riot ID</p>
+                  <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                    {selectedReg.valorant_leaderRiotId}
+                  </p>
+                </div>
+              )}
+              {selectedReg.freefire_leaderUid && (
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-[11px] font-medium text-slate-500 mb-1">Free Fire Leader UID</p>
+                  <p className="font-semibold text-xs text-slate-800 bg-slate-50 p-2.5 border border-slate-200 rounded-lg">
+                    {selectedReg.freefire_leaderUid}
+                  </p>
+                </div>
+              )}
+
+              {/* Team Members */}
+              {selectedReg.teamMembers && (
+                <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Team Members</p>
+                  <div className="space-y-3">
+                    {(() => {
+                      let membersToRender: any[] = [];
+                      if (Array.isArray(selectedReg.teamMembers)) {
+                        membersToRender = selectedReg.teamMembers;
+                      } else if (typeof selectedReg.teamMembers === 'object') {
+                        Object.entries(selectedReg.teamMembers).forEach(([group, members]: [string, any]) => {
+                          if (Array.isArray(members)) {
+                            membersToRender.push(...members.map((m: any) => ({ ...m, _group: group })));
+                          }
+                        });
+                      }
+
+                      if (membersToRender.length === 0) {
+                        return <p className="text-slate-500 text-xs italic">No team members registered.</p>;
+                      }
+
+                      return membersToRender.map((m, idx) => (
+                        <div key={m.id || idx} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <p className="font-semibold text-slate-800 mb-2">{idx + 1}. {m.name || 'Unknown Name'}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+                            {m.email && <p><span className="text-slate-500 font-medium">Email:</span> {m.email}</p>}
+                            {(m.mobileNumber || m.phone) && <p><span className="text-slate-500 font-medium">Phone:</span> {m.mobileNumber || m.phone}</p>}
+                            {m.gender && <p><span className="text-slate-500 font-medium">Gender:</span> {m.gender}</p>}
+                            {m.age && <p><span className="text-slate-500 font-medium">Age:</span> {m.age}</p>}
+                            {m.institutionName && <p className="col-span-1 sm:col-span-2"><span className="text-slate-500 font-medium">Institution:</span> {m.institutionName}</p>}
+                            {m._group && <p className="col-span-1 sm:col-span-2"><span className="text-slate-500 font-medium">Event Group:</span> <span className="uppercase text-slate-800 font-semibold">{m._group}</span></p>}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              )}
+
               {/* Payment Details */}
               <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
                 <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Payment & Security</p>
