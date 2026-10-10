@@ -333,6 +333,7 @@ export default function GalleryHighlights({
             onContextMenu={(e) => e.preventDefault()}
             tabIndex={-1}
             className="absolute inset-0 h-full w-full object-contain scale-[0.85] sm:scale-[0.8] md:scale-[0.78] opacity-75 transition-transform duration-700 pointer-events-none select-none"
+            poster="https://res.cloudinary.com/eprhemvt/video/upload/v1787082832/sabrang-2026/root/cube.jpg"
             src="https://res.cloudinary.com/eprhemvt/video/upload/v1787082832/sabrang-2026/root/cube.mp4"
           />
           {/* Dark overlay so content stays readable */}

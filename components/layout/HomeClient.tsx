@@ -41,6 +41,7 @@ export default function HomeClient() {
 
   return (
     <main className="hero-theme relative w-full">
+      <h1 className="sr-only">Sabrang 2026 - JK Lakshmipat University Annual Cultural Fest</h1>
       <HeroScene />
 
       {/* Register Now - fixed at z-[45]: above film strip overlay (z-40),
