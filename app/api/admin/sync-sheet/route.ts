@@ -121,15 +121,28 @@ export async function POST(req: Request) {
       const parentEmail = reg.parentEmail || reg.fatherEmail || 'N/A';
       const pincode = reg.pincode || (reg.address ? (reg.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
 
-      // Format Events
+      // Format Events using official catalog
+      const { OFFICIAL_EVENTS } = await import('@/lib/eventPricing');
       const getEventTitle = (id: string) => {
-        const titleMatch = id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        return titleMatch;
+        const found = OFFICIAL_EVENTS.find(e => e.id === id || e.title.toLowerCase() === id.toLowerCase());
+        if (found) return found.title;
+        return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       };
+
+      let eventIds: string[] = [];
+      if (Array.isArray(reg.selectedEvents)) eventIds = reg.selectedEvents;
+      else if (Array.isArray(reg.events)) eventIds = reg.events;
+      else if (reg.eventId) eventIds = [reg.eventId];
+      else if (reg.event) eventIds = [reg.event];
+      else if (reg.eventName) eventIds = [reg.eventName];
+
+      const eventTitlesList = eventIds.length > 0
+        ? eventIds.map(getEventTitle)
+        : (reg.eventName || reg.eventTitle || reg.event
+            ? [getEventTitle(reg.eventName || reg.eventTitle || reg.event)]
+            : ['General']);
       
-      const eventsList = Array.isArray(reg.selectedEvents) 
-        ? reg.selectedEvents.map(getEventTitle).join(', ') 
-        : (reg.eventName || reg.eventTitle || reg.event || 'N/A');
+      const eventsList = eventTitlesList.join(', ');
 
       const { extractRegistrationInfo } = await import('@/lib/registrationDataHelper');
       const unifiedData = extractRegistrationInfo(reg, regId);
@@ -148,6 +161,9 @@ export async function POST(req: Request) {
         email: unifiedData.email,
         college: unifiedData.college,
         event: eventsList,
+        events: eventTitlesList,
+        eventType: unifiedData.eventType,
+        teamName: unifiedData.teamName,
         members: unifiedData.eventType === 'Team' && unifiedData.noOfTeammates !== 'N/A' 
           ? (Number(unifiedData.noOfTeammates) + 1) 
           : 1,

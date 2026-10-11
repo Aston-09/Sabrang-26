@@ -329,30 +329,9 @@ export default function Registrations() {
     }).length;
   }, [registrations]);
 
-  // Excel (.xlsx) export
+  // Excel (.xlsx) export with Master and individual event sheets
   const exportExcel = async () => {
-    const headers = [
-      'S.No',
-      'Registration Number', 
-      'Student Name', 
-      'Gender', 
-      'Application Number', 
-      'Phone Number', 
-      'Parent Name', 
-      'Parent Phone', 
-      'Student Email', 
-      'Parent Email', 
-      'Pincode', 
-      'State',
-      'Course', 
-      'Payment Amount', 
-      'Received Amount', 
-      'Date Of Payment', 
-      'UTR No.', 
-      'Bank Reference No.', 
-      'Settlement ID', 
-      'Transaction ID'
-    ];
+    const { extractRegistrationInfo } = await import('../../../lib/registrationDataHelper');
 
     const formatSinglePhone = (phone: string): string => {
       if (!phone) return '';
@@ -364,48 +343,169 @@ export default function Registrations() {
       return phone;
     };
 
-    const rows = sortedRegistrations
-      .filter(r => !r.isTest)
-      .map((r, index) => {
+    const masterHeaders = [
+      'S.No',
+      'Registration Number',
+      'Participant Name',
+      'Gender',
+      'Phone Number',
+      'Email',
+      'College / Institution',
+      'Course',
+      'Event(s)',
+      'Event Type',
+      'Team Name',
+      'No. of Teammates',
+      'State',
+      'Pincode',
+      'Payment Amount',
+      'Received Amount',
+      'Date Of Payment',
+      'Payment ID',
+      'Settlement ID',
+      'Order ID'
+    ];
+
+    const eventHeaders = [
+      'S.No',
+      'Registration Number',
+      'Participant Name',
+      'Gender',
+      'Phone Number',
+      'Email',
+      'College / Institution',
+      'Course',
+      'Event Type',
+      'Team Name',
+      'No. of Teammates',
+      'State',
+      'Pincode',
+      'Payment Amount',
+      'Received Amount',
+      'Date Of Payment',
+      'Payment ID',
+      'Settlement ID',
+      'Order ID'
+    ];
+
+    const validRegistrations = sortedRegistrations.filter(r => !r.isTest);
+
+    // 1. Build Master Sheet Rows
+    const masterRows = validRegistrations.map((r, index) => {
+      const pin = r.pincode || (r.address ? (r.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
+      const state = r.region || r.state || 'N/A';
+      const formattedDate = r.dateOfPayment || (r.registeredAt ? r.registeredAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-') : 'N/A');
+      const payAmount = getDisplayPaymentAmount(r);
+      const recAmount = getDisplayPaymentAmount(r);
+      const unifiedData = extractRegistrationInfo(r, r.id);
+      const evTitles = getEventTitles(r);
+
+      return [
+        index + 1,
+        r.rollNumber || r.registrationNumber || r.id || 'N/A',
+        unifiedData.name,
+        r.gender || 'N/A',
+        formatSinglePhone(unifiedData.phone || r.phone || ''),
+        unifiedData.email,
+        unifiedData.college,
+        r.course || 'N/A',
+        evTitles.full,
+        unifiedData.eventType,
+        unifiedData.teamName,
+        unifiedData.noOfTeammates,
+        state,
+        pin,
+        payAmount,
+        recAmount,
+        formattedDate,
+        r.paymentId || 'N/A',
+        r.settlementId || 'N/A',
+        r.orderId || 'N/A'
+      ];
+    });
+
+    // 2. Build Event Sheets for each official event
+    const eventSheets: { sheetName: string; headers: string[]; rows: (string | number | boolean | null | undefined)[][] }[] = [];
+
+    // Track which events have registrations plus include all official events
+    const allEventsMap = new Map<string, string>();
+    OFFICIAL_EVENTS.forEach(e => allEventsMap.set(e.id, e.title));
+
+    // Also collect any events mentioned in registrations
+    validRegistrations.forEach(r => {
+      const titles = getEventTitles(r).list;
+      titles.forEach(t => {
+        if (!allEventsMap.has(t)) {
+          allEventsMap.set(t, t);
+        }
+      });
+    });
+
+    allEventsMap.forEach((eventTitle, eventKey) => {
+      const matchingRegs = validRegistrations.filter(r => {
+        const evTitles = getEventTitles(r);
+        return evTitles.list.includes(eventTitle) ||
+               (Array.isArray(r.selectedEvents) && r.selectedEvents.includes(eventKey)) ||
+               r.eventId === eventKey ||
+               r.event === eventTitle;
+      });
+
+      const eventRows = matchingRegs.map((r, index) => {
         const pin = r.pincode || (r.address ? (r.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
         const state = r.region || r.state || 'N/A';
         const formattedDate = r.dateOfPayment || (r.registeredAt ? r.registeredAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-') : 'N/A');
         const payAmount = getDisplayPaymentAmount(r);
         const recAmount = getDisplayPaymentAmount(r);
+        const unifiedData = extractRegistrationInfo(r, r.id);
 
         return [
           index + 1,
-          r.rollNumber || r.registrationNumber || 'N/A',
-          r.name || '',
+          r.rollNumber || r.registrationNumber || r.id || 'N/A',
+          unifiedData.name,
           r.gender || 'N/A',
-          r.rollNumber || '',
-          formatSinglePhone(r.phone || ''),
-          r.parentName || r.fatherName || '',
-          formatSinglePhone(r.parentPhone || r.fatherMobile || ''),
-          r.email || '',
-          r.parentEmail || r.fatherEmail || 'N/A',
-          pin,
-          state,
+          formatSinglePhone(unifiedData.phone || r.phone || ''),
+          unifiedData.email,
+          unifiedData.college,
           r.course || 'N/A',
+          unifiedData.eventType,
+          unifiedData.teamName,
+          unifiedData.noOfTeammates,
+          state,
+          pin,
           payAmount,
           recAmount,
           formattedDate,
-          r.paymentId || 'N/A',
           r.paymentId || 'N/A',
           r.settlementId || 'N/A',
           r.orderId || 'N/A'
         ];
       });
 
-    const { exportToExcel } = await import('../../../lib/excelExportHelper');
-    await exportToExcel({
-      filename: `sabrang_registrations_${new Date().toISOString().split('T')[0]}.xlsx`,
-      sheetName: 'Registrations',
-      headers,
-      rows,
+      eventSheets.push({
+        sheetName: eventTitle,
+        headers: eventHeaders,
+        rows: eventRows,
+      });
     });
 
-    await logAdminAction('EXPORT_REGISTRATIONS_EXCEL', 'registrations', `Exported ${registrations.length} registrations to Excel (.xlsx)`);
+    const { exportToExcel } = await import('../../../lib/excelExportHelper');
+    await exportToExcel({
+      filename: `sabrang_registrations_master_${new Date().toISOString().split('T')[0]}.xlsx`,
+      sheets: [
+        {
+          sheetName: 'Master',
+          headers: masterHeaders,
+          rows: masterRows,
+        },
+        ...eventSheets,
+      ],
+    });
+
+    await logAdminAction(
+      'EXPORT_REGISTRATIONS_EXCEL',
+      'registrations',
+      `Exported ${validRegistrations.length} registrations to Excel (.xlsx) with Master and ${eventSheets.length} Event sheets`
+    );
   };
 
   useEffect(() => {

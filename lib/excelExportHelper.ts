@@ -1,29 +1,30 @@
 import ExcelJS from 'exceljs';
 
-export interface ExcelExportOptions {
+export interface ExcelSheetData {
+  sheetName: string;
+  headers: string[];
+  rows: (string | number | boolean | null | undefined)[][];
+}
+
+export interface SingleSheetExportOptions {
   filename: string;
   sheetName?: string;
   headers: string[];
   rows: (string | number | boolean | null | undefined)[][];
 }
 
-/**
- * Generates and downloads a native Excel (.xlsx) spreadsheet with styled headers and auto-fitted columns.
- */
-export async function exportToExcel({
-  filename,
-  sheetName = 'Data',
-  headers,
-  rows,
-}: ExcelExportOptions): Promise<void> {
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'Sabrang 2026 Admin';
-  workbook.created = new Date();
+export interface MultiSheetExportOptions {
+  filename: string;
+  sheets: ExcelSheetData[];
+}
 
-  const worksheet = workbook.addWorksheet(sheetName, {
-    views: [{ showGridLines: true }],
-  });
+export type ExcelExportOptions = SingleSheetExportOptions | MultiSheetExportOptions;
 
+function formatWorksheet(
+  worksheet: ExcelJS.Worksheet,
+  headers: string[],
+  rows: (string | number | boolean | null | undefined)[][]
+) {
   // 1. Add Headers with dark slate styling
   const headerRow = worksheet.addRow(headers);
   headerRow.height = 26;
@@ -72,6 +73,51 @@ export async function exportToExcel({
     });
     column.width = Math.min(50, Math.max(maxLen + 4, 15));
   });
+}
+
+/**
+ * Generates and downloads a native Excel (.xlsx) spreadsheet with styled headers and auto-fitted columns.
+ * Supports both single-sheet and multi-sheet (e.g. Master + Event sheets) workbooks.
+ */
+export async function exportToExcel(options: ExcelExportOptions): Promise<void> {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Sabrang 2026 Admin';
+  workbook.created = new Date();
+
+  const sheetsToExport: ExcelSheetData[] = 'sheets' in options && Array.isArray(options.sheets)
+    ? options.sheets
+    : [{
+        sheetName: (options as SingleSheetExportOptions).sheetName || 'Data',
+        headers: (options as SingleSheetExportOptions).headers,
+        rows: (options as SingleSheetExportOptions).rows,
+      }];
+
+  const usedSheetNames = new Set<string>();
+
+  sheetsToExport.forEach(({ sheetName, headers, rows }) => {
+    // Sanitize sheet name for Excel (max 31 chars, no invalid chars : \ / ? * [ ])
+    let cleanName = (sheetName || 'Sheet')
+      .replace(/[\\\/:\?\*\[\]]/g, '')
+      .trim()
+      .slice(0, 31);
+    
+    if (!cleanName) cleanName = 'Sheet';
+
+    // Ensure uniqueness
+    let finalName = cleanName;
+    let counter = 1;
+    while (usedSheetNames.has(finalName.toLowerCase())) {
+      const suffix = ` (${counter++})`;
+      finalName = `${cleanName.slice(0, 31 - suffix.length)}${suffix}`;
+    }
+    usedSheetNames.add(finalName.toLowerCase());
+
+    const worksheet = workbook.addWorksheet(finalName, {
+      views: [{ showGridLines: true }],
+    });
+
+    formatWorksheet(worksheet, headers, rows);
+  });
 
   // 4. Export & Trigger Browser Download
   const buffer = await workbook.xlsx.writeBuffer();
@@ -79,7 +125,9 @@ export async function exportToExcel({
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
 
-  const cleanFilename = filename.endsWith('.xlsx') ? filename : `${filename.replace(/\.csv$/i, '')}.xlsx`;
+  const cleanFilename = options.filename.endsWith('.xlsx')
+    ? options.filename
+    : `${options.filename.replace(/\.csv$/i, '')}.xlsx`;
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
