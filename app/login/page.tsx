@@ -117,42 +117,81 @@ export default function LoginPage() {
         }}
       />
 
-      {/* Concentric Modernist Orbital Rings Centered Around the Login Box */}
+      {/* Vinyl Record Player Background Element */}
       <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
-        {/* Outer Ring */}
-        <div className="w-[880px] h-[880px] rounded-full border border-indigo-200/50 [stroke-dasharray:6_6] animate-[spin_160s_linear_infinite]" />
-        {/* Middle Ring */}
-        <div className="absolute w-[680px] h-[680px] rounded-full border border-purple-200/60" />
-        {/* Inner Ring with Subtle Gradient Accent */}
-        <div className="absolute w-[500px] h-[500px] rounded-full border border-pink-200/50" />
+        {/* Spinning Vinyl Disc Container */}
+        <div className="relative w-[780px] h-[780px] sm:w-[920px] sm:h-[920px] flex items-center justify-center animate-[spin_24s_linear_infinite]">
+          {/* Vinyl Grooves Body (Concentric rings with record sheen) */}
+          <div 
+            className="absolute inset-0 rounded-full border border-slate-300/40 shadow-[0_20px_80px_rgba(99,102,241,0.08)]"
+            style={{
+              background: `
+                radial-gradient(circle, 
+                  transparent 28%,
+                  rgba(148, 163, 184, 0.06) 29%, 
+                  transparent 30%,
+                  rgba(148, 163, 184, 0.08) 36%, 
+                  transparent 37%,
+                  rgba(148, 163, 184, 0.06) 44%, 
+                  transparent 45%,
+                  rgba(148, 163, 184, 0.09) 52%, 
+                  transparent 53%,
+                  rgba(148, 163, 184, 0.07) 60%, 
+                  transparent 61%,
+                  rgba(148, 163, 184, 0.08) 68%, 
+                  transparent 69%,
+                  rgba(148, 163, 184, 0.06) 76%, 
+                  transparent 77%,
+                  rgba(148, 163, 184, 0.08) 84%, 
+                  transparent 85%,
+                  rgba(148, 163, 184, 0.05) 92%,
+                  transparent 93%
+                )
+              `
+            }}
+          />
+
+          {/* Micro Fine Grooves (Denser sound grooves) */}
+          <div className="absolute w-[86%] h-[86%] rounded-full border border-slate-300/30 border-dashed" />
+          <div className="absolute w-[76%] h-[76%] rounded-full border border-indigo-200/40" />
+          <div className="absolute w-[66%] h-[66%] rounded-full border border-purple-200/40 border-dashed" />
+          <div className="absolute w-[56%] h-[56%] rounded-full border border-slate-300/30" />
+          <div className="absolute w-[46%] h-[46%] rounded-full border border-pink-200/40 border-dotted" />
+
+          {/* Vinyl Specular Light Sheen (Two conic light reflection cones typical of vinyl records) */}
+          <div 
+            className="absolute inset-0 rounded-full opacity-40 mix-blend-overlay pointer-events-none"
+            style={{
+              background: `conic-gradient(
+                from 45deg,
+                transparent 0deg,
+                rgba(255, 255, 255, 0.8) 35deg,
+                transparent 70deg,
+                transparent 180deg,
+                rgba(255, 255, 255, 0.8) 215deg,
+                transparent 250deg,
+                transparent 360deg
+              )`
+            }}
+          />
+
+          {/* Outer Rim Highlight */}
+          <div className="absolute inset-0 rounded-full border-2 border-indigo-200/50" />
+          <div className="absolute inset-[3px] rounded-full border border-slate-300/30" />
+
+          {/* Record Center Run-Out Groove & Label Edge */}
+          <div className="absolute w-[360px] h-[360px] rounded-full border-2 border-indigo-300/40 bg-gradient-to-tr from-purple-100/30 via-indigo-100/20 to-pink-100/30 shadow-inner" />
+          <div className="absolute w-[320px] h-[320px] rounded-full border border-slate-300/40" />
+          
+          {/* Subtle Stylus/Spindle Indicator Marks around perimeter */}
+          <div className="absolute top-2 w-1.5 h-3 bg-indigo-400/60 rounded-full" />
+          <div className="absolute bottom-2 w-1.5 h-3 bg-indigo-400/60 rounded-full" />
+          <div className="absolute left-2 w-3 h-1.5 bg-indigo-400/60 rounded-full" />
+          <div className="absolute right-2 w-3 h-1.5 bg-indigo-400/60 rounded-full" />
+        </div>
+
         {/* Ambient Center Glow */}
-        <div className="absolute w-[440px] h-[440px] rounded-full bg-gradient-to-tr from-indigo-300/20 via-purple-300/20 to-pink-300/20 blur-3xl" />
-      </div>
-
-      {/* Subtle Floating Decorative Festival Character Badges in the Distance */}
-      <div className="fixed inset-0 pointer-events-none z-0 hidden lg:block">
-        {/* Top-Left Floating Tag */}
-        <div className="absolute top-12 left-12 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-xs text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>Sabrang 2026 • Live</span>
-        </div>
-
-        {/* Top-Right Floating Tag */}
-        <div className="absolute top-12 right-12 px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-xs text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase">
-          JK Lakshmipat University
-        </div>
-
-        {/* Bottom-Left Metric Chip */}
-        <div className="absolute bottom-12 left-12 px-4 py-2 rounded-2xl bg-white/60 backdrop-blur-md border border-slate-200/70 shadow-xs">
-          <p className="text-[9px] uppercase tracking-widest font-mono text-slate-400 font-bold">Annual Cultural Fest</p>
-          <p className="text-xs font-extrabold text-slate-800 font-space-grotesk tracking-tight">The Festival of Colors & Rhythm</p>
-        </div>
-
-        {/* Bottom-Right Coordinates Chip */}
-        <div className="absolute bottom-12 right-12 px-4 py-2 rounded-2xl bg-white/60 backdrop-blur-md border border-slate-200/70 shadow-xs text-right">
-          <p className="text-[9px] uppercase tracking-widest font-mono text-slate-400 font-bold">Jaipur, Rajasthan</p>
-          <p className="text-xs font-mono text-slate-700 font-bold tracking-wider">26°50'N • 75°47'E</p>
-        </div>
+        <div className="absolute w-[460px] h-[460px] rounded-full bg-gradient-to-tr from-indigo-300/20 via-purple-300/20 to-pink-300/20 blur-3xl pointer-events-none" />
       </div>
 
       {/* Main Glassmorphic Card */}
