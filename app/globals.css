@@ -153,35 +153,6 @@
   border-radius: 8px !important;
 }
 
-/* Hide default browser system cursor globally on desktop (pointer: fine) */
-@media (hover: hover) and (pointer: fine) {
-  html,
-  body {
-    cursor: none !important;
-  }
-  
-  /* Selectively restore cursor for interactive elements instead of chaining :not() */
-  a, button, input, textarea, select, [role="button"], .cursor-pointer {
-    cursor: pointer !important;
-  }
-  
-  input[type="text"], input[type="email"], input[type="password"], textarea {
-    cursor: text !important;
-  }
-}
-
-/* Ensure custom cursors are completely hidden on mobile/touch screens */
-@media (hover: none),
-(pointer: coarse) {
-
-  .custom-cursor-circle,
-  .tubes-cursor-container {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-}
-
 /* Hide browser scrollbars globally */
 html,
 body {
@@ -194,10 +165,6 @@ body::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
-}
-
-.custom-cursor-circle {
-  border-radius: 9999px !important;
 }
 
 /* Prevent image & video dragging, selection, and browser download overlays */
@@ -261,17 +228,7 @@ body.team-card-expanded header {
   transition: opacity 0.4s ease-in-out !important;
 }
 
-/* Show default browser cursor and hide custom follow trails when loader is active */
-body.loader-active,
-body.loader-active * {
-  cursor: auto !important;
-}
 
-body.loader-active .tubes-cursor-container,
-body.loader-active .custom-cursor-circle {
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
 
 /* On mobile, hide logos and heading on the team page after scroll interaction */
 @media (max-width: 767px) {

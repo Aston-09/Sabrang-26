@@ -105,15 +105,8 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
       
       {/* Main Content Area with fluid padding to match floating sidebar */}
       <main className="flex-1 w-full overflow-y-auto relative z-10 bg-transparent flex flex-col h-[100dvh]">
-        <header className="sticky top-0 z-30 bg-white backdrop-blur-xl mx-4 mt-4 md:mx-6 md:mt-6 rounded-[24px] px-6 h-16 hidden md:flex items-center justify-between border border-slate-200 shadow-sm">
-          <span className="text-xs font-bold text-slate-700 uppercase tracking-[0.2em] font-space-grotesk">
-            Sabrang '26 Administration
-          </span>
-
-        </header>
-
-        {/* Page content with fluid fade-in animation container */}
-        <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out fill-mode-both">
+        {/* Page content with fluid fade-in animation container - pt-20 provides clean clearance for 64px mobile navbar, md:pt-8 for desktop */}
+        <div className="pt-20 md:pt-8 px-4 pb-6 md:p-6 lg:p-8 max-w-[1600px] w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out fill-mode-both">
           {children}
         </div>
       </main>

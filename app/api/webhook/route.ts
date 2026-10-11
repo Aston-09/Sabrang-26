@@ -4,6 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 
 import { verifyCashfreeSignature, cashfreeAppId, cashfreeSecretKey, isProd, isRateLimited } from '@/lib/security';
+import { logSystemError } from '@/lib/errorAlertService';
 
 export async function POST(req: Request) {
   try {
@@ -266,26 +267,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, message: "Event ignored" });
   } catch (error: any) {
     console.error("Webhook processing error:", error);
-    try {
-      const errorDetails = `Webhook processing failed: ${error.message}\n\nStack:\n${error.stack || 'No stack trace available'}`;
-      
-      await adminDb.collection('auditLogs').add({
-        timestamp: FieldValue.serverTimestamp(),
-        action: 'SYSTEM_ERROR',
-        performedBy: 'System (Webhook)',
-        targetEntity: 'api/webhook',
-        details: errorDetails
-      });
-
-      const { sendSystemErrorEmail } = await import('@/lib/registrationHelper');
-      sendSystemErrorEmail(
-        'System (Webhook)',
-        'api/webhook',
-        errorDetails
-      ).catch(err => console.error("Failed to send system error email alert:", err));
-    } catch (logErr) {
-      console.error("Failed to log webhook system error:", logErr);
-    }
+    await logSystemError({
+      message: error?.message || 'Webhook processing failed',
+      stack: error?.stack,
+      path: '/api/webhook',
+      type: 'Cashfree Webhook Error',
+      method: 'POST',
+      statusCode: 500,
+      performedBy: 'System (Webhook)',
+    });
     return NextResponse.json({ error: error.message || "Webhook processing failed" }, { status: 500 });
   }
 }

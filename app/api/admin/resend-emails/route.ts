@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { generatePDF, sendEmail } from '@/lib/registrationHelper';
+import { logSystemError } from '@/lib/errorAlertService';
 
 export async function POST(req: Request) {
   try {
@@ -107,17 +108,15 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Resend emails endpoint error:", error);
-    try {
-      await adminDb.collection('auditLogs').add({
-        timestamp: FieldValue.serverTimestamp(),
-        action: 'SYSTEM_ERROR',
-        performedBy: 'Resend Emails API',
-        targetEntity: '/api/admin/resend-emails',
-        details: `Error: ${error.message || String(error)}\n\nStack:\n${error.stack || 'N/A'}`
-      });
-    } catch (logErr) {
-      console.error("Failed to log error to database:", logErr);
-    }
+    await logSystemError({
+      message: error?.message || 'Resend emails endpoint error',
+      stack: error?.stack,
+      path: '/api/admin/resend-emails',
+      type: 'Batch Resend Emails Error',
+      method: 'POST',
+      statusCode: 500,
+      performedBy: 'System (Resend Emails API)',
+    });
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

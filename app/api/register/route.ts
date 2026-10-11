@@ -5,6 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { Cashfree, CFEnvironment } from 'cashfree-pg';
 import { finalizeRegistration } from '@/lib/registrationHelper';
 import { validateRegistrationNumber } from '@/lib/utils';
+import { logSystemError } from '@/lib/errorAlertService';
 
 import { isRateLimited, sanitizeObject, isProd, cashfreeAppId, cashfreeSecretKey, formatPhoneNumber } from '@/lib/security';
 import { calculateTotalRegistrationFee } from '@/lib/eventPricing';
@@ -347,18 +348,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     console.error('Registration API Error:', error);
-    try {
-      const errorDetails = `Registration API Error: ${error.message}\n\nStack:\n${error.stack || 'No stack trace available'}`;
-      await adminDb.collection('auditLogs').add({
-        timestamp: FieldValue.serverTimestamp(),  
-        action: 'SYSTEM_ERROR',
-        performedBy: 'System (Register API)',
-        targetEntity: 'api/register',
-        details: errorDetails
-      });
-    } catch (logErr) {
-      console.error("Failed to log registration system error:", logErr);
-    }
+    await logSystemError({
+      message: error?.message || 'Registration API Exception',
+      stack: error?.stack,
+      path: '/api/register',
+      type: 'Registration API Error',
+      method: 'POST',
+      statusCode: 500,
+      performedBy: 'System (Register API)',
+    });
     return NextResponse.json({ error: 'An unexpected error occurred. Please try again.' }, { status: 500 });
   }
 }
