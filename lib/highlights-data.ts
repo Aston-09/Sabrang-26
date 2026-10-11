@@ -1,13 +1,15 @@
 /**
- * Gallery Highlights - the festival archive.
+ * Gallery Highlights - the festival archive & events data.
  *
  * Presentation lives in components/events/. To add or remove a photograph,
- * edit this array only: the 3D composition, focus order, metadata HUD and the
- * static fallback all derive from it.
- *
- * Drop the matching files into public/events_posters/. Any file that is missing
- * renders as a neutral archive placeholder instead of breaking the scene.
+ * edit this array only: the 3D composition, focus order, metadata HUD,
+ * static fallback, and event detail modal all derive from it.
  */
+
+export type EventCoordinator = {
+  name: string;
+  phone: string;
+};
 
 export type GalleryItem = {
   id: number;
@@ -25,6 +27,7 @@ export type GalleryItem = {
   runnerUpCash?: number | string;
   totalCash?: number | string;
   prizesRemarks?: string;
+  coordinators?: EventCoordinator[];
 };
 
 export const galleryItems: GalleryItem[] = [
@@ -43,6 +46,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 21000,
     runnerUpCash: 14000,
     totalCash: 35000,
+    coordinators: [
+      { name: "Purvi Jain", phone: "7877082586" },
+      { name: "Akshat Bisht", phone: "9509693736" },
+    ],
   },
   {
     id: 2,
@@ -59,6 +66,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 21000,
     runnerUpCash: 14000,
     totalCash: 35000,
+    coordinators: [
+      { name: "Anubha Sharma", phone: "9829820425" },
+      { name: "Aadrika Roy", phone: "9423486087" },
+    ],
   },
   {
     id: 3,
@@ -75,6 +86,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 15000,
     runnerUpCash: 10000,
     totalCash: 25000,
+    coordinators: [
+      { name: "Aarya Khadse", phone: "7726980122" },
+      { name: "Vansh Bhatia", phone: "9413833334" },
+    ],
   },
   {
     id: 4,
@@ -91,6 +106,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 9000,
     runnerUpCash: 6000,
     totalCash: 15000,
+    coordinators: [
+      { name: "Purvi Jain", phone: "7877082586" },
+      { name: "Akshat Bisht", phone: "9509693736" },
+    ],
   },
   {
     id: 5,
@@ -107,6 +126,11 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 9000,
     runnerUpCash: 6000,
     totalCash: 15000,
+    coordinators: [
+      { name: "Chelsy Tanwar", phone: "9119289533" },
+      { name: "Dishika Pancholi", phone: "9588934442" },
+      { name: "Nikita Bhatia", phone: "7742314923" },
+    ],
   },
   {
     id: 6,
@@ -123,6 +147,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 9000,
     runnerUpCash: 6000,
     totalCash: 15000,
+    coordinators: [
+      { name: "Dhruv Tyagi", phone: "8979809484" },
+      { name: "Rishi", phone: "7568191942" },
+    ],
   },
   {
     id: 7,
@@ -139,6 +167,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 9000,
     runnerUpCash: 6000,
     totalCash: 15000,
+    coordinators: [
+      { name: "Rishi", phone: "7568191942" },
+      { name: "Dhruv Tyagi", phone: "8979809484" },
+    ],
   },
   {
     id: 8,
@@ -155,6 +187,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 9000,
     runnerUpCash: 6000,
     totalCash: 15000,
+    coordinators: [
+      { name: "Chirayu", phone: "9831438763" },
+      { name: "Lakshit", phone: "9216333707" },
+    ],
   },
   {
     id: 9,
@@ -171,6 +207,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 7000,
     runnerUpCash: 5000,
     totalCash: 12000,
+    coordinators: [
+      { name: "Anuj Soni", phone: "7568776359" },
+      { name: "Devyan", phone: "9636738859" },
+    ],
   },
   {
     id: 10,
@@ -187,6 +227,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 6000,
     runnerUpCash: 4000,
     totalCash: 10000,
+    coordinators: [
+      { name: "Somay Agarwal", phone: "8130668138" },
+      { name: "Shivam", phone: "7460932017" },
+    ],
   },
   {
     id: 11,
@@ -203,6 +247,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 9000,
     runnerUpCash: 6000,
     totalCash: 15000,
+    coordinators: [
+      { name: "Chelsy Tanwar", phone: "9119289533" },
+      { name: "Dishika Pancholi", phone: "9588934442" },
+    ],
   },
   {
     id: 12,
@@ -219,6 +267,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 6000,
     runnerUpCash: 4000,
     totalCash: 10000,
+    coordinators: [
+      { name: "Purvee Dudheria", phone: "9352221827" },
+      { name: "Rishi", phone: "7568191942" },
+    ],
   },
   {
     id: 13,
@@ -235,6 +287,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 6000,
     runnerUpCash: 4000,
     totalCash: 10000,
+    coordinators: [
+      { name: "Akshit Singhal", phone: "8890976061" },
+      { name: "Co-Coordinator (TBA)", phone: "To be announced" },
+    ],
   },
   {
     id: 14,
@@ -251,6 +307,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 4000,
     runnerUpCash: 3000,
     totalCash: 7000,
+    coordinators: [
+      { name: "Aditya Vyas", phone: "8955637102" },
+      { name: "Aarya Khadse", phone: "7726980122" },
+    ],
   },
   {
     id: 15,
@@ -267,22 +327,30 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 3500,
     runnerUpCash: 2500,
     totalCash: 6000,
+    coordinators: [
+      { name: "Vansh Bhatia", phone: "9413833334" },
+      { name: "Purvee Dudheria", phone: "9352221827" },
+    ],
   },
   {
     id: 16,
     eventId: "face_off",
     image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/STEPUP.webp",
-    title: "Face Off",
+    title: "Dance Battle (Face-Off)",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
     year: 2026,
-    alt: "Face Off at Sabrang 2026",
+    alt: "Dance Battle (Face-Off) at Sabrang 2026",
     description: "Street Dance Face Off (Solo) | Prize Pool: ₹12,000",
     minTeam: 1,
     maxTeam: 1,
     winnerCash: "6,000 + 6,000*",
     totalCash: 12000,
     prizesRemarks: "2 styles, no runner-up; ₹6,000 per category",
+    coordinators: [
+      { name: "Akshat Bisht", phone: "9509693736" },
+      { name: "Anubha Sharma", phone: "9829820425" },
+    ],
   },
   {
     id: 17,
@@ -299,6 +367,10 @@ export const galleryItems: GalleryItem[] = [
     winnerCash: 3000,
     runnerUpCash: 2000,
     totalCash: 5000,
+    coordinators: [
+      { name: "Purvi Jain", phone: "7877082586" },
+      { name: "Devyan", phone: "9636738859" },
+    ],
   },
   {
     id: 18,
@@ -313,6 +385,10 @@ export const galleryItems: GalleryItem[] = [
     minTeam: 1,
     maxTeam: 1,
     prizesRemarks: "Gifts / Hampers",
+    coordinators: [
+      { name: "Saumya", phone: "9897110960" },
+      { name: "Divya Malik", phone: "7017160230" },
+    ],
   },
   {
     id: 19,
@@ -327,6 +403,10 @@ export const galleryItems: GalleryItem[] = [
     minTeam: 1,
     maxTeam: 1,
     prizesRemarks: "Gifts / Hampers",
+    coordinators: [
+      { name: "Nikita Bhatia", phone: "7742314923" },
+      { name: "Divya Malik", phone: "7017160230" },
+    ],
   },
   {
     id: 20,
@@ -341,5 +421,153 @@ export const galleryItems: GalleryItem[] = [
     minTeam: 1,
     maxTeam: 1,
     prizesRemarks: "Gifts / Hampers",
-  }
+    coordinators: [
+      { name: "Jayash Gahlot", phone: "8306274199" },
+      { name: "Ankit Joshi", phone: "9354116261" },
+    ],
+  },
+  {
+    id: 21,
+    eventId: "pronite_outsider",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060184/sabrang-2026/about/sabrang-live.png",
+    title: "Celebrity Pro-Nite & EDM Concert",
+    category: "Pro-Show & Star Night",
+    venue: "Main Stage Arena",
+    year: 2026,
+    alt: "Celebrity Pro-Nite Concert at Sabrang 2026",
+    description: "Star Night Live Concert & High-Voltage EDM Finale | Access Pass",
+    minTeam: 1,
+    maxTeam: 1,
+    prizesRemarks: "Star Night Access & Live Band Performance",
+    coordinators: [
+      { name: "Jayash Gahlot (Core)", phone: "8306274199" },
+      { name: "Ankit Joshi (Core)", phone: "9354116261" },
+      { name: "Artist Hospitality Lead (TBA)", phone: "To be announced" },
+    ],
+  },
+  {
+    id: 22,
+    eventId: "visitor",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060182/sabrang-2026/about/fest-crowd-lights.jpg",
+    title: "Visitor Pass & Festival Experience",
+    category: "General Entry & Pass",
+    venue: "Festival Grounds",
+    year: 2026,
+    alt: "Visitor Pass and Campus Experience at Sabrang 2026",
+    description: "All-Day Campus Entry, Cultural Stages, Food Village & Art Stalls",
+    minTeam: 1,
+    maxTeam: 1,
+    prizesRemarks: "Festival Entry & Arena Access (Days 1, 2 & 3)",
+    coordinators: [
+      { name: "Jayash Gahlot", phone: "8306274199" },
+      { name: "Ankit Joshi", phone: "9354116261" },
+      { name: "Helpdesk Coordinator (TBA)", phone: "To be announced" },
+    ],
+  },
+  {
+    id: 23,
+    eventId: "inaugural",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060182/sabrang-2026/about/fest-crowd-lights.jpg",
+    title: "Grand Inaugural Ceremony & Gala",
+    category: "Festival Showcase",
+    venue: "University Amphitheatre",
+    year: 2026,
+    alt: "Grand Inaugural Ceremony at Sabrang 2026",
+    description: "Official Opening, Keynote Address, Cultural Showcase & Flashmob",
+    minTeam: 1,
+    maxTeam: 1,
+    prizesRemarks: "Grand Festival Opening & Cultural Showcase",
+    coordinators: [
+      { name: "Cultural Committee Lead (TBA)", phone: "To be announced" },
+      { name: "Stage & Protocol Manager (TBA)", phone: "To be announced" },
+    ],
+  },
+  {
+    id: 24,
+    eventId: "general_reg",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/convo.webp",
+    title: "Registration Helpdesk & Info Desk",
+    category: "Registration Core",
+    venue: "Central Reception Desk",
+    year: 2026,
+    alt: "Registration Desk at Sabrang 2026",
+    description: "Central Desk for Participant IDs, On-Campus Verification & Queries",
+    minTeam: 1,
+    maxTeam: 1,
+    prizesRemarks: "Official Support & Desk Assistance",
+    coordinators: [
+      { name: "Jayash Gahlot", phone: "8306274199" },
+      { name: "Ankit Joshi", phone: "9354116261" },
+      { name: "Student Desk Lead (TBA)", phone: "To be announced" },
+    ],
+  },
+];
+
+export type CoordinatorDirectoryEntry = {
+  category: "Flagship Events" | "Non-Flagship Events" | "Esports" | "Activities" | "Registration Core" | "Pro-Shows & Showcases";
+  eventName: string;
+  name: string;
+  phone: string;
+};
+
+export const ALL_COORDINATOR_DIRECTORY: CoordinatorDirectoryEntry[] = [
+  // Flagship Events
+  { category: "Flagship Events", eventName: "Panache", name: "Purvi Jain", phone: "7877082586" },
+  { category: "Flagship Events", eventName: "Panache", name: "Akshat Bisht", phone: "9509693736" },
+  { category: "Flagship Events", eventName: "Persona", name: "Purvi Jain", phone: "7877082586" },
+  { category: "Flagship Events", eventName: "Persona", name: "Akshat Bisht", phone: "9509693736" },
+  { category: "Flagship Events", eventName: "Echoes of Noor", name: "Dhruv Tyagi", phone: "8979809484" },
+  { category: "Flagship Events", eventName: "Echoes of Noor", name: "Rishi", phone: "7568191942" },
+  { category: "Flagship Events", eventName: "Band Jam", name: "Aarya Khadse", phone: "7726980122" },
+  { category: "Flagship Events", eventName: "Band Jam", name: "Vansh Bhatia", phone: "9413833334" },
+  { category: "Flagship Events", eventName: "Step Up", name: "Chelsy Tanwar", phone: "9119289533" },
+  { category: "Flagship Events", eventName: "Step Up", name: "Dishika Pancholi", phone: "9588934442" },
+  { category: "Flagship Events", eventName: "Step Up", name: "Nikita Bhatia", phone: "7742314923" },
+  { category: "Flagship Events", eventName: "Sync", name: "Anubha Sharma", phone: "9829820425" },
+  { category: "Flagship Events", eventName: "Sync", name: "Aadrika Roy", phone: "9423486087" },
+  { category: "Flagship Events", eventName: "Verse Vaad", name: "Rishi", phone: "7568191942" },
+  { category: "Flagship Events", eventName: "Verse Vaad", name: "Dhruv Tyagi", phone: "8979809484" },
+  { category: "Flagship Events", eventName: "Grand Inaugural Ceremony", name: "Cultural Committee Lead (TBA)", phone: "To be announced" },
+  { category: "Flagship Events", eventName: "Grand Inaugural Ceremony", name: "Stage & Protocol Manager (TBA)", phone: "To be announced" },
+
+  // Non-Flagship Events
+  { category: "Non-Flagship Events", eventName: "Dumb Show", name: "Aditya Vyas", phone: "8955637102" },
+  { category: "Non-Flagship Events", eventName: "Dumb Show", name: "Aarya Khadse", phone: "7726980122" },
+  { category: "Non-Flagship Events", eventName: "Courtroom", name: "Purvee Dudheria", phone: "9352221827" },
+  { category: "Non-Flagship Events", eventName: "Courtroom", name: "Rishi", phone: "7568191942" },
+  { category: "Non-Flagship Events", eventName: "Bidding Before Wicket", name: "Akshit Singhal", phone: "8890976061" },
+  { category: "Non-Flagship Events", eventName: "Bidding Before Wicket", name: "Co-Coordinator (TBA)", phone: "To be announced" },
+  { category: "Non-Flagship Events", eventName: "Anime Quiz", name: "Purvi Jain", phone: "7877082586" },
+  { category: "Non-Flagship Events", eventName: "Anime Quiz", name: "Devyan", phone: "9636738859" },
+  { category: "Non-Flagship Events", eventName: "Dance Battle (Face-Off)", name: "Akshat Bisht", phone: "9509693736" },
+  { category: "Non-Flagship Events", eventName: "Dance Battle (Face-Off)", name: "Anubha Sharma", phone: "9829820425" },
+  { category: "Non-Flagship Events", eventName: "Rangmanch", name: "Chelsy Tanwar", phone: "9119289533" },
+  { category: "Non-Flagship Events", eventName: "Rangmanch", name: "Dishika Pancholi", phone: "9588934442" },
+  { category: "Non-Flagship Events", eventName: "Vaad Vivad", name: "Vansh Bhatia", phone: "9413833334" },
+  { category: "Non-Flagship Events", eventName: "Vaad Vivad", name: "Purvee Dudheria", phone: "9352221827" },
+
+  // Esports
+  { category: "Esports", eventName: "Valorant", name: "Somay Agarwal", phone: "8130668138" },
+  { category: "Esports", eventName: "Valorant", name: "Shivam", phone: "7460932017" },
+  { category: "Esports", eventName: "Free Fire", name: "Anuj Soni", phone: "7568776359" },
+  { category: "Esports", eventName: "Free Fire", name: "Devyan", phone: "9636738859" },
+  { category: "Esports", eventName: "BGMI", name: "Chirayu", phone: "9831438763" },
+  { category: "Esports", eventName: "BGMI", name: "Lakshit", phone: "9216333707" },
+
+  // Activities & Open Sessions
+  { category: "Activities", eventName: "Art Relay", name: "Saumya", phone: "9897110960" },
+  { category: "Activities", eventName: "Art Relay", name: "Divya Malik", phone: "7017160230" },
+  { category: "Activities", eventName: "Clay Modelling", name: "Nikita Bhatia", phone: "7742314923" },
+  { category: "Activities", eventName: "Clay Modelling", name: "Divya Malik", phone: "7017160230" },
+  { category: "Activities", eventName: "Chai Pe Charcha", name: "Jayash Gahlot", phone: "8306274199" },
+  { category: "Activities", eventName: "Chai Pe Charcha", name: "Ankit Joshi", phone: "9354116261" },
+
+  // Registration Core & Pro-Shows
+  { category: "Registration Core", eventName: "General Registration", name: "Jayash Gahlot", phone: "8306274199" },
+  { category: "Registration Core", eventName: "General Registration", name: "Ankit Joshi", phone: "9354116261" },
+  { category: "Registration Core", eventName: "Registration Helpdesk", name: "Student Desk Lead (TBA)", phone: "To be announced" },
+  { category: "Registration Core", eventName: "Celebrity Pro-Nite", name: "Jayash Gahlot (Core)", phone: "8306274199" },
+  { category: "Registration Core", eventName: "Celebrity Pro-Nite", name: "Ankit Joshi (Core)", phone: "9354116261" },
+  { category: "Registration Core", eventName: "Celebrity Pro-Nite", name: "Artist Hospitality Lead (TBA)", phone: "To be announced" },
+  { category: "Registration Core", eventName: "Visitor Experience Pass", name: "Helpdesk Coordinator (TBA)", phone: "To be announced" },
 ];
