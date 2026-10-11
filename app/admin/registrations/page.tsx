@@ -6,6 +6,7 @@ import { collection, onSnapshot, query, orderBy, doc, updateDoc, serverTimestamp
 import { db, auth } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
 import { Modal } from '../../../components/admin/Modal';
+import { X, Maximize2 } from 'lucide-react';
 import { logAdminAction } from '../../../lib/audit';
 import { OFFICIAL_EVENTS } from '../../../lib/eventPricing';
 import { getDisplayPaymentAmount } from '@/lib/registrationDataHelper';
@@ -141,8 +142,18 @@ export default function Registrations() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReg, setSelectedReg] = useState<any>(null);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title?: string } | null>(null);
 
-  // Filters State
+  // Close image preview on Escape key without refreshing or navigating
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && previewImage) {
+        setPreviewImage(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewImage]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'entered' | 'pending' | 'declined'>('all');
   const [emailFilter, setEmailFilter] = useState<'all' | 'sent' | 'unsent'>('all');
@@ -917,7 +928,11 @@ export default function Registrations() {
                   {selectedReg.idCard !== undefined ? (
                     typeof selectedReg.idCard === 'string' && (selectedReg.idCard.startsWith('http') || selectedReg.idCard.startsWith('/')) ? (
                       <div className="space-y-2">
-                        <a href={selectedReg.idCard} target="_blank" rel="noopener noreferrer" className="block relative h-44 w-full max-w-[240px] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 group shadow-xs">
+                        <button 
+                          type="button"
+                          onClick={() => setPreviewImage({ url: selectedReg.idCard, title: `${selectedReg.name} — Institution ID Card` })}
+                          className="block relative h-44 w-full max-w-[240px] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 group shadow-xs cursor-pointer text-left focus:outline-none"
+                        >
                           <img 
                             src={selectedReg.idCard} 
                             alt="ID Card" 
@@ -931,20 +946,23 @@ export default function Registrations() {
                           />
                           <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center p-3 text-center text-slate-500 text-[10px] gap-1">
                             <span className="font-bold text-slate-700">Preview Unavailable</span>
-                            <span className="text-[9px] text-slate-400">Click to open original file</span>
+                            <span className="text-[9px] text-slate-400">Click to view image</span>
                           </div>
-                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center pointer-events-none">
-                            <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl">Open Full Image</span>
+                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center">
+                            <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl flex items-center gap-1.5">
+                              <Maximize2 size={12} />
+                              View Image
+                            </span>
                           </div>
-                        </a>
-                        <a 
-                          href={selectedReg.idCard} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider"
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setPreviewImage({ url: selectedReg.idCard, title: `${selectedReg.name} — Institution ID Card` })}
+                          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider cursor-pointer"
                         >
-                          ↗ Open in new tab
-                        </a>
+                          <Maximize2 size={12} />
+                          View Image (Current Tab)
+                        </button>
                       </div>
                     ) : (
                       <span className="text-[12px]">Attached</span>
@@ -1056,7 +1074,11 @@ export default function Registrations() {
                                 <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px] block mb-2">Institution ID Card</span> 
                                 {typeof m.idCard === 'string' && (m.idCard.startsWith('http') || m.idCard.startsWith('/')) ? (
                                   <div className="space-y-1.5">
-                                    <a href={m.idCard} target="_blank" rel="noopener noreferrer" className="block relative h-40 w-full max-w-xs overflow-hidden rounded-xl border border-slate-200 bg-slate-50 group shadow-xs">
+                                    <button 
+                                      type="button"
+                                      onClick={() => setPreviewImage({ url: m.idCard, title: `${m.name} — Institution ID Card` })}
+                                      className="block relative h-40 w-full max-w-xs overflow-hidden rounded-xl border border-slate-200 bg-slate-50 group shadow-xs cursor-pointer text-left focus:outline-none"
+                                    >
                                       <img 
                                         src={m.idCard} 
                                         alt={`${m.name} ID Card`} 
@@ -1070,20 +1092,23 @@ export default function Registrations() {
                                       />
                                       <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center p-3 text-center text-slate-500 text-[10px] gap-1">
                                         <span className="font-bold text-slate-700">Preview Unavailable</span>
-                                        <span className="text-[9px] text-slate-400">Click to open original file</span>
+                                        <span className="text-[9px] text-slate-400">Click to view image</span>
                                       </div>
-                                      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center pointer-events-none">
-                                        <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl">Open Full Image</span>
+                                      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center">
+                                        <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl flex items-center gap-1.5">
+                                          <Maximize2 size={12} />
+                                          View Image
+                                        </span>
                                       </div>
-                                    </a>
-                                    <a 
-                                      href={m.idCard} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider"
+                                    </button>
+                                    <button 
+                                      type="button"
+                                      onClick={() => setPreviewImage({ url: m.idCard, title: `${m.name} — Institution ID Card` })}
+                                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider cursor-pointer"
                                     >
-                                      ↗ Open in new tab
-                                    </a>
+                                      <Maximize2 size={12} />
+                                      View Image (Current Tab)
+                                    </button>
                                   </div>
                                 ) : (
                                   <span className="font-medium text-slate-800 text-[10px]">Attached</span>
@@ -1182,6 +1207,94 @@ export default function Registrations() {
           </div>
         )}
       </Modal>
+
+      {/* In-Tab Image Preview Lightbox */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setPreviewImage(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* High-visibility Floating Cross Button for Mobile & Desktop */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewImage(null);
+            }}
+            className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[220] h-11 w-11 sm:h-12 sm:w-12 flex items-center justify-center rounded-full bg-slate-900 text-white hover:bg-slate-800 active:scale-90 border border-white/20 shadow-2xl transition-all cursor-pointer focus:outline-none"
+            aria-label="Close image preview"
+          >
+            <X size={22} strokeWidth={2.5} />
+          </button>
+
+          {/* Modal Box */}
+          <div 
+            className="relative max-w-4xl w-full max-h-[92vh] flex flex-col bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-[0_20px_60px_rgba(0,0,0,0.35)] overflow-hidden z-[210] animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-200/80 bg-white/95 shrink-0">
+              <div className="truncate pr-4">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 font-space-grotesk truncate">
+                  {previewImage.title || 'Institution ID Card'}
+                </h3>
+                <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono">
+                  Identity Verification Preview
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 transition-colors cursor-pointer border border-slate-200 shrink-0"
+                aria-label="Close image preview"
+              >
+                <X size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+
+            {/* Image Container */}
+            <div className="relative w-full flex-1 max-h-[72vh] sm:max-h-[75vh] flex items-center justify-center overflow-auto p-3 sm:p-6 bg-slate-50/70">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title || "ID Card Preview"}
+                className="max-h-[65vh] sm:max-h-[70vh] max-w-full w-auto h-auto object-contain rounded-xl shadow-xs"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              <div style={{ display: 'none' }} className="flex-col items-center justify-center p-8 text-center text-slate-500 gap-2">
+                <p className="font-bold text-sm text-slate-800">Preview Unavailable</p>
+                <p className="text-xs text-slate-500 max-w-xs">The image file could not be loaded from the storage URL.</p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 bg-white text-xs shrink-0">
+              <a 
+                href={previewImage.url} 
+                download
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider transition-colors"
+              >
+                Open Original File ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
