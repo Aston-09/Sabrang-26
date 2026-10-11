@@ -79,9 +79,9 @@ export default function AboutSection() {
               <Image
                 src="/images/varun-jain.jpg"
                 alt="Varun Jain performing live"
-                width={400}
-                height={400}
-                className="artist-image"
+                fill
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="artist-image object-cover"
                 priority
               />
               <div className="artist-image-glow" />

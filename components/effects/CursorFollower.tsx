@@ -5,15 +5,34 @@ import { usePathname } from "next/navigation";
 
 export default function CursorFollower() {
   const pathname = usePathname();
-  const isAdmin = false; // Always show the custom dot cursor
+  const isManagement = Boolean(
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/scanner") ||
+    pathname === "/login"
+  );
 
   const [mounted, setMounted] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
 
+  // Synchronize management-page class on html and body
+  useEffect(() => {
+    if (isManagement) {
+      document.documentElement.classList.add("management-page");
+      document.body.classList.add("management-page");
+    } else {
+      document.documentElement.classList.remove("management-page");
+      document.body.classList.remove("management-page");
+    }
+    return () => {
+      document.documentElement.classList.remove("management-page");
+      document.body.classList.remove("management-page");
+    };
+  }, [isManagement]);
+
   useEffect(() => {
     setMounted(true);
-    if (isAdmin) return;
+    if (isManagement) return;
 
     let mouseX = -100;
     let mouseY = -100;
@@ -27,7 +46,7 @@ export default function CursorFollower() {
 
       const target = e.target as HTMLElement | null;
       const interactive = !!(
-        target?.closest?.('a, button, input, select, textarea, [role="button"], th, td, tr')
+        target?.closest?.('a, button, input, select, textarea, [role="button"]')
       );
       if (dotRef.current) {
         dotRef.current.style.transform = interactive ? "scale(1.8)" : "scale(1)";
@@ -59,9 +78,9 @@ export default function CursorFollower() {
       window.removeEventListener("pointermove", onMouseMove);
       cancelAnimationFrame(animId);
     };
-  }, [isAdmin]);
+  }, [isManagement]);
 
-  if (!mounted || isAdmin) return null;
+  if (!mounted || isManagement) return null;
 
   return (
     <div

@@ -3,6 +3,9 @@ import "@/lib/suppress-three-logs";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import TubesCursor from "@/components/effects/TubesCursor";
+import CursorFollower from "@/components/effects/CursorFollower";
+import SmoothScroll from "@/components/effects/SmoothScroll";
 import PreloaderGate from "@/components/effects/PreloaderGate";
 import { InteractionProvider } from "@/components/context/InteractionContext";
 import { AudioPlayerProvider } from "@/components/audio/AudioPlayerProvider";
@@ -73,7 +76,7 @@ export const metadata: Metadata = {
       "SABRANG 2026 - JK Lakshmipat University's premier annual cultural fest. Experience Sabrang JKLU with star-studded nights and thrilling competitions.",
     images: [
       {
-        url: "/sabrang-logo/Sabrang_Logo.png",
+        url: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1788091530/sabrang-2026/sabrang-logo/sabrang-logo.png",
         width: 1200,
         height: 630,
         alt: "Sabrang 2026 - JK Lakshmipat University Annual Cultural Fest",
@@ -85,7 +88,7 @@ export const metadata: Metadata = {
     title: "SABRANG 2026 | Sabrang JKLU | JK Lakshmipat University Fest",
     description:
       "SABRANG 2026 - JK Lakshmipat University's premier annual cultural fest.",
-    images: ["/sabrang-logo/Sabrang_Logo.png"],
+    images: ["https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1788091530/sabrang-2026/sabrang-logo/sabrang-logo.png"],
   },
 };
 
@@ -95,7 +98,7 @@ const organizationSchema = {
   name: "JK Lakshmipat University",
   alternateName: "JKLU",
   url: "https://jklu.edu.in",
-  logo: "/sabrang-logo/jklu_logo.png",
+  logo: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060374/sabrang-2026/sabrang-logo/white_jklu_logo.png",
   sameAs: [
     "https://www.facebook.com/jklakshmipatuniversity",
     "https://www.instagram.com/jklakshmipatuniversity",
@@ -121,6 +124,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link
+          rel="preload"
+          href="/fonts/FlorasDisplay.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
         <link rel="preload" href="/models/SABRANG_TRANSPARENT_STRIP_PRISM.glb" as="fetch" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${inter.className}`}>
@@ -138,11 +148,15 @@ export default function RootLayout({
             <ReCaptchaProvider>
               <InteractionProvider>
                 <AuthProvider>
-                  <div className="min-h-screen flex flex-col text-white overflow-x-clip">
-                    <Navbar />
-                    <main className="flex-grow w-full">{children}</main>
-                    <Footer />
-                  </div>
+                  <SmoothScroll>
+                    <TubesCursor />
+                    <CursorFollower />
+                    <div className="min-h-screen flex flex-col text-white overflow-x-clip">
+                      <Navbar />
+                      <main className="flex-grow w-full">{children}</main>
+                      <Footer />
+                    </div>
+                  </SmoothScroll>
                 </AuthProvider>
               </InteractionProvider>
             </ReCaptchaProvider>

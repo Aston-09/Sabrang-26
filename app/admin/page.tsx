@@ -126,7 +126,6 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight text-slate-900 font-space-grotesk">Overview</h1>
-          <p className="text-slate-500 uppercase tracking-[0.2em] text-[10px] mt-2 font-semibold">Live Festival Metrics</p>
         </div>
         <div className="flex items-center gap-3">
           <Link

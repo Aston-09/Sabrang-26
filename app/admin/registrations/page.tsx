@@ -340,30 +340,9 @@ export default function Registrations() {
     }).length;
   }, [registrations]);
 
-  // Excel (.xlsx) export
+  // Excel (.xlsx) export with Master and individual event sheets
   const exportExcel = async () => {
-    const headers = [
-      'S.No',
-      'Registration Number', 
-      'Student Name', 
-      'Gender', 
-      'Application Number', 
-      'Phone Number', 
-      'Parent Name', 
-      'Parent Phone', 
-      'Student Email', 
-      'Parent Email', 
-      'Pincode', 
-      'State',
-      'Course', 
-      'Payment Amount', 
-      'Received Amount', 
-      'Date Of Payment', 
-      'UTR No.', 
-      'Bank Reference No.', 
-      'Settlement ID', 
-      'Transaction ID'
-    ];
+    const { extractRegistrationInfo } = await import('../../../lib/registrationDataHelper');
 
     const formatSinglePhone = (phone: string): string => {
       if (!phone) return '';
@@ -375,48 +354,169 @@ export default function Registrations() {
       return phone;
     };
 
-    const rows = sortedRegistrations
-      .filter(r => !r.isTest)
-      .map((r, index) => {
+    const masterHeaders = [
+      'S.No',
+      'Registration Number',
+      'Participant Name',
+      'Gender',
+      'Phone Number',
+      'Email',
+      'College / Institution',
+      'Course',
+      'Event(s)',
+      'Event Type',
+      'Team Name',
+      'No. of Teammates',
+      'State',
+      'Pincode',
+      'Payment Amount',
+      'Received Amount',
+      'Date Of Payment',
+      'Payment ID',
+      'Settlement ID',
+      'Order ID'
+    ];
+
+    const eventHeaders = [
+      'S.No',
+      'Registration Number',
+      'Participant Name',
+      'Gender',
+      'Phone Number',
+      'Email',
+      'College / Institution',
+      'Course',
+      'Event Type',
+      'Team Name',
+      'No. of Teammates',
+      'State',
+      'Pincode',
+      'Payment Amount',
+      'Received Amount',
+      'Date Of Payment',
+      'Payment ID',
+      'Settlement ID',
+      'Order ID'
+    ];
+
+    const validRegistrations = sortedRegistrations.filter(r => !r.isTest);
+
+    // 1. Build Master Sheet Rows
+    const masterRows = validRegistrations.map((r, index) => {
+      const pin = r.pincode || (r.address ? (r.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
+      const state = r.region || r.state || 'N/A';
+      const formattedDate = r.dateOfPayment || (r.registeredAt ? r.registeredAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-') : 'N/A');
+      const payAmount = getDisplayPaymentAmount(r);
+      const recAmount = getDisplayPaymentAmount(r);
+      const unifiedData = extractRegistrationInfo(r, r.id);
+      const evTitles = getEventTitles(r);
+
+      return [
+        index + 1,
+        r.rollNumber || r.registrationNumber || r.id || 'N/A',
+        unifiedData.name,
+        r.gender || 'N/A',
+        formatSinglePhone(unifiedData.phone || r.phone || ''),
+        unifiedData.email,
+        unifiedData.college,
+        r.course || 'N/A',
+        evTitles.full,
+        unifiedData.eventType,
+        unifiedData.teamName,
+        unifiedData.noOfTeammates,
+        state,
+        pin,
+        payAmount,
+        recAmount,
+        formattedDate,
+        r.paymentId || 'N/A',
+        r.settlementId || 'N/A',
+        r.orderId || 'N/A'
+      ];
+    });
+
+    // 2. Build Event Sheets for each official event
+    const eventSheets: { sheetName: string; headers: string[]; rows: (string | number | boolean | null | undefined)[][] }[] = [];
+
+    // Track which events have registrations plus include all official events
+    const allEventsMap = new Map<string, string>();
+    OFFICIAL_EVENTS.forEach(e => allEventsMap.set(e.id, e.title));
+
+    // Also collect any events mentioned in registrations
+    validRegistrations.forEach(r => {
+      const titles = getEventTitles(r).list;
+      titles.forEach(t => {
+        if (!allEventsMap.has(t)) {
+          allEventsMap.set(t, t);
+        }
+      });
+    });
+
+    allEventsMap.forEach((eventTitle, eventKey) => {
+      const matchingRegs = validRegistrations.filter(r => {
+        const evTitles = getEventTitles(r);
+        return evTitles.list.includes(eventTitle) ||
+               (Array.isArray(r.selectedEvents) && r.selectedEvents.includes(eventKey)) ||
+               r.eventId === eventKey ||
+               r.event === eventTitle;
+      });
+
+      const eventRows = matchingRegs.map((r, index) => {
         const pin = r.pincode || (r.address ? (r.address.match(/\b\d{6}\b/)?.[0] || 'N/A') : 'N/A');
         const state = r.region || r.state || 'N/A';
         const formattedDate = r.dateOfPayment || (r.registeredAt ? r.registeredAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-') : 'N/A');
         const payAmount = getDisplayPaymentAmount(r);
         const recAmount = getDisplayPaymentAmount(r);
+        const unifiedData = extractRegistrationInfo(r, r.id);
 
         return [
           index + 1,
-          r.rollNumber || r.registrationNumber || 'N/A',
-          r.name || '',
+          r.rollNumber || r.registrationNumber || r.id || 'N/A',
+          unifiedData.name,
           r.gender || 'N/A',
-          r.rollNumber || '',
-          formatSinglePhone(r.phone || ''),
-          r.parentName || r.fatherName || '',
-          formatSinglePhone(r.parentPhone || r.fatherMobile || ''),
-          r.email || '',
-          r.parentEmail || r.fatherEmail || 'N/A',
-          pin,
-          state,
+          formatSinglePhone(unifiedData.phone || r.phone || ''),
+          unifiedData.email,
+          unifiedData.college,
           r.course || 'N/A',
+          unifiedData.eventType,
+          unifiedData.teamName,
+          unifiedData.noOfTeammates,
+          state,
+          pin,
           payAmount,
           recAmount,
           formattedDate,
-          r.paymentId || 'N/A',
           r.paymentId || 'N/A',
           r.settlementId || 'N/A',
           r.orderId || 'N/A'
         ];
       });
 
-    const { exportToExcel } = await import('../../../lib/excelExportHelper');
-    await exportToExcel({
-      filename: `sabrang_registrations_${new Date().toISOString().split('T')[0]}.xlsx`,
-      sheetName: 'Registrations',
-      headers,
-      rows,
+      eventSheets.push({
+        sheetName: eventTitle,
+        headers: eventHeaders,
+        rows: eventRows,
+      });
     });
 
-    await logAdminAction('EXPORT_REGISTRATIONS_EXCEL', 'registrations', `Exported ${registrations.length} registrations to Excel (.xlsx)`);
+    const { exportToExcel } = await import('../../../lib/excelExportHelper');
+    await exportToExcel({
+      filename: `sabrang_registrations_master_${new Date().toISOString().split('T')[0]}.xlsx`,
+      sheets: [
+        {
+          sheetName: 'Master',
+          headers: masterHeaders,
+          rows: masterRows,
+        },
+        ...eventSheets,
+      ],
+    });
+
+    await logAdminAction(
+      'EXPORT_REGISTRATIONS_EXCEL',
+      'registrations',
+      `Exported ${validRegistrations.length} registrations to Excel (.xlsx) with Master and ${eventSheets.length} Event sheets`
+    );
   };
 
   useEffect(() => {
@@ -548,7 +648,6 @@ export default function Registrations() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 pb-2 border-b border-slate-200 mt-8">
         <div>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight text-slate-900 font-space-grotesk">Registration Directory</h1>
-          <p className="text-slate-500 uppercase tracking-[0.2em] text-[10px] mt-2 font-semibold">Attendee Database</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {unsentCount > 0 && (
@@ -603,33 +702,33 @@ export default function Registrations() {
           <select
             value={statusFilter}
             onChange={(e: any) => setStatusFilter(e.target.value)}
-            className="w-full sm:w-[160px] bg-white/80 border border-slate-100 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
+            className="w-full sm:w-[160px] bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
           >
-            <option value="all" className="bg-[#1a1525]">Filter: All Status</option>
-            <option value="entered" className="bg-[#1a1525]">Checked-In</option>
-            <option value="pending" className="bg-[#1a1525]">Pending Check-In</option>
-            <option value="declined" className="bg-[#1a1525]">Declined / Blocked</option>
+            <option value="all">Filter: All Status</option>
+            <option value="entered">Checked-In</option>
+            <option value="pending">Pending Check-In</option>
+            <option value="declined">Declined / Blocked</option>
           </select>
 
           <select
             value={eventFilter}
             onChange={(e: any) => setEventFilter(e.target.value)}
-            className="w-full sm:w-[180px] bg-white/80 border border-slate-100 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
+            className="w-full sm:w-[180px] bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
           >
-            <option value="all" className="bg-[#1a1525]">Event: All Events</option>
+            <option value="all">Event: All Events</option>
             {OFFICIAL_EVENTS.map(evt => (
-              <option key={evt.id} value={evt.id} className="bg-[#1a1525]">{evt.title}</option>
+              <option key={evt.id} value={evt.id}>{evt.title}</option>
             ))}
           </select>
 
           <select
             value={emailFilter}
             onChange={(e: any) => setEmailFilter(e.target.value)}
-            className="w-full sm:w-[140px] bg-white/80 border border-slate-100 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
+            className="w-full sm:w-[140px] bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
           >
-            <option value="all" className="bg-[#1a1525]">Email: All</option>
-            <option value="sent" className="bg-[#1a1525]">Email: Sent</option>
-            <option value="unsent" className="bg-[#1a1525]">Email: Unsent</option>
+            <option value="all">Email: All</option>
+            <option value="sent">Email: Sent</option>
+            <option value="unsent">Email: Unsent</option>
           </select>
         </div>
       </div>
@@ -703,28 +802,22 @@ export default function Registrations() {
                       </div>
                     </td>
                     <td className="p-5">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${
                         reg.hasEntered 
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
                           : (reg.status === 'declined' 
                               ? 'bg-rose-50 text-rose-700 border border-rose-200' 
                               : 'bg-amber-50 text-amber-700 border border-amber-200')
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          reg.hasEntered ? 'bg-emerald-500' : (reg.status === 'declined' ? 'bg-rose-500' : 'bg-amber-500')
-                        }`} />
                         {reg.hasEntered ? 'Entered' : (reg.status === 'declined' ? 'Declined' : 'Pending')}
                       </span>
                     </td>
                     <td className="p-5">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${
                         reg.emailSent 
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
                           : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          reg.emailSent ? 'bg-emerald-500' : 'bg-rose-500'
-                        }`} />
                         {reg.emailSent ? 'Sent' : 'Unsent'}
                       </span>
                     </td>

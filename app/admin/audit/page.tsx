@@ -108,7 +108,6 @@ export default function AuditLogs() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 pb-2 border-b border-slate-200">
         <div>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight text-slate-900 font-space-grotesk">Audit Logs</h1>
-          <p className="text-slate-500 uppercase tracking-[0.2em] text-[10px] mt-2 font-semibold">System Action Tracking</p>
         </div>
         <button
           onClick={exportExcel}
@@ -149,8 +148,8 @@ export default function AuditLogs() {
                 onChange={e => setFilterAction(e.target.value)}
                 className="w-full bg-white/80 border border-slate-100 rounded-xl py-3 px-4 text-xs text-slate-900 font-bold focus:outline-none focus:border-purple-500/50 cursor-pointer appearance-none"
               >
-                <option value="" className="bg-[#1a1525]">All Actions ({uniqueActions.length})</option>
-                {uniqueActions.map(a => <option key={a} value={a} className="bg-[#1a1525]">{a}</option>)}
+                <option value="">All Actions ({uniqueActions.length})</option>
+                {uniqueActions.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
 

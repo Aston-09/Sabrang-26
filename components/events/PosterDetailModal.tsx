@@ -70,15 +70,13 @@ export default function PosterDetailModal({
         </button>
 
         {/* Poster image */}
-        <div className="relative flex-shrink-0 w-full md:w-[320px] lg:w-[380px] overflow-hidden rounded-xl shadow-2xl shadow-indigo-500/10 ring-1 ring-white/10 mt-0">
+        <div className="relative flex-shrink-0 w-full md:w-[320px] lg:w-[380px] aspect-[380/540] overflow-hidden rounded-xl shadow-2xl shadow-indigo-500/10 ring-1 ring-white/10 mt-0">
           <Image
             src={item.image}
             alt={item.alt || item.title}
-            width={380}
-            height={540}
+            fill
             sizes="(max-width: 768px) 100vw, 380px"
-            className="w-full object-cover"
-            style={{ width: "100%", height: "auto" }}
+            className="object-cover"
             loading="eager"
             fetchPriority="high"
           />

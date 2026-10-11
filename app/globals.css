@@ -22,7 +22,7 @@
   src: url('/fonts/FlorasDisplay.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @theme {
@@ -141,16 +141,88 @@
   }
 }
 
+/* ── Global Cursor Scoping ── */
+/* On desktop (pointer: fine), hide the default OS cursor ONLY on public website pages so the fancy custom cursor (TubesCursor + CursorFollower) takes over */
+@media (hover: hover) and (pointer: fine) {
+  html:not(.management-page):not(:has(.admin-portal-scope)),
+  html:not(.management-page):not(:has(.admin-portal-scope)) body,
+  html:not(.management-page):not(:has(.admin-portal-scope)) body *:not(.admin-portal-scope):not(.admin-portal-scope *) {
+    cursor: none !important;
+  }
 
+  /* Management & internal portal pages (/admin, /scanner, /login): restore native desktop PC cursor */
+  html.management-page,
+  html.management-page body,
+  html.management-page body *,
+  .admin-portal-scope,
+  .admin-portal-scope *,
+  html:has(.admin-portal-scope),
+  body:has(.admin-portal-scope),
+  body:has(.admin-portal-scope) * {
+    cursor: auto !important;
+  }
 
-/* Material Inspired Subtle Radii */
-.rounded-xl {
-  border-radius: 6px !important;
+  html.management-page a,
+  html.management-page button,
+  html.management-page [role="button"],
+  html.management-page select,
+  html.management-page .cursor-pointer,
+  .admin-portal-scope a,
+  .admin-portal-scope button,
+  .admin-portal-scope [role="button"],
+  .admin-portal-scope select,
+  .admin-portal-scope .cursor-pointer,
+  body:has(.admin-portal-scope) a,
+  body:has(.admin-portal-scope) button,
+  body:has(.admin-portal-scope) [role="button"],
+  body:has(.admin-portal-scope) select,
+  body:has(.admin-portal-scope) .cursor-pointer {
+    cursor: pointer !important;
+  }
+
+  html.management-page input,
+  html.management-page textarea,
+  .admin-portal-scope input,
+  .admin-portal-scope textarea,
+  body:has(.admin-portal-scope) input,
+  body:has(.admin-portal-scope) textarea {
+    cursor: text !important;
+  }
+
+  html.management-page button:disabled,
+  html.management-page .cursor-not-allowed,
+  .admin-portal-scope button:disabled,
+  .admin-portal-scope .cursor-not-allowed,
+  body:has(.admin-portal-scope) button:disabled,
+  body:has(.admin-portal-scope) .cursor-not-allowed {
+    cursor: not-allowed !important;
+  }
 }
 
-.rounded-2xl,
-.rounded-3xl {
-  border-radius: 8px !important;
+/* Ensure custom cursors are completely hidden on mobile/touch screens */
+@media (hover: none), (pointer: coarse) {
+  .custom-cursor-circle,
+  .tubes-cursor-container {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+.custom-cursor-circle {
+  border-radius: 9999px !important;
+}
+
+/* Show default browser cursor and hide custom follow trails when loader is active */
+body.loader-active,
+body.loader-active * {
+  cursor: auto !important;
+}
+
+body.loader-active .tubes-cursor-container,
+body.loader-active .custom-cursor-circle {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Hide browser scrollbars globally */

@@ -89,7 +89,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-on-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="admin-portal-scope min-h-screen bg-transparent text-on-background flex items-center justify-center p-4 relative overflow-hidden">
       <LiquidBackground />
 
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative z-10">
