@@ -34,7 +34,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 1,
     eventId: "panache",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/PANACHE.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747465/panache.png",
     title: "Panache",
     category: "Flagship Events - Team",
     venue: "Campus",
@@ -54,7 +54,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 2,
     eventId: "sync",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/DANCE_BATTLE.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747481/sync.png",
     title: "SYNC",
     category: "Flagship Events - Team",
     venue: "Campus",
@@ -74,7 +74,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 3,
     eventId: "bandjam",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/BANDJAM.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747463/band_jam.png",
     title: "Band Jam",
     category: "Flagship Events - Team",
     venue: "Campus",
@@ -94,7 +94,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 4,
     eventId: "persona",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/art.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747465/Personna.png",
     title: "Persona",
     category: "Flagship Events - Solo / Duo",
     venue: "Campus",
@@ -114,7 +114,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 5,
     eventId: "step_up",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/STEPUP.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747480/step_up.png",
     title: "Step Up",
     category: "Flagship Events - Solo / Duo",
     venue: "Campus",
@@ -135,7 +135,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 6,
     eventId: "echoes_of_noor",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/echoesofnoor.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747465/Echos_of_noor.png",
     title: "Echoes of Noor",
     category: "Flagship Events - Solo / Duo",
     venue: "Campus",
@@ -155,7 +155,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 7,
     eventId: "versevaad",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/VERSVAAD.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747484/versevaad.png",
     title: "Verse Vaad",
     category: "Flagship Events - Solo / Duo",
     venue: "Campus",
@@ -175,7 +175,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 8,
     eventId: "bgmi",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/bgmi.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747463/BGMI.png",
     title: "BGMI",
     category: "Non-Flagship - Esports",
     venue: "Campus",
@@ -195,7 +195,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 9,
     eventId: "freefire",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/freefire.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747465/free_fire.png",
     title: "Free Fire",
     category: "Non-Flagship - Esports",
     venue: "Campus",
@@ -215,7 +215,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 10,
     eventId: "valorant",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/valo.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747483/valorant.png",
     title: "Valorant",
     category: "Non-Flagship - Esports",
     venue: "Campus",
@@ -235,7 +235,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 11,
     eventId: "rang_manch",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/convo.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747600/Rang_Manch.png",
     title: "Rang Manch",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -255,7 +255,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 12,
     eventId: "courtroom",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/courtroom.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747464/Court_Room.png",
     title: "Court Room",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -275,7 +275,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 13,
     eventId: "bidding",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/deal.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747464/BBW.png",
     title: "Bidding Before Wicket",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -295,7 +295,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 14,
     eventId: "dumb_show",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/dumb.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747465/Dumb_Show.png",
     title: "Dumb Show",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -315,7 +315,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 15,
     eventId: "vaad_vivaad",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/convo.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747484/Vaad_Vivad.png",
     title: "Vaad Vivaad",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -335,7 +335,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 16,
     eventId: "face_off",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/STEPUP.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747465/Face_Off.png",
     title: "Dance Battle (Face-Off)",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -355,7 +355,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 17,
     eventId: "anime_quiz",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/focus.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747463/Anime_Quiz.png",
     title: "Anime Quiz",
     category: "Non-Flagship - Other Events",
     venue: "Campus",
@@ -375,7 +375,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 18,
     eventId: "art_relay",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/art.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747464/Art_Relay.png",
     title: "Art Relay",
     category: "Activities - Gifts & Hampers",
     venue: "Campus",
@@ -393,7 +393,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 19,
     eventId: "clay_modelling",
-    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1787060200/sabrang-2026/events_posters/clay.webp",
+    image: "https://res.cloudinary.com/eprhemvt/image/upload/f_auto,q_auto/v1791747464/Clay_Modelling.png",
     title: "Clay Modelling",
     category: "Activities - Gifts & Hampers",
     venue: "Campus",
