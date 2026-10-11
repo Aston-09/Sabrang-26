@@ -22,7 +22,7 @@
   src: url('/fonts/FlorasDisplay.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @theme {

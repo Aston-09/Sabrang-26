@@ -81,204 +81,241 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
   useEffect(() => {
     if (!mounted) return;
 
-    document.body.classList.add("loader-active");
-    document.body.style.overflow = "hidden";
+    let cancelled = false;
 
-    const globalGuides = globalGuidesRef.current.filter(Boolean) as SVGGeometryElement[];
-    const letters = letterRefs.current.filter(Boolean) as SVGTextElement[];
+    const startAnimation = () => {
+      if (cancelled) return;
 
-    // Helper to calculate & set strokeDash
-    const initStroke = (el: SVGGeometryElement, initialOpacity = 0) => {
-      try {
-        const len = el.getTotalLength?.() ?? 1400;
+      document.body.classList.add("loader-active");
+      document.body.style.overflow = "hidden";
+
+      const globalGuides = globalGuidesRef.current.filter(Boolean) as SVGGeometryElement[];
+      const letters = letterRefs.current.filter(Boolean) as SVGTextElement[];
+
+      // Helper to calculate & set strokeDash
+      const initStroke = (el: SVGGeometryElement, initialOpacity = 0) => {
+        try {
+          const len = el.getTotalLength?.() ?? 1400;
+          gsap.set(el, {
+            strokeDasharray: len,
+            strokeDashoffset: len,
+            opacity: initialOpacity,
+          });
+          return len;
+        } catch {
+          gsap.set(el, { opacity: initialOpacity });
+          return 1400;
+        }
+      };
+
+      // 1. Initialize Global Blueprint Guides
+      globalGuides.forEach((el) => initStroke(el, 0));
+
+      // 2. Initialize Letterforms: all letters start completely invisible
+      letters.forEach((el) => {
         gsap.set(el, {
-          strokeDasharray: len,
-          strokeDashoffset: len,
-          opacity: initialOpacity,
+          opacity: 0,
+          fill: "#ffffff",
         });
-        return len;
-      } catch {
-        gsap.set(el, { opacity: initialOpacity });
-        return 1400;
-      }
-    };
-
-    // 1. Initialize Global Blueprint Guides
-    globalGuides.forEach((el) => initStroke(el, 0));
-
-    // 2. Initialize Letterforms:
-    // IMPORTANT: Letters 1..6 (A, B, R, A, N, G) are COMPLETELY INVISIBLE at start!
-    // They will only appear when their specific construction lines arrive.
-    letters.forEach((el, i) => {
-      gsap.set(el, {
-        opacity: i === 0 ? 1 : 0,
-        fill: "#ffffff",
       });
-    });
 
-    // 3. Initialize per-letter guide elements
-    for (let i = 0; i < 7; i++) {
-      const gElements = (letterGuidesRef.current[i] || []).filter(Boolean) as SVGGeometryElement[];
-      gElements.forEach((el) => initStroke(el, 0));
-    }
+      // 3. Initialize per-letter guide elements
+      for (let i = 0; i < 7; i++) {
+        const gElements = (letterGuidesRef.current[i] || []).filter(Boolean) as SVGGeometryElement[];
+        gElements.forEach((el) => initStroke(el, 0));
+      }
 
-    // Position S-Group at dead center (offset +680px from X=280 anchor to X=960 center)
-    if (sGroupRef.current) {
-      gsap.set(sGroupRef.current, { x: 680 });
-    }
+      // Position S-Group at dead center (offset +680px from X=280 anchor to X=960 center)
+      if (sGroupRef.current) {
+        gsap.set(sGroupRef.current, { x: 680 });
+      }
 
-    // ── Build Main Animation Timeline ──
-    const tl = gsap.timeline({
-      onComplete: () => exitTl.play(),
-    });
-    tlRef.current = tl;
+      function handleExit() {
+        document.body.classList.remove("loader-active");
+        document.body.style.overflow = "";
+        onComplete?.();
+      }
 
-    // Ambient glow
-    tl.to(glowRef.current, { opacity: 1, duration: 1.4, ease: "power2.out" }, 0);
+      // Exit transition (Swift, punchy dissolve into homepage)
+      const exitTl = gsap.timeline({ paused: true, onComplete: handleExit });
+      exitTlRef.current = exitTl;
 
-    // ── STAGE 1: S Appears in the Center (t = 0.2s → 1.5s) ──
-    const sGuides = (letterGuidesRef.current[0] || []).filter(Boolean) as SVGGeometryElement[];
-    sGuides.forEach((el, idx) => {
-      tl.to(
-        el,
-        {
-          opacity: 0.75,
-          strokeDashoffset: 0,
-          duration: 0.9,
-          ease: "expo.out",
-        },
-        0.2 + idx * 0.05
-      );
-    });
+      exitTl
+        .to(".preloader-guide-line", { opacity: 0, duration: 0.35, stagger: 0.015, ease: "power2.in" }, 0)
+        .to(gridCanvasRef.current, { opacity: 0, duration: 0.4, ease: "power2.in" }, 0)
+        .to(glowRef.current, { opacity: 0, scale: 1.05, duration: 0.45, ease: "power2.in" }, 0.03)
+        .to(letters, { y: -30, opacity: 0, stagger: 0.02, duration: 0.4, ease: "power3.in" }, 0.05)
+        .to(overlayRef.current, { opacity: 0, duration: 0.45, ease: "power2.inOut" }, 0.15);
 
-    // ── STAGE 2: Slide S to the Left & Project Typographic Axes (t = 1.5s → 2.6s) ──
-    if (sGroupRef.current) {
-      tl.to(
-        sGroupRef.current,
-        {
-          x: 0,
-          duration: 1.1,
-          ease: "power2.inOut",
-        },
-        1.5
-      );
-    }
+      // ── Build Main Animation Timeline ──
+      const tl = gsap.timeline({
+        onComplete: () => exitTl.play(),
+      });
+      tlRef.current = tl;
 
-    // Global cap-height, midline, baseline axes shoot across the screen
-    globalGuides.forEach((el, idx) => {
-      tl.to(
-        el,
-        {
-          opacity: 0.25,
-          strokeDashoffset: 0,
-          duration: 1.1,
-          ease: "expo.out",
-        },
-        1.6 + idx * 0.04
-      );
-    });
+      // Ambient glow
+      tl.to(glowRef.current, { opacity: 1, duration: 1.4, ease: "power2.out" }, 0);
 
-    // S guides settle to delicate grid
-    sGuides.forEach((el) => {
-      tl.to(el, { opacity: 0.18, duration: 0.7, ease: "power1.out" }, 2.1);
-    });
-
-    // ── STAGE 3: Sequential Architectural Construction & Letter Reveal (A B R A N G) ──
-    const letterStep = 0.48;
-    const stage3Start = 2.4;
-
-    for (let i = 1; i < 7; i++) {
-      const start = stage3Start + (i - 1) * letterStep;
-      const letterEl = letters[i];
-      const gElements = (letterGuidesRef.current[i] || []).filter(Boolean) as SVGGeometryElement[];
-
-      // Phase A: Architectural crossing rays & guide lines shoot in at high speed
-      gElements.forEach((el, elIdx) => {
+      // ── STAGE 1: S Appears in the Center (t = 0.2s → 1.5s) ──
+      const sGuides = (letterGuidesRef.current[0] || []).filter(Boolean) as SVGGeometryElement[];
+      sGuides.forEach((el, idx) => {
         tl.to(
           el,
           {
-            opacity: 0.9,
+            opacity: 0.75,
             strokeDashoffset: 0,
-            duration: 0.65,
+            duration: 0.9,
             ease: "expo.out",
           },
-          start + elIdx * 0.03
+          0.2 + idx * 0.05
         );
       });
 
-      // Phase B: The letter appears directly inside the intersecting lines and illuminates into solid white
-      if (letterEl) {
+      // Illuminate letter S directly as its construction guides shoot in
+      if (letters[0]) {
         tl.to(
-          letterEl,
+          letters[0],
           {
             opacity: 1,
-            duration: 0.25,
+            duration: 0.35,
             ease: "power2.out",
           },
-          start + 0.22
+          0.22
         );
       }
 
-      // Phase C: Guide lines settle down into the background blueprint
-      gElements.forEach((el) => {
+      // ── STAGE 2: Slide S to the Left & Project Typographic Axes (t = 1.5s → 2.6s) ──
+      if (sGroupRef.current) {
+        tl.to(
+          sGroupRef.current,
+          {
+            x: 0,
+            duration: 1.1,
+            ease: "power2.inOut",
+          },
+          1.5
+        );
+      }
+
+      // Global cap-height, midline, baseline axes shoot across the screen
+      globalGuides.forEach((el, idx) => {
         tl.to(
           el,
           {
-            opacity: 0.18,
-            duration: 0.5,
-            ease: "power1.out",
+            opacity: 0.25,
+            strokeDashoffset: 0,
+            duration: 1.1,
+            ease: "expo.out",
           },
-          start + 0.5
+          1.6 + idx * 0.04
         );
       });
-    }
 
-    // Final letter completes at:
-    const finalCompleteTime = stage3Start + 5 * letterStep + 0.25;
+      // S guides settle to delicate grid
+      sGuides.forEach((el) => {
+        tl.to(el, { opacity: 0.18, duration: 0.7, ease: "power1.out" }, 2.1);
+      });
 
-    // ── Progress Counter (000 → 100) Synced Exactly with Final Letter Completion ──
-    const counterObj = { val: 0 };
-    tl.to(
-      counterObj,
-      {
-        val: 100,
-        duration: finalCompleteTime,
-        ease: "none",
-        onUpdate: () => {
-          if (counterRef.current) {
-            counterRef.current.textContent = `${Math.round(counterObj.val).toString().padStart(3, "0")}/100`;
-          }
+      // ── STAGE 3: Sequential Architectural Construction & Letter Reveal (A B R A N G) ──
+      const letterStep = 0.48;
+      const stage3Start = 2.4;
+
+      for (let i = 1; i < 7; i++) {
+        const start = stage3Start + (i - 1) * letterStep;
+        const letterEl = letters[i];
+        const gElements = (letterGuidesRef.current[i] || []).filter(Boolean) as SVGGeometryElement[];
+
+        // Phase A: Architectural crossing rays & guide lines shoot in at high speed
+        gElements.forEach((el, elIdx) => {
+          tl.to(
+            el,
+            {
+              opacity: 0.9,
+              strokeDashoffset: 0,
+              duration: 0.65,
+              ease: "expo.out",
+            },
+            start + elIdx * 0.03
+          );
+        });
+
+        // Phase B: The letter appears directly inside the intersecting lines and illuminates into solid white
+        if (letterEl) {
+          tl.to(
+            letterEl,
+            {
+              opacity: 1,
+              duration: 0.25,
+              ease: "power2.out",
+            },
+            start + 0.22
+          );
+        }
+
+        // Phase C: Guide lines settle down into the background blueprint
+        gElements.forEach((el) => {
+          tl.to(
+            el,
+            {
+              opacity: 0.18,
+              duration: 0.5,
+              ease: "power1.out",
+            },
+            start + 0.5
+          );
+        });
+      }
+
+      // Final letter completes at:
+      const finalCompleteTime = stage3Start + 5 * letterStep + 0.25;
+
+      // ── Progress Counter (000 → 100) Synced Exactly with Final Letter Completion ──
+      const counterObj = { val: 0 };
+      tl.to(
+        counterObj,
+        {
+          val: 100,
+          duration: finalCompleteTime,
+          ease: "none",
+          onUpdate: () => {
+            if (counterRef.current) {
+              counterRef.current.textContent = `${Math.round(counterObj.val).toString().padStart(3, "0")}/100`;
+            }
+          },
         },
-      },
-      0
-    );
+        0
+      );
 
-    // Subtle glow flash upon word completion
-    tl.to(glowRef.current, { opacity: 1.4, duration: 0.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, finalCompleteTime);
+      // Subtle glow flash upon word completion
+      tl.to(glowRef.current, { opacity: 1.4, duration: 0.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, finalCompleteTime);
 
-    // ── STAGE 4: Crisp 0.25s Hold then Immediate Exit to Home ──
-    tl.to({}, { duration: 0.25 });
+      // ── STAGE 4: Crisp 0.25s Hold then Immediate Exit to Home ──
+      tl.to({}, { duration: 0.25 });
+    };
 
-    // Exit transition (Swift, punchy dissolve into homepage)
-    const exitTl = gsap.timeline({ paused: true, onComplete: handleExit });
-    exitTlRef.current = exitTl;
+    const prepareAndStart = async () => {
+      if (typeof document !== "undefined" && "fonts" in document) {
+        try {
+          await Promise.race([
+            Promise.all([
+              document.fonts.load('280px FlorasDisplay'),
+              document.fonts.ready,
+            ]),
+            new Promise((res) => setTimeout(res, 500)),
+          ]);
+        } catch {
+          // Fallback gracefully if font loading check errors
+        }
+      }
+      startAnimation();
+    };
 
-    exitTl
-      .to(".preloader-guide-line", { opacity: 0, duration: 0.35, stagger: 0.015, ease: "power2.in" }, 0)
-      .to(gridCanvasRef.current, { opacity: 0, duration: 0.4, ease: "power2.in" }, 0)
-      .to(glowRef.current, { opacity: 0, scale: 1.05, duration: 0.45, ease: "power2.in" }, 0.03)
-      .to(letters, { y: -30, opacity: 0, stagger: 0.02, duration: 0.4, ease: "power3.in" }, 0.05)
-      .to(overlayRef.current, { opacity: 0, duration: 0.45, ease: "power2.inOut" }, 0.15);
-
-    function handleExit() {
-      document.body.classList.remove("loader-active");
-      document.body.style.overflow = "";
-      onComplete?.();
-    }
+    prepareAndStart();
 
     return () => {
-      tl.kill();
-      exitTl.kill();
+      cancelled = true;
+      if (tlRef.current) tlRef.current.kill();
+      if (exitTlRef.current) exitTlRef.current.kill();
       document.body.classList.remove("loader-active");
       document.body.style.overflow = "";
     };
@@ -446,7 +483,7 @@ export default function SabrangPreloader({ onComplete }: SabrangPreloaderProps) 
                 fill="#ffffff"
                 style={{
                   fontFamily: "'FlorasDisplay', 'Syne', serif",
-                  opacity: i === 0 ? 1 : 0
+                  opacity: 0,
                 }}
               >
                 {char}
