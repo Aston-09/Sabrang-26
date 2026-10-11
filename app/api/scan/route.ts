@@ -112,24 +112,39 @@ export async function POST(req: Request) {
 
     // 2. Validate Event Specificity
     // If scanner specified an event, verify that the registration belongs to this event
-    const ticketEvent = (regData.eventName || regData.eventTitle || regData.eventId || 'General Fest Entry').trim();
+    const registeredEventsList: string[] = [];
+    if (Array.isArray(regData.selectedEvents)) {
+      registeredEventsList.push(...regData.selectedEvents.map((e: any) => typeof e === 'object' ? (e.id || e.title || '') : String(e)));
+    }
+    if (Array.isArray(regData.events)) {
+      registeredEventsList.push(...regData.events.map((e: any) => typeof e === 'object' ? (e.id || e.title || '') : String(e)));
+    }
+    if (regData.eventName) registeredEventsList.push(regData.eventName);
+    if (regData.eventTitle) registeredEventsList.push(regData.eventTitle);
+    if (regData.eventId) registeredEventsList.push(regData.eventId);
+    if (regData.visitorConfig) registeredEventsList.push('visitor', 'Visitor Pass');
+    if (registeredEventsList.length === 0) registeredEventsList.push('General Fest Entry');
+
+    const ticketEvent = (regData.eventName || regData.eventTitle || regData.eventId || registeredEventsList[0] || 'General Fest Entry').trim();
     
     if (eventId && eventId !== 'all' && eventId !== 'general') {
       const targetKey = normalizeEventKey(eventId);
-      const ticketEventKey = normalizeEventKey(ticketEvent);
-
-      const isMatch = ticketEventKey.includes(targetKey) || 
-                      targetKey.includes(ticketEventKey) ||
-                      ticketEventKey === 'all' || 
-                      ticketEventKey === 'generalfestentry';
+      
+      const isMatch = registeredEventsList.some(ev => {
+        const ticketEventKey = normalizeEventKey(ev);
+        return ticketEventKey.includes(targetKey) || 
+               targetKey.includes(ticketEventKey) ||
+               ticketEventKey === 'all' || 
+               ticketEventKey === 'generalfestentry';
+      });
 
       if (!isMatch) {
         return NextResponse.json({
           success: false,
           code: 'WRONG_EVENT',
-          error: `WRONG EVENT: This ticket is for "${ticketEvent}", not for "${eventTitle || eventId}".`,
+          error: `WRONG EVENT: This ticket is for "${registeredEventsList.join(', ')}", not for "${eventTitle || eventId}".`,
           attendeeName,
-          ticketEvent,
+          ticketEvent: registeredEventsList.join(', '),
           expectedEvent: eventTitle || eventId,
         }, { status: 400 });
       }

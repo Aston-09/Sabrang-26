@@ -13,13 +13,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // Server-side validation: must be an image and <= 5MB
+    if (!file.type || !file.type.startsWith('image/')) {
+      return NextResponse.json({ error: "Only image files (JPEG, PNG, WEBP) are allowed" }, { status: 400 });
+    }
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File size exceeds 5MB limit" }, { status: 400 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const uniqueFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
     // 1. Try uploading to Cloudinary first (Permanent CDN storage, works in production & localhost)
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'eprhemvt';
-    const apiKey = process.env.CLOUDINARY_API_KEY || '263566829496821';
-    const apiSecret = process.env.CLOUDINARY_API_SECRET || '69VhgUgGOHfhg1aRJE552lxTSpo';
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (cloudName && apiKey && apiSecret) {
       try {

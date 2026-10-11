@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '../../../lib/firebase';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Check, X, User, AlertCircle, Mail, Phone, Loader2 } from 'lucide-react';
-import { getEventById } from '@/lib/eventPricing';
+import { OFFICIAL_EVENTS, getEventById } from '@/lib/eventPricing';
 import { extractRegistrationInfo } from '@/lib/registrationDataHelper';
 
 function getScannedEventName(data: any): string {
@@ -97,16 +97,6 @@ export default function AdminScannerView() {
   const [cameras, setCameras] = useState<Array<{ id: string, label: string }>>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
   const [selectedScanEvent, setSelectedScanEvent] = useState<string>('all');
-  const [availableEvents, setAvailableEvents] = useState<string[]>([
-    'PANACHE - RAMPWALK',
-    'BANDJAM - BATTLE OF BANDS',
-    'STEP UP - SOLO DANCE',
-    'SYNC - GROUP DANCE',
-    'ECHOES OF NOOR - SUFI NIGHT',
-    'VERSEVAAD - SLAM POETRY',
-    'VALORANT SHOWDOWN',
-    'GENERAL FEST ENTRY'
-  ]);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isScanning = useRef(true);
@@ -410,7 +400,9 @@ export default function AdminScannerView() {
           body: JSON.stringify({
             registrationID: scannedData.id,
             eventId: selectedScanEvent === 'all' ? undefined : selectedScanEvent,
-            eventTitle: selectedScanEvent === 'all' ? undefined : selectedScanEvent,
+            eventTitle: selectedScanEvent === 'all' 
+              ? undefined 
+              : (OFFICIAL_EVENTS.find(e => e.id === selectedScanEvent)?.title || (selectedScanEvent === 'visitor' ? 'Visitor Pass' : selectedScanEvent)),
             scannerId: 'ADMIN',
             volunteerName: adminEmail
           })
@@ -434,7 +426,9 @@ export default function AdminScannerView() {
           volunteerName: adminEmail,
           registrationID: scannedData.id,
           attendeeName: scannedData.name,
-          eventTitle: selectedScanEvent,
+          eventTitle: selectedScanEvent === 'all' 
+            ? 'All Events' 
+            : (OFFICIAL_EVENTS.find(e => e.id === selectedScanEvent)?.title || (selectedScanEvent === 'visitor' ? 'Visitor Pass' : selectedScanEvent)),
           timestamp: serverTimestamp(),
           result: 'declined'
         });
@@ -521,10 +515,13 @@ export default function AdminScannerView() {
             onChange={(e) => setSelectedScanEvent(e.target.value)}
             className="w-full bg-white border border-slate-200 text-slate-900 font-bold text-xs rounded-xl py-3 px-4 focus:outline-none focus:border-purple-500/50 cursor-pointer appearance-none"
           >
-            <option value="all" className="bg-[#1a1525]">All Events (Global Fest Entry)</option>
-            {availableEvents.map((evt) => (
-              <option key={evt} value={evt} className="bg-[#1a1525]">{evt}</option>
+            <option value="all">All Events (Global Fest Entry)</option>
+            {OFFICIAL_EVENTS.map((evt) => (
+              <option key={evt.id} value={evt.id}>
+                {evt.title} ({evt.subtitle})
+              </option>
             ))}
+            <option value="visitor">Visitor Pass (General Fest Entry)</option>
           </select>
           <p className="text-[10px] text-slate-500 mt-3 font-medium">
             Tickets for other events will be rejected with "WRONG EVENT" when a specific event is selected.
@@ -579,7 +576,7 @@ export default function AdminScannerView() {
                   className="w-full bg-white text-slate-900 border border-slate-200 text-xs rounded-xl py-3 px-4 focus:outline-none cursor-pointer appearance-none"
                 >
                   {cameras.map((camera) => (
-                    <option key={camera.id} value={camera.id} className="bg-[#1a1525]">
+                    <option key={camera.id} value={camera.id}>
                       {camera.label || `Camera ${camera.id.slice(0, 8)}`}
                     </option>
                   ))}

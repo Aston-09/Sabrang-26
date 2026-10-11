@@ -21,6 +21,8 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { OFFICIAL_EVENTS } from '@/lib/eventPricing';
+
 interface EntryLogItem {
   id: string;
   ticketId?: string;
@@ -39,14 +41,9 @@ interface EntryLogItem {
 }
 
 const DEFAULT_EVENTS = [
-  'PANACHE - RAMPWALK',
-  'BANDJAM - BATTLE OF BANDS',
-  'STEP UP - SOLO DANCE',
-  'SYNC - GROUP DANCE',
-  'ECHOES OF NOOR - SUFI NIGHT',
-  'VERSEVAAD - SLAM POETRY',
-  'VALORANT SHOWDOWN',
-  'GENERAL FEST ENTRY'
+  ...OFFICIAL_EVENTS.map(e => e.title.toUpperCase()),
+  'GENERAL FEST ENTRY',
+  'VISITOR PASS'
 ];
 
 export default function EventEntryLogsPage() {
@@ -246,7 +243,6 @@ export default function EventEntryLogsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 pb-2 border-b border-slate-200">
         <div>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight text-slate-900 font-space-grotesk">Entry Logs</h1>
-          <p className="text-slate-500 uppercase tracking-[0.2em] text-[10px] mt-2 font-semibold">Live Scanner Feed</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -335,9 +331,9 @@ export default function EventEntryLogsPage() {
             onChange={(e) => setSelectedEvent(e.target.value)}
             className="block w-full pl-4 pr-10 py-3 bg-white/80 border border-slate-100 rounded-xl text-xs text-slate-900 font-bold focus:outline-none cursor-pointer appearance-none"
           >
-            <option value="all" className="bg-[#1a1525]">All Events (Global)</option>
+            <option value="all">All Events (Global)</option>
             {availableEvents.map(evt => (
-              <option key={evt} value={evt} className="bg-[#1a1525]">{evt}</option>
+              <option key={evt} value={evt}>{evt}</option>
             ))}
           </select>
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

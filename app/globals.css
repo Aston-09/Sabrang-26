@@ -143,15 +143,6 @@
 
 
 
-/* Material Inspired Subtle Radii */
-.rounded-xl {
-  border-radius: 6px !important;
-}
-
-.rounded-2xl,
-.rounded-3xl {
-  border-radius: 8px !important;
-}
 
 /* Hide browser scrollbars globally */
 html,

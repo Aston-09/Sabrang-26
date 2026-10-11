@@ -324,7 +324,6 @@ export default function CouponsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 pb-2 border-b border-slate-200">
         <div>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight text-slate-900 font-space-grotesk">Coupons</h1>
-          <p className="text-slate-500 uppercase tracking-[0.2em] text-[10px] mt-2 font-semibold">Promotional Discounts</p>
         </div>
         <button 
           onClick={openAddModal}
@@ -419,12 +418,11 @@ export default function CouponsPage() {
                         </div>
                       </td>
                       <td className="p-5">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-[0.2em] ${
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-[0.2em] ${
                           coupon.active 
-                            ? 'bg-white text-slate-600 border border-slate-200' 
-                            : 'bg-white text-slate-600 border border-slate-200'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                            : 'bg-slate-50 text-slate-500 border border-slate-200'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${coupon.active ? 'bg-white0' : 'bg-slate-100'}`}></span>
                           {coupon.active ? 'Active' : 'Disabled'}
                         </span>
                       </td>
@@ -502,8 +500,8 @@ export default function CouponsPage() {
                 onChange={(e) => setDiscountType(e.target.value as CouponDiscountType)}
                 className="w-full bg-white/80 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-purple-500/50 appearance-none"
               >
-                <option value="fixed" className="bg-[#1a1525]">Fixed Amount (₹)</option>
-                <option value="percentage" className="bg-[#1a1525]">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (₹)</option>
+                <option value="percentage">Percentage (%)</option>
               </select>
             </div>
             
