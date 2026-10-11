@@ -427,6 +427,9 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     extraMemberFee: 299,
     isTeam: true,
     type: "generic",
+    earlyBirdPricingLabel: "₹149 per head",
+    earlyBirdExtraMemberFee: 149,
+    earlyBirdPrice: 149,
     pricingLabel: "₹299 per head",
     prizes: {
       winnerCash: 3000,

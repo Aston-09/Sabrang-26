@@ -17,6 +17,7 @@ import {
   VisitorPassConfig,
   calculateVisitorPassFee,
 } from "@/lib/eventPricing";
+import RegistrationCoordinatorsDropdown from "@/components/auth/RegistrationCoordinatorsDropdown";
 
 type StepId = "select" | "forms" | "review";
 
@@ -1998,6 +1999,9 @@ export default function CheckoutForm() {
             </div>
           )}
         </div>
+
+        {/* Event Coordinators Dropdown Menu */}
+        <RegistrationCoordinatorsDropdown />
       </div>
       </div>
       ) : (

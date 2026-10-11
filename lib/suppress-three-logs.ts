@@ -34,6 +34,7 @@ const SUPPRESSED_STRINGS = [
   "WebGPU is not available",
   "Failed to stop camera via html5-qrcode",
   "RenderedCameraImpl video surface onabort",
+  "Detected an update time that is in the future",
 ];
 
 const filterLog = (origFn: (...args: unknown[]) => void) => {
