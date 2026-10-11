@@ -56,11 +56,7 @@ export async function POST(req: Request) {
     const errorDocRef = await adminDb.collection('systemErrors').add(errorRecord);
     const errorId = errorDocRef.id;
 
-    // 2. Also record in auditLogs
-    await adminDb.collection('auditLogs').add({
-      ...errorRecord,
-      errorId,
-    }).catch(auditErr => console.error("Audit log error creation failed:", auditErr));
+
 
     // 3. Trigger automated email alert to devamgupta@jklu.edu.in asynchronously
     sendErrorNotificationAlert({

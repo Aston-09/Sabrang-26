@@ -46,10 +46,10 @@ export function sanitizeErrorDetails(input: string | null | undefined): string {
 /**
  * Sends an error alert email via Brevo.
  */
-async function sendAlertEmail(to: string, subject: string, htmlContent: string, textContent: string): Promise<void> {
+async function sendAlertEmail(to: { email: string; name?: string }[], subject: string, htmlContent: string, textContent: string): Promise<void> {
   const { sendBrevoEmail } = await import('./brevo');
   const result = await sendBrevoEmail({
-    to: [{ email: to, name: 'Sabrang Dev Team' }],
+    to,
     subject,
     htmlContent,
     textContent,
@@ -92,7 +92,10 @@ export async function sendErrorNotificationAlert(payload: ErrorAlertPayload): Pr
   isInsideAlertExecution = true;
 
   try {
-    const recipientEmail = process.env.ERROR_ALERT_EMAIL || 'devamgupta@jklu.edu.in';
+    const rawRecipients = process.env.ERROR_ALERT_EMAIL || 'devamgupta@jklu.edu.in';
+    const recipientEmails = rawRecipients.split(',').map(e => e.trim()).filter(Boolean);
+    const toList = recipientEmails.map(email => ({ email, name: 'Sabrang Dev Team' }));
+    const recipientSummary = recipientEmails.join(', ');
     const fromAddress = process.env.BREVO_SENDER_EMAIL || 'sabrang@jklu.edu.in';
     const environment = payload.environment || process.env.NODE_ENV || 'development';
 
@@ -187,7 +190,7 @@ export async function sendErrorNotificationAlert(payload: ErrorAlertPayload): Pr
 
         <!-- Footer -->
         <div style="background-color: #f8fafc; padding: 16px 28px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8;">
-          Sabrang 2026 Automated System Reliability & Error Alert Service • Delivered to ${recipientEmail}
+          Sabrang 2026 Automated System Reliability & Error Alert Service • Delivered to ${recipientSummary}
         </div>
       </div>
     `;
@@ -205,14 +208,14 @@ Stack Trace:
 ${cleanStack.substring(0, 1000)}
     `.trim();
 
-    await sendAlertEmail(recipientEmail, subject, htmlContent, textContent);
-    console.log(`[ErrorAlertService] Error notification email sent successfully to ${recipientEmail} for Error ID: ${errorId}`);
+    await sendAlertEmail(toList, subject, htmlContent, textContent);
+    console.log(`[ErrorAlertService] Error notification email sent successfully to ${recipientSummary} for Error ID: ${errorId}`);
 
     // Update Firestore error record notification status if errorId exists
     if (errorId !== 'N/A' && adminDb) {
       adminDb.collection('systemErrors').doc(errorId).update({
         notificationStatus: 'SENT',
-        notifiedTo: recipientEmail,
+        notifiedTo: recipientSummary,
         notifiedAt: FieldValue.serverTimestamp(),
       }).catch(() => {});
     }
@@ -232,5 +235,79 @@ ${cleanStack.substring(0, 1000)}
     return false;
   } finally {
     isInsideAlertExecution = false;
+  }
+}
+
+/**
+ * Unified server-side system error logger.
+ * 1. Writes solely to the `systemErrors` collection (NEVER `auditLogs`).
+ * 2. Immediately dispatches an email alert to the dev team via Brevo ("haatho haath").
+ */
+export async function logSystemError(params: {
+  message: string;
+  stack?: string;
+  path?: string;
+  type?: string;
+  method?: string;
+  statusCode?: number;
+  performedBy?: string;
+  metadata?: Record<string, any>;
+}): Promise<string | null> {
+  try {
+    if (!adminDb) {
+      console.warn("[logSystemError] Firebase Admin DB not initialized.");
+      return null;
+    }
+
+    const cleanMessage = sanitizeErrorDetails(params.message || 'Unknown Server Error');
+    const cleanStack = sanitizeErrorDetails(params.stack ? params.stack.substring(0, 1500) : 'No stack trace provided');
+    const cleanPath = sanitizeErrorDetails(params.path || '/');
+    const type = params.type || 'Server API Error';
+
+    const errorDetails = `[${type}] ${cleanMessage}\n\nStack:\n${cleanStack}`;
+
+    const errorRecord: any = {
+      timestamp: FieldValue.serverTimestamp(),
+      createdAt: new Date().toISOString(),
+      action: 'SYSTEM_ERROR',
+      performedBy: params.performedBy || 'System API',
+      targetEntity: cleanPath,
+      details: errorDetails,
+      message: cleanMessage,
+      stack: cleanStack,
+      type: type,
+      method: params.method || 'SERVER',
+      statusCode: params.statusCode || 500,
+      userAgent: 'Server Runtime',
+      userId: 'Server',
+      environment: process.env.NODE_ENV || 'development',
+      notificationStatus: 'PENDING',
+    };
+
+    if (params.metadata && typeof params.metadata === 'object') {
+      errorRecord.metadata = params.metadata;
+    }
+
+    // Record SOLELY in systemErrors collection - NEVER in auditLogs
+    const errorDocRef = await adminDb.collection('systemErrors').add(errorRecord);
+    const errorId = errorDocRef.id;
+
+    // Trigger email alert asynchronously ("haatho haath")
+    sendErrorNotificationAlert({
+      errorId,
+      message: cleanMessage,
+      type,
+      path: cleanPath,
+      method: params.method || 'SERVER',
+      statusCode: params.statusCode || 500,
+      stack: cleanStack,
+      metadata: params.metadata,
+      environment: process.env.NODE_ENV || 'development',
+    }).catch(alertErr => console.error("[logSystemError] Failed to dispatch automated alert email:", alertErr));
+
+    return errorId;
+  } catch (err) {
+    console.error("[logSystemError] Critical: Failed to log system error:", err);
+    return null;
   }
 }

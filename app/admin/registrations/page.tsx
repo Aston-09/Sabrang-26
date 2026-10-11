@@ -503,18 +503,18 @@ export default function Registrations() {
 
   return (
     <div className="space-y-8 font-sans text-slate-900 animate-in fade-in duration-300">
-      {/* Live Counter Cards - Bento Boxes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Live Counter Cards - Bento Boxes (Side-by-side on mobile, compact vertical footprint) */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {/* Total Registrations */}
-        <div className="bg-white backdrop-blur-[40px] border border-slate-200 p-8 md:p-10 rounded-[32px] shadow-xs flex flex-col justify-between group transition-all duration-500 hover:bg-white/[0.07] overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white rounded-full blur-[50px] -translate-y-1/2 translate-x-1/3 group-hover:bg-purple-500/20 transition-all duration-700 ease-out" />
-          <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] relative z-10 mb-8">Total Registrations</h2>
+        <div className="bg-white backdrop-blur-[40px] border border-slate-200 p-4 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] shadow-xs flex flex-col justify-between group transition-all duration-500 hover:bg-white/[0.07] overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-48 sm:h-48 bg-white rounded-full blur-[30px] sm:blur-[50px] -translate-y-1/2 translate-x-1/3 group-hover:bg-purple-500/20 transition-all duration-700 ease-out" />
+          <h2 className="text-[8px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] relative z-10 mb-2 sm:mb-8 truncate">Total Registrations</h2>
           <div className="relative z-10">
-            <p className="text-6xl md:text-8xl font-light tracking-tighter text-slate-900 font-space-grotesk">
+            <p className="text-3xl sm:text-6xl md:text-8xl font-light tracking-tighter text-slate-900 font-space-grotesk leading-none">
               {loading ? '-' : registrations.length.toLocaleString('en-IN')}
             </p>
             {filteredRegistrations.length !== registrations.length && (
-              <p className="text-[10px] font-bold text-slate-600 mt-3 tracking-widest uppercase bg-white px-3 py-1.5 border border-slate-200 rounded-lg inline-block">
+              <p className="text-[8px] sm:text-[10px] font-bold text-slate-600 mt-1.5 sm:mt-3 tracking-wider sm:tracking-widest uppercase bg-white px-2 sm:px-3 py-0.5 sm:py-1.5 border border-slate-200 rounded-md sm:rounded-lg inline-block">
                 Filtered: {filteredRegistrations.length}
               </p>
             )}
@@ -522,11 +522,11 @@ export default function Registrations() {
         </div>
         
         {/* Today's Registrations */}
-        <div className="bg-white backdrop-blur-[40px] border border-slate-200 p-8 md:p-10 rounded-[32px] shadow-xs flex flex-col justify-between group transition-all duration-500 hover:bg-white/[0.07] overflow-hidden relative">
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-white rounded-full blur-[50px] translate-y-1/2 translate-x-1/4 group-hover:bg-blue-500/20 transition-all duration-700 ease-out" />
-          <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] relative z-10 mb-8">Today's Registrations</h2>
+        <div className="bg-white backdrop-blur-[40px] border border-slate-200 p-4 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] shadow-xs flex flex-col justify-between group transition-all duration-500 hover:bg-white/[0.07] overflow-hidden relative">
+          <div className="absolute bottom-0 right-0 w-24 h-24 sm:w-48 sm:h-48 bg-white rounded-full blur-[30px] sm:blur-[50px] translate-y-1/2 translate-x-1/4 group-hover:bg-blue-500/20 transition-all duration-700 ease-out" />
+          <h2 className="text-[8px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] relative z-10 mb-2 sm:mb-8 truncate">Today's Registrations</h2>
           <div className="relative z-10 flex items-end">
-            <p className="text-6xl md:text-8xl font-light tracking-tighter text-slate-600 font-space-grotesk">
+            <p className="text-3xl sm:text-6xl md:text-8xl font-light tracking-tighter text-slate-600 font-space-grotesk leading-none">
               {loading ? '-' : todaysRegistrationsCount.toLocaleString('en-IN')}
             </p>
           </div>
@@ -694,18 +694,26 @@ export default function Registrations() {
                     <td className="p-5">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${
                         reg.hasEntered 
-                          ? 'bg-white text-slate-600 border border-slate-200' 
-                          : (reg.status === 'declined' ? 'bg-white text-slate-600 border border-slate-200' : 'bg-white text-slate-600 border border-slate-200')
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                          : (reg.status === 'declined' 
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                              : 'bg-amber-50 text-amber-700 border border-amber-200')
                       }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          reg.hasEntered ? 'bg-emerald-500' : (reg.status === 'declined' ? 'bg-rose-500' : 'bg-amber-500')
+                        }`} />
                         {reg.hasEntered ? 'Entered' : (reg.status === 'declined' ? 'Declined' : 'Pending')}
                       </span>
                     </td>
                     <td className="p-5">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${
                         reg.emailSent 
-                          ? 'bg-white text-slate-600 border border-slate-200' 
-                          : 'bg-white text-slate-600 border border-slate-200'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                          : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          reg.emailSent ? 'bg-emerald-500' : 'bg-rose-500'
+                        }`} />
                         {reg.emailSent ? 'Sent' : 'Unsent'}
                       </span>
                     </td>
@@ -797,7 +805,7 @@ export default function Registrations() {
                 <p className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.25em]">Additional Information</p>
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <p className="text-[9px] font-medium text-slate-500 uppercase tracking-[0.25em] mb-1">Registration / Roll No.</p>
+                <p className="text-[9px] font-medium text-slate-500 uppercase tracking-[0.25em] mb-1">Registration ID</p>
                 <p className="font-medium text-sm text-slate-900 bg-white/80 p-3 border border-slate-100 rounded-xl font-mono tracking-widest">{selectedReg.rollNumber || selectedReg.registrationNumber || 'N/A'}</p>
               </div>
               <div className="col-span-2 sm:col-span-1">
@@ -815,12 +823,36 @@ export default function Registrations() {
                 <div className="font-medium text-sm text-slate-900 bg-white/80 p-3 border border-slate-100 rounded-xl">
                   {selectedReg.idCard !== undefined ? (
                     typeof selectedReg.idCard === 'string' && (selectedReg.idCard.startsWith('http') || selectedReg.idCard.startsWith('/')) ? (
-                      <a href={selectedReg.idCard} target="_blank" rel="noopener noreferrer" className="block relative h-40 w-full max-w-[200px] overflow-hidden rounded-xl border border-slate-200 group">
-                        <img src={selectedReg.idCard} alt="ID Card" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center">
-                          <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl">Open Full Image</span>
-                        </div>
-                      </a>
+                      <div className="space-y-2">
+                        <a href={selectedReg.idCard} target="_blank" rel="noopener noreferrer" className="block relative h-44 w-full max-w-[240px] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 group shadow-xs">
+                          <img 
+                            src={selectedReg.idCard} 
+                            alt="ID Card" 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                          <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center p-3 text-center text-slate-500 text-[10px] gap-1">
+                            <span className="font-bold text-slate-700">Preview Unavailable</span>
+                            <span className="text-[9px] text-slate-400">Click to open original file</span>
+                          </div>
+                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center pointer-events-none">
+                            <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl">Open Full Image</span>
+                          </div>
+                        </a>
+                        <a 
+                          href={selectedReg.idCard} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider"
+                        >
+                          ↗ Open in new tab
+                        </a>
+                      </div>
                     ) : (
                       <span className="text-[12px]">Attached</span>
                     )
@@ -930,12 +962,36 @@ export default function Registrations() {
                               <div className="col-span-1 sm:col-span-2 mt-2">
                                 <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px] block mb-2">Institution ID Card</span> 
                                 {typeof m.idCard === 'string' && (m.idCard.startsWith('http') || m.idCard.startsWith('/')) ? (
-                                  <a href={m.idCard} target="_blank" rel="noopener noreferrer" className="block relative h-40 w-full max-w-xs overflow-hidden rounded-xl border border-slate-200 group">
-                                    <img src={m.idCard} alt={`${m.name} ID Card`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center">
-                                      <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl">Open Full Image</span>
-                                    </div>
-                                  </a>
+                                  <div className="space-y-1.5">
+                                    <a href={m.idCard} target="_blank" rel="noopener noreferrer" className="block relative h-40 w-full max-w-xs overflow-hidden rounded-xl border border-slate-200 bg-slate-50 group shadow-xs">
+                                      <img 
+                                        src={m.idCard} 
+                                        alt={`${m.name} ID Card`} 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                        onError={(e) => {
+                                          const target = e.currentTarget;
+                                          target.style.display = 'none';
+                                          const fallback = target.nextElementSibling as HTMLElement;
+                                          if (fallback) fallback.style.display = 'flex';
+                                        }}
+                                      />
+                                      <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center p-3 text-center text-slate-500 text-[10px] gap-1">
+                                        <span className="font-bold text-slate-700">Preview Unavailable</span>
+                                        <span className="text-[9px] text-slate-400">Click to open original file</span>
+                                      </div>
+                                      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors flex items-center justify-center pointer-events-none">
+                                        <span className="text-white bg-slate-900/80 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm shadow-xl">Open Full Image</span>
+                                      </div>
+                                    </a>
+                                    <a 
+                                      href={m.idCard} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider"
+                                    >
+                                      ↗ Open in new tab
+                                    </a>
+                                  </div>
                                 ) : (
                                   <span className="font-medium text-slate-800 text-[10px]">Attached</span>
                                 )}
@@ -974,14 +1030,16 @@ export default function Registrations() {
               </div>
 
               {/* QR Code */}
-              <div className="col-span-2 flex flex-col items-center justify-center p-6 bg-white/80 border border-slate-100 rounded-2xl mt-4 relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white rounded-full blur-[30px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.25em] mb-4 relative z-10">Ticket QR Code</p>
-                <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${selectedReg.id}&color=ffffff&bgcolor=000000`} 
-                  alt="Registration QR Code" 
-                  className="w-32 h-32 rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)] relative z-10 opacity-90 mix-blend-screen"
-                />
+              <div className="col-span-2 flex flex-col items-center justify-center p-6 bg-slate-50/80 border border-slate-200 rounded-2xl mt-4">
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.25em] mb-3">Ticket QR Code</p>
+                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(selectedReg.id)}&color=0f172a&bgcolor=ffffff`} 
+                    alt="Registration QR Code" 
+                    className="w-36 h-36 rounded-lg object-contain"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 font-mono tracking-wider mt-2.5 select-all">{selectedReg.id}</p>
               </div>
               
               {/* Actions */}
@@ -1019,6 +1077,13 @@ export default function Registrations() {
                 >
                   Download Receipt
                 </a>
+                <button
+                  type="button"
+                  onClick={() => setSelectedReg(null)}
+                  className="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer text-center sm:hidden"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>

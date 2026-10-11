@@ -191,7 +191,7 @@ export async function generatePDF(data: any, id: string, paymentId: string, orde
   // 1. PARTICIPANT INFORMATION Section
   drawSectionHeader('PARTICIPANT INFORMATION', 525);
   drawField('Full Name', regInfo.name, 40, 502);
-  drawField('Registration ID / Roll No.', regInfo.rollNumber, 300, 502);
+  drawField('Registration ID', regInfo.rollNumber, 300, 502);
   
   drawField('College / Institution', regInfo.college, 40, 469);
   drawField('Event Type', regInfo.eventType, 300, 469);
@@ -369,13 +369,12 @@ export async function sendEmail(to: string, name: string, pdfBytes: Uint8Array) 
 
 export async function sendSystemErrorEmail(performedBy: string, targetEntity: string, details: string) {
   try {
-    const { sendErrorNotificationAlert } = await import('./errorAlertService');
-    await sendErrorNotificationAlert({
+    const { logSystemError } = await import('./errorAlertService');
+    await logSystemError({
       message: details,
-      type: 'System Exception',
+      type: 'Registration Pipeline Exception',
       path: targetEntity,
-      userId: performedBy,
-      environment: process.env.NODE_ENV || 'production',
+      performedBy,
     });
   } catch (err) {
     console.error("Failed to route system error alert:", err);
@@ -559,13 +558,7 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
         }).catch(err => console.error("Failed to update emailError status in Firestore:", err));
       }
 
-      await adminDb.collection('auditLogs').add({
-        timestamp: FieldValue.serverTimestamp(),
-        action: 'SYSTEM_ERROR',
-        performedBy: 'System (Email/PDF)',
-        targetEntity: `registration/${docId}`,
-        details: `Failed to generate PDF or send email to ${formData.email}: ${emailError.message}`
-      }).catch(() => {});
+
 
       sendSystemErrorEmail(
         'System (Email/PDF)',
@@ -663,13 +656,7 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
     console.log("All post-registration tasks resolved successfully.");
   } catch (bgError: any) {
     console.error("Error in post-registration tasks:", bgError);
-    await adminDb.collection('auditLogs').add({
-      timestamp: FieldValue.serverTimestamp(),
-      action: 'SYSTEM_ERROR',
-      performedBy: 'System (Background Tasks)',
-      targetEntity: `registration/${docId}`,
-      details: `Unexpected error in background pipeline: ${bgError.message}`
-    }).catch(() => {});
+
 
     sendSystemErrorEmail(
       'System (Background Tasks)',

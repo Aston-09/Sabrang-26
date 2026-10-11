@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { SkeletonTable } from '../../../components/admin/SkeletonLoader';
-import { Download, Filter, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Download, Filter, RotateCcw, AlertTriangle, CheckCircle2, Clock, XCircle, Mail } from 'lucide-react';
 
 export default function SystemErrors() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -16,7 +16,7 @@ export default function SystemErrors() {
   const itemsPerPage = 50;
 
   useEffect(() => {
-    // Synchronize latest 500 error logs in realtime
+    // Synchronize latest 500 system error logs in realtime
     const q = query(
       collection(db, 'systemErrors'),
       orderBy('timestamp', 'desc'),
@@ -28,19 +28,7 @@ export default function SystemErrors() {
       setLoading(false);
     }, (error) => {
       console.error("Firestore systemErrors stream failed:", error);
-      // Fallback query to auditLogs for legacy compatibility
-      const fallbackQuery = query(
-        collection(db, 'auditLogs'),
-        orderBy('timestamp', 'desc'),
-        limit(200)
-      );
-      onSnapshot(fallbackQuery, (snap) => {
-        const errs = snap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter((l: any) => l.action === 'SYSTEM_ERROR' || l.action === 'ERROR');
-        setLogs(errs);
-        setLoading(false);
-      });
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -76,7 +64,7 @@ export default function SystemErrors() {
 
   const exportExcel = async () => {
     if (filteredLogs.length === 0) return alert('No system errors to export.');
-    const headers = ['S.No', 'Timestamp', 'Target Module', 'Component / Performer', 'Error Details'];
+    const headers = ['S.No', 'Timestamp', 'Target Module', 'Component / Performer', 'Alert Status', 'Error Details'];
     const rows = filteredLogs.map((log, index) => {
       const timeStr = log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString('en-IN') : 'N/A';
       return [
@@ -84,6 +72,7 @@ export default function SystemErrors() {
         timeStr,
         log.targetEntity || 'System',
         log.performedBy || 'System Error',
+        log.notificationStatus || 'N/A',
         log.details || 'N/A'
       ];
     });
@@ -190,6 +179,7 @@ export default function SystemErrors() {
                   <th className="p-5">Timestamp</th>
                   <th className="p-5">Component / Performer</th>
                   <th className="p-5">Target Node</th>
+                  <th className="p-5">Email Alert</th>
                   <th className="p-5">Error Details</th>
                 </tr>
               </thead>
@@ -211,14 +201,41 @@ export default function SystemErrors() {
                     </td>
                     <td className="p-5 font-medium text-sm text-slate-900">{log.performedBy || 'System'}</td>
                     <td className="p-5 text-slate-500 font-mono tracking-widest text-[10px] uppercase">{log.targetEntity || 'N/A'}</td>
+                    <td className="p-5 whitespace-nowrap">
+                      {log.notificationStatus === 'SENT' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">
+                          <CheckCircle2 size={12} className="text-emerald-600" />
+                          Sent
+                        </span>
+                      ) : log.notificationStatus === 'FAILED' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase tracking-wider">
+                          <XCircle size={12} className="text-rose-600" />
+                          Failed
+                        </span>
+                      ) : log.notificationStatus === 'PENDING' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wider">
+                          <Clock size={12} className="text-amber-600" />
+                          Pending
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] text-slate-400 font-mono">
+                          -
+                        </span>
+                      )}
+                    </td>
                     <td className="p-5 whitespace-normal min-w-[280px] max-w-lg text-slate-800 font-mono text-[10px] leading-relaxed bg-white/80 border border-slate-100 rounded-xl">
-                      {log.details || '-'}
+                      <div>{log.details || '-'}</div>
+                      {log.stack && (
+                        <div className="mt-1 text-[9px] text-slate-400 line-clamp-2 hover:line-clamp-none transition-all">
+                          {log.stack}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
                 {paginatedLogs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-16 text-center text-slate-500 font-medium text-[10px] uppercase tracking-[0.25em]">
+                    <td colSpan={6} className="p-16 text-center text-slate-500 font-medium text-[10px] uppercase tracking-[0.25em]">
                       No system error logs recorded. System healthy.
                     </td>
                   </tr>

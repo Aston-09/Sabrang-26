@@ -33,12 +33,21 @@ export default function AuditLogs() {
 
   const uniqueActions = useMemo(() => {
     const set = new Set<string>();
-    logs.forEach(l => { if (l.action) set.add(l.action); });
+    logs.forEach(l => { 
+      if (l.action && l.action !== 'SYSTEM_ERROR' && l.action !== 'ERROR' && l.type !== 'system_error') {
+        set.add(l.action);
+      }
+    });
     return Array.from(set).sort();
   }, [logs]);
 
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
+      // Strictly exclude system error logs from the audit collection view
+      if (log.action === 'SYSTEM_ERROR' || log.action === 'ERROR' || log.type === 'system_error') {
+        return false;
+      }
+
       // Filter action
       if (filterAction && log.action !== filterAction) return false;
       

@@ -3,9 +3,6 @@ import "@/lib/suppress-three-logs";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import TubesCursor from "@/components/effects/TubesCursor";
-import CursorFollower from "@/components/effects/CursorFollower";
-import SmoothScroll from "@/components/effects/SmoothScroll";
 import PreloaderGate from "@/components/effects/PreloaderGate";
 import { InteractionProvider } from "@/components/context/InteractionContext";
 import { AudioPlayerProvider } from "@/components/audio/AudioPlayerProvider";
@@ -141,16 +138,11 @@ export default function RootLayout({
             <ReCaptchaProvider>
               <InteractionProvider>
                 <AuthProvider>
-                  <SmoothScroll>
-                    {/* Re-enabled the colourful cursor now that HeroScene is optimized */}
-                    <TubesCursor />
-                    <CursorFollower />
-                    <div className="min-h-screen flex flex-col text-white overflow-x-clip">
-                      <Navbar />
-                      <main className="flex-grow w-full">{children}</main>
-                      <Footer />
-                    </div>
-                  </SmoothScroll>
+                  <div className="min-h-screen flex flex-col text-white overflow-x-clip">
+                    <Navbar />
+                    <main className="flex-grow w-full">{children}</main>
+                    <Footer />
+                  </div>
                 </AuthProvider>
               </InteractionProvider>
             </ReCaptchaProvider>

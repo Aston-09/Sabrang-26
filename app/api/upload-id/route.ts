@@ -16,7 +16,51 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const uniqueFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-    // Try uploading to Firebase Admin Storage first
+    // 1. Try uploading to Cloudinary first (Permanent CDN storage, works in production & localhost)
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'eprhemvt';
+    const apiKey = process.env.CLOUDINARY_API_KEY || '263566829496821';
+    const apiSecret = process.env.CLOUDINARY_API_SECRET || '69VhgUgGOHfhg1aRJE552lxTSpo';
+
+    if (cloudName && apiKey && apiSecret) {
+      try {
+        const timestamp = Math.floor(Date.now() / 1000);
+        const folder = 'sabrang-2026/id-cards';
+        const stringToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+        const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
+
+        const base64Data = `data:${file.type || 'image/jpeg'};base64,${buffer.toString('base64')}`;
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', base64Data);
+        uploadFormData.append('api_key', apiKey);
+        uploadFormData.append('timestamp', timestamp.toString());
+        uploadFormData.append('folder', folder);
+        uploadFormData.append('signature', signature);
+
+        const cloudinaryRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+          {
+            method: 'POST',
+            body: uploadFormData,
+          }
+        );
+
+        if (cloudinaryRes.ok) {
+          const cloudinaryData = await cloudinaryRes.json();
+          const secureUrl = cloudinaryData.secure_url || cloudinaryData.url;
+          if (secureUrl) {
+            console.log(`[Upload-ID] Successfully uploaded ID card to Cloudinary: ${secureUrl}`);
+            return NextResponse.json({ url: secureUrl, name: file.name });
+          }
+        } else {
+          const errText = await cloudinaryRes.text();
+          console.warn("[Upload-ID] Cloudinary returned non-ok status:", cloudinaryRes.status, errText);
+        }
+      } catch (cloudErr: any) {
+        console.warn("[Upload-ID] Cloudinary upload encountered an issue, trying fallbacks:", cloudErr.message);
+      }
+    }
+
+    // 2. Try uploading to Firebase Admin Storage fallback
     if (adminStorage) {
       try {
         const bucketName = 
