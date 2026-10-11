@@ -6,7 +6,7 @@ import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Mail, Lock, Eye, EyeOff, ArrowLeft, ShieldCheck, AlertCircle } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react";
 import LiquidBackground from "../../components/admin/LiquidBackground";
 
 export default function LoginPage() {
@@ -100,31 +100,76 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="admin-portal-scope min-h-screen bg-transparent text-slate-900 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans">
+    <div className="admin-portal-scope min-h-screen bg-slate-50/70 text-slate-900 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans select-none">
       <LiquidBackground />
 
+      {/* Atmospheric Background Layer: Fine Engineering Grid */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0 opacity-[0.45] mix-blend-multiply"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px)
+          `,
+          backgroundSize: '48px 48px',
+          maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 95%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 95%)'
+        }}
+      />
+
+      {/* Concentric Modernist Orbital Rings Centered Around the Login Box */}
+      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
+        {/* Outer Ring */}
+        <div className="w-[880px] h-[880px] rounded-full border border-indigo-200/50 [stroke-dasharray:6_6] animate-[spin_160s_linear_infinite]" />
+        {/* Middle Ring */}
+        <div className="absolute w-[680px] h-[680px] rounded-full border border-purple-200/60" />
+        {/* Inner Ring with Subtle Gradient Accent */}
+        <div className="absolute w-[500px] h-[500px] rounded-full border border-pink-200/50" />
+        {/* Ambient Center Glow */}
+        <div className="absolute w-[440px] h-[440px] rounded-full bg-gradient-to-tr from-indigo-300/20 via-purple-300/20 to-pink-300/20 blur-3xl" />
+      </div>
+
+      {/* Subtle Floating Decorative Festival Character Badges in the Distance */}
+      <div className="fixed inset-0 pointer-events-none z-0 hidden lg:block">
+        {/* Top-Left Floating Tag */}
+        <div className="absolute top-12 left-12 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-xs text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <span>Sabrang 2026 • Live</span>
+        </div>
+
+        {/* Top-Right Floating Tag */}
+        <div className="absolute top-12 right-12 px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-xs text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase">
+          JK Lakshmipat University
+        </div>
+
+        {/* Bottom-Left Metric Chip */}
+        <div className="absolute bottom-12 left-12 px-4 py-2 rounded-2xl bg-white/60 backdrop-blur-md border border-slate-200/70 shadow-xs">
+          <p className="text-[9px] uppercase tracking-widest font-mono text-slate-400 font-bold">Annual Cultural Fest</p>
+          <p className="text-xs font-extrabold text-slate-800 font-space-grotesk tracking-tight">The Festival of Colors & Rhythm</p>
+        </div>
+
+        {/* Bottom-Right Coordinates Chip */}
+        <div className="absolute bottom-12 right-12 px-4 py-2 rounded-2xl bg-white/60 backdrop-blur-md border border-slate-200/70 shadow-xs text-right">
+          <p className="text-[9px] uppercase tracking-widest font-mono text-slate-400 font-bold">Jaipur, Rajasthan</p>
+          <p className="text-xs font-mono text-slate-700 font-bold tracking-wider">26°50'N • 75°47'E</p>
+        </div>
+      </div>
+
       {/* Main Glassmorphic Card */}
-      <div className="w-full max-w-[420px] bg-white/85 backdrop-blur-2xl border border-white/80 rounded-[32px] p-7 sm:p-10 shadow-[0_24px_70px_rgba(15,23,42,0.08),0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] relative z-10 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-[420px] bg-white/85 backdrop-blur-2xl border border-white/90 rounded-[32px] p-7 sm:p-10 shadow-[0_24px_70px_rgba(15,23,42,0.08),0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] relative z-10 animate-in fade-in zoom-in-95 duration-300">
         
         {/* Top Branding Section */}
         <div className="flex flex-col items-center text-center mb-8">
-          <Link href="/" className="group mb-3 inline-block transition-transform duration-300 hover:scale-105 active:scale-95 focus:outline-none">
+          <Link href="/" className="group mb-4 inline-block transition-transform duration-300 hover:scale-105 active:scale-95 focus:outline-none">
             <img
               src="/sabrang-logo/Sabrang_Logo.png"
               alt="Sabrang 2026 Logo"
-              className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition-all"
+              className="h-16 sm:h-20 w-auto object-contain drop-shadow-sm transition-all"
             />
           </Link>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/90 border border-slate-200/80 text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-2 font-mono">
-            <ShieldCheck size={12} className="text-indigo-600" />
-            Portal Access
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-space-grotesk">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-space-grotesk">
             Sabrang Portal
           </h1>
-          <p className="text-xs text-slate-500 mt-1 font-medium">
-            Staff & Core Team Authorization
-          </p>
         </div>
 
         {/* Error Feedback Banner */}
