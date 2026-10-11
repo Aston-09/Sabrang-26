@@ -599,15 +599,28 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const dateGroup = `${istDate.getUTCDate()}-${months[istDate.getUTCMonth()]}`;
 
-      // Format Events
+      // Format Events using official catalog
+      const { OFFICIAL_EVENTS } = await import('@/lib/eventPricing');
       const getEventTitle = (id: string) => {
-        const titleMatch = id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        return titleMatch;
+        const found = OFFICIAL_EVENTS.find(e => e.id === id || e.title.toLowerCase() === id.toLowerCase());
+        if (found) return found.title;
+        return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       };
+
+      let eventIds: string[] = [];
+      if (Array.isArray(formData.selectedEvents)) eventIds = formData.selectedEvents;
+      else if (Array.isArray(formData.events)) eventIds = formData.events;
+      else if (formData.eventId) eventIds = [formData.eventId];
+      else if (formData.event) eventIds = [formData.event];
+      else if (formData.eventName) eventIds = [formData.eventName];
+
+      const eventTitlesList = eventIds.length > 0
+        ? eventIds.map(getEventTitle)
+        : (formData.eventName || formData.eventTitle || formData.event
+            ? [getEventTitle(formData.eventName || formData.eventTitle || formData.event)]
+            : ['General']);
       
-      const eventsList = Array.isArray(formData.selectedEvents) 
-        ? formData.selectedEvents.map(getEventTitle).join(', ') 
-        : (formData.eventName || formData.eventTitle || formData.event || 'N/A');
+      const eventsList = eventTitlesList.join(', ');
 
       const { extractRegistrationInfo } = await import('@/lib/registrationDataHelper');
       const unifiedData = extractRegistrationInfo(formData, docId);
@@ -626,6 +639,9 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
         email: unifiedData.email,
         college: unifiedData.college,
         event: eventsList,
+        events: eventTitlesList,
+        eventType: unifiedData.eventType,
+        teamName: unifiedData.teamName,
         members: unifiedData.eventType === 'Team' && unifiedData.noOfTeammates !== 'N/A' 
           ? (Number(unifiedData.noOfTeammates) + 1) 
           : 1,
