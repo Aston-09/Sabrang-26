@@ -284,10 +284,12 @@ export default function CheckoutForm() {
 
       const regNum = getField(primaryGroup, "registrationNumber") || getField(primaryGroup, "rollNumber") || `REG_${Date.now()}`;
 
+      const primaryIdCard = idCards[primaryGroup]?.url || Object.values(idCards).find(v => v !== null)?.url || null;
+
       const payload = {
         action: "CREATE_ORDER",
-        idCard: Object.values(idCards).find(v => v !== null)?.url || null,
         ...formData,
+        idCard: primaryIdCard,
         name,
         email,
         mobile,
@@ -1785,7 +1787,13 @@ export default function CheckoutForm() {
                   {promoApplied && couponData && (
                     <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center text-emerald-400 text-sm text-white/80">
                       <span>
-                        Coupon {promoCode} applied ({couponData.discountType === 'fixed' ? `Special Price ₹${couponData.finalPrice}` : `${couponData.discountValue}% Off`})
+                        Coupon {promoCode} applied ({
+                          couponData.discountType === 'fixed' 
+                            ? `Special Price ₹${couponData.finalPrice}` 
+                            : couponData.discountType === 'per_head_cap'
+                            ? `Cap ₹${couponData.discountValue}/head`
+                            : `${couponData.discountValue}% Off`
+                        })
                       </span>
                       <span className="font-bold">- ₹ {couponData.discountAmount}</span>
                     </div>

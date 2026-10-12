@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { initializeFirestore, getFirestore, persistentLocalCache, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, CustomProvider } from 'firebase/app-check';
 
@@ -46,7 +46,9 @@ export const auth: Auth = getAuth(app);
 export const db: Firestore = (() => {
   try {
     return initializeFirestore(app, {
-      localCache: typeof window !== 'undefined' ? persistentLocalCache() : undefined,
+      localCache: typeof window !== 'undefined' 
+        ? persistentLocalCache({ tabManager: persistentMultipleTabManager() }) 
+        : undefined,
     });
   } catch {
     return getFirestore(app);

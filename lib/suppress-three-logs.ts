@@ -35,6 +35,8 @@ const SUPPRESSED_STRINGS = [
   "Failed to stop camera via html5-qrcode",
   "RenderedCameraImpl video surface onabort",
   "Detected an update time that is in the future",
+  "Failed to obtain exclusive access to the persistence layer",
+  "multi-tab synchronization",
 ];
 
 const filterLog = (origFn: (...args: unknown[]) => void) => {

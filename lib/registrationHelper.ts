@@ -398,7 +398,15 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
       if (docSnap.exists) {
         const { calculateCouponDiscount } = await import('@/lib/couponHelper');
         const eventTarget = formData.eventId || formData.event || formData.eventName || formData.eventTitle || '';
-        const res = calculateCouponDiscount(docSnap.data(), basePrice, eventTarget);
+        const eventList = Array.isArray(formData.selectedEvents) && formData.selectedEvents.length > 0
+          ? formData.selectedEvents
+          : (formData.eventId ? [formData.eventId] : []);
+        const res = calculateCouponDiscount(docSnap.data(), basePrice, eventTarget, {
+          selectedEvents: eventList,
+          teamMembers: formData.teamMembers,
+          visitorConfig: formData.visitorConfig,
+          isEarlyBird: formData.isEarlyBird,
+        });
         if (res.valid) {
           paymentAmount = res.finalPrice;
         }
@@ -433,9 +441,43 @@ export async function finalizeRegistration(formData: any, paymentId: string, ord
     
     const ownRoll = formData.registrationNumber || formData.rollNumber;
 
+    // Robust resolution of primary idCard from formData top level or team members
+    let resolvedIdCard = typeof formData.idCard === 'string' && formData.idCard.trim() ? formData.idCard.trim() : null;
+    if (!resolvedIdCard && formData.teamMembers && typeof formData.teamMembers === 'object') {
+      for (const group of Object.keys(formData.teamMembers)) {
+        const members = Array.isArray(formData.teamMembers[group]) ? formData.teamMembers[group] : [];
+        for (const m of members) {
+          if (m && typeof m.idCard === 'string' && m.idCard.trim()) {
+            resolvedIdCard = m.idCard.trim();
+            break;
+          }
+        }
+        if (resolvedIdCard) break;
+      }
+    }
+
+    // Clean up team member idCard fields so Firestore never stores `{}` as an empty object
+    const cleanedTeamMembers = formData.teamMembers ? { ...formData.teamMembers } : {};
+    if (typeof cleanedTeamMembers === 'object') {
+      for (const group of Object.keys(cleanedTeamMembers)) {
+        if (Array.isArray(cleanedTeamMembers[group])) {
+          cleanedTeamMembers[group] = cleanedTeamMembers[group].map((m: any) => {
+            if (!m) return m;
+            const cardVal = typeof m.idCard === 'string' && m.idCard.trim() ? m.idCard.trim() : (m.idCard?.url || null);
+            return {
+              ...m,
+              idCard: cardVal,
+            };
+          });
+        }
+      }
+    }
+
     // We got the lock! Save data to Firestore Registration Collection
     const docRef = await adminDb.collection('registrations').add({
       ...formData,
+      idCard: resolvedIdCard,
+      teamMembers: cleanedTeamMembers,
       name: formData.name,
       email: formData.email,
       phone: formData.mobile,

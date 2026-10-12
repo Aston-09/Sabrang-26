@@ -81,18 +81,20 @@ export function sanitizeInput(val: any): any {
 
 /**
  * Recursively sanitizes request objects to prevent nested injections.
+ * Preserves arrays, null values, and recursively sanitizes nested objects and arrays.
  */
 export function sanitizeObject(obj: any): any {
-  if (!obj || typeof obj !== 'object') return obj;
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') {
+    return sanitizeInput(obj);
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObject(item));
+  }
   const sanitized: any = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const val = obj[key];
-      if (val && typeof val === 'object' && !Array.isArray(val)) {
-        sanitized[key] = sanitizeObject(val);
-      } else {
-        sanitized[key] = sanitizeInput(val);
-      }
+      sanitized[key] = sanitizeObject(obj[key]);
     }
   }
   return sanitized;

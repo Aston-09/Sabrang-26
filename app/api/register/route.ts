@@ -69,7 +69,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Bot detected' }, { status: 400 });
     }
 
-    const checkCoupon = async (code: string, originalPrice: number = 500, eventIdOrTitle?: string) => {
+    const checkCoupon = async (
+      code: string, 
+      originalPrice: number = 500, 
+      eventIdOrTitle?: string,
+      context?: import('@/lib/couponHelper').CouponCalculationContext
+    ) => {
       if (!code) return { valid: false, amount: originalPrice, finalPrice: originalPrice, error: 'No coupon code provided.' };
       try {
         const lowerCode = code.trim().toLowerCase();
@@ -83,7 +88,7 @@ export async function POST(req: Request) {
         if (docSnap.exists) {
           const couponData = docSnap.data();
           const { calculateCouponDiscount } = await import('@/lib/couponHelper');
-          const res = calculateCouponDiscount(couponData, originalPrice, eventIdOrTitle);
+          const res = calculateCouponDiscount(couponData, originalPrice, eventIdOrTitle, context);
           return {
             valid: res.valid,
             amount: res.finalPrice,
@@ -127,7 +132,12 @@ export async function POST(req: Request) {
         basePrice = 500;
       }
 
-      const couponStatus = await checkCoupon(code, basePrice, eventTarget);
+      const couponStatus = await checkCoupon(code, basePrice, eventTarget, {
+        selectedEvents: eventList,
+        teamMembers: data.teamMembers,
+        visitorConfig: data.visitorConfig,
+        isEarlyBird,
+      });
       return NextResponse.json(couponStatus);
     }
 
@@ -198,7 +208,12 @@ export async function POST(req: Request) {
           basePrice = 500;
         }
 
-        const couponStatus = await checkCoupon(couponCode, basePrice, eventTarget);
+        const couponStatus = await checkCoupon(couponCode, basePrice, eventTarget, {
+          selectedEvents: eventList,
+          teamMembers: data.teamMembers,
+          visitorConfig: data.visitorConfig,
+          isEarlyBird,
+        });
         const orderAmount = couponStatus.valid ? couponStatus.finalPrice : basePrice;
 
         console.log("Saving pending registration for order ID:", orderId);

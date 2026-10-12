@@ -610,6 +610,54 @@ export function calculateEventItemPrice(
 }
 
 /**
+ * Checks if an event uses a per-head fee collection system.
+ * Competitive/showcase events (Flagship, Non-Flagship, Activities) where registration
+ * is charged per individual have a per-head fee, while Esports is charged per team flat.
+ */
+export function isPerHeadFeeEvent(event: SabrangEvent): boolean {
+  if (!event) return false;
+  // Esports events are flat per team
+  if (event.type === "bgmi" || event.type === "freefire" || event.type === "valorant") {
+    return false;
+  }
+  // Visitor pass and general entry passes
+  if (event.id === "visitor" || event.category === "General Entry") {
+    return false;
+  }
+  // Check pricing label
+  return event.pricingLabel?.toLowerCase().includes("per head") ?? false;
+}
+
+/**
+ * Gets the standard per-head fee for an event (respects early bird if active).
+ */
+export function getEventPerHeadFee(event: SabrangEvent, isEarlyBird?: boolean): number {
+  if (isEarlyBird && event.earlyBirdPrice !== undefined) {
+    return event.earlyBirdPrice;
+  }
+  return event.basePrice;
+}
+
+/**
+ * Calculates event item price, optionally capping the per-head fee if the event has a per-head fee collection system.
+ */
+export function calculateEventItemPriceWithCap(
+  event: SabrangEvent,
+  totalMembers: number = 1,
+  visitorConfig?: VisitorPassConfig,
+  isEarlyBird?: boolean,
+  perHeadCap?: number
+): number {
+  if (perHeadCap !== undefined && perHeadCap >= 0 && isPerHeadFeeEvent(event)) {
+    const regularPerHead = getEventPerHeadFee(event, isEarlyBird);
+    const effectivePerHead = Math.min(regularPerHead, perHeadCap);
+    const members = !event.isTeam ? 1 : Math.max(1, totalMembers);
+    return members * effectivePerHead;
+  }
+  return calculateEventItemPrice(event, totalMembers, visitorConfig, isEarlyBird);
+}
+
+/**
  * Calculates the total registration fee across all selected events taking into account
  * team member additions per group and visitor pass configuration.
  */
