@@ -1327,18 +1327,18 @@ export default function CheckoutForm() {
                   "Flagship Events - Solo / Duo",
                   "Non-Flagship - Esports",
                   "Non-Flagship - Other Events",
-                  // "Activities - Gifts & Hampers",
+                  "Activities - Gifts & Hampers",
                   "General Entry",
                 ] as SabrangEvent["category"][]).map((category) => {
                   const categoryEvents = EVENTS.filter((e) => e.category === category);
                   if (categoryEvents.length === 0) return null;
 
                   const categoryLabel = 
-                    category === "Flagship Events - Team" ? "Flagship" :
-                    category === "Flagship Events - Solo / Duo" ? "Flagship Solo / Duo" :
+                    category === "Flagship Events - Team" ? "Flagship Team" :
+                    category === "Flagship Events - Solo / Duo" ? "Flagship Solo" :
                     category === "Non-Flagship - Esports" ? "E-Sports" :
                     category === "Non-Flagship - Other Events" ? "Competitions & Events" :
-                    category === "Activities - Gifts & Hampers" ? "Activities & Hampers" :
+                    category === "Activities - Gifts & Hampers" ? "Activities (Per Head)" :
                     "General Visitor Pass";
 
                   return (
@@ -1375,8 +1375,8 @@ export default function CheckoutForm() {
                                     {event.id === "visitor" ? (
                                       <span className="font-sans text-sm font-bold text-cyan-400">
                                         {isSelected
-                                          ? `₹${calculateVisitorPassFee(visitorCount, visitorDays.length)} (₹99/day/person)`
-                                          : "₹99 per person per day"}
+                                          ? `₹${calculateVisitorPassFee(visitorCount, visitorDays.length)} (₹69/day/person)`
+                                          : "₹69 per person per day"}
                                       </span>
                                     ) : isEarlyBirdActive && event.earlyBirdPricingLabel ? (
                                       <div className="flex items-center gap-2">
@@ -1507,7 +1507,7 @@ export default function CheckoutForm() {
                                   {/* Calculated Subtotal pill */}
                                   <div className="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 flex justify-between items-center text-xs">
                                     <span className="text-white/70 font-sans text-[11px]">
-                                      {visitorCount} visitor{visitorCount > 1 ? "s" : ""} × {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} @ ₹99/person/day
+                                      {visitorCount} visitor{visitorCount > 1 ? "s" : ""} × {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} @ ₹69/person/day
                                     </span>
                                     <span className="font-sans font-bold text-cyan-400 text-sm">
                                       ₹{calculateVisitorPassFee(visitorCount, visitorDays.length)}
