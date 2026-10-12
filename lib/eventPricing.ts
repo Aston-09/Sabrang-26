@@ -27,8 +27,8 @@ export interface SabrangEvent {
   pricingLabel: string;
   earlyBirdPricingLabel?: string;
   prizes: {
-    winnerCash?: number;
-    runnerUpCash?: number;
+    winnerCash?: number | string;
+    runnerUpCash?: number | string;
     totalCash?: number;
     remarks?: string;
   };
@@ -170,7 +170,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
   },
   {
     id: "persona",
-    title: "Persona",
+    title: "Personna",
     subtitle: "Solo/Duo Performance",
     category: "Flagship Events - Solo / Duo",
     minTeam: 1,
@@ -195,14 +195,14 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     subtitle: "Sufi Night & Acoustic Melodies",
     category: "Flagship Events - Solo / Duo",
     minTeam: 1,
-    maxTeam: 2,
+    maxTeam: 1,
     baseIncludedMembers: 1,
     basePrice: 649,
-    extraMemberFee: 649,
-    isTeam: true,
+    extraMemberFee: 0,
+    isTeam: false,
     type: "generic",
     earlyBirdPricingLabel: "₹449 per head",
-    earlyBirdExtraMemberFee: 449,
+    earlyBirdExtraMemberFee: 0,
     earlyBirdPrice: 449,
     pricingLabel: "₹649 per head",
     prizes: {
@@ -217,14 +217,14 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     subtitle: "Poetry Slam & Literary Debates",
     category: "Flagship Events - Solo / Duo",
     minTeam: 1,
-    maxTeam: 2,
+    maxTeam: 1,
     baseIncludedMembers: 1,
     basePrice: 649,
-    extraMemberFee: 649,
-    isTeam: true,
+    extraMemberFee: 0,
+    isTeam: false,
     type: "generic",
     earlyBirdPricingLabel: "₹449 per head",
-    earlyBirdExtraMemberFee: 449,
+    earlyBirdExtraMemberFee: 0,
     earlyBirdPrice: 449,
     pricingLabel: "₹649 per head",
     prizes: {
@@ -249,9 +249,9 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     type: "bgmi",
     pricingLabel: "₹749 per team",
     prizes: {
-      winnerCash: 9000,
-      runnerUpCash: 6000,
-      totalCash: 15000,
+      winnerCash: "As per Krafton",
+      runnerUpCash: "As per Krafton",
+      totalCash: 20000,
       remarks: "Fee is per team",
     },
   },
@@ -293,6 +293,26 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
       runnerUpCash: 4000,
       totalCash: 10000,
       remarks: "Fee is per team",
+    },
+  },
+  {
+    id: "real_cricket",
+    title: "Real Cricket",
+    subtitle: "Mobile Cricket Esports Tournament",
+    category: "Non-Flagship - Esports",
+    minTeam: 1,
+    maxTeam: 1,
+    baseIncludedMembers: 1,
+    basePrice: 299,
+    extraMemberFee: 0,
+    isTeam: false,
+    type: "generic",
+    pricingLabel: "₹299 per head",
+    prizes: {
+      winnerCash: "As per Krafton",
+      runnerUpCash: "As per Krafton",
+      totalCash: 5000,
+      remarks: "Fee is per head",
     },
   },
 
@@ -438,8 +458,7 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     },
   },
 
-  // --- Activities - Gifts & Hampers (Temporarily Commented Out) ---
-  /*
+  // --- Activities - Gifts & Hampers ---
   {
     id: "art_relay",
     title: "Art Relay",
@@ -474,24 +493,6 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
       remarks: "Gifts & Hampers",
     },
   },
-  {
-    id: "chai_pe_charcha",
-    title: "Chai Pe Charcha",
-    subtitle: "Conversations & Open Mic Session",
-    category: "Activities - Gifts & Hampers",
-    minTeam: 1,
-    maxTeam: 1,
-    baseIncludedMembers: 1,
-    basePrice: 111,
-    extraMemberFee: 0,
-    isTeam: false,
-    type: "generic",
-    pricingLabel: "₹111 per head",
-    prizes: {
-      remarks: "Gifts & Hampers",
-    },
-  },
-  */
 
   // --- General Entry ---
   {
@@ -502,34 +503,32 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 99,
+    basePrice: 69,
     extraMemberFee: 0,
     isTeam: false,
     type: "visitor",
-    pricingLabel: "₹99 per pass",
+    pricingLabel: "₹69 per pass",
     prizes: { remarks: "Standard Visitor Pass (Pro-Nite not included)" },
   },
   {
     id: "pronite_outsider",
-    title: "PRO-NITE - Outsiders",
-    subtitle: "Full-day access, including PRO-NITE - Days 1 & 2",
+    title: "PRO-NITE & Concert – Outsiders",
+    subtitle: "Full-day access, including PRO-NITE – Days 1, 2 & 3",
     category: "General Entry",
     minTeam: 1,
     maxTeam: 1,
     baseIncludedMembers: 1,
-    basePrice: 599,
+    basePrice: 499,
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
-    earlyBirdPricingLabel: "₹499 per pass",
-    earlyBirdPrice: 499,
-    pricingLabel: "₹599 per pass",
+    pricingLabel: "₹499 per pass",
     prizes: { remarks: "Outsider pass" },
   },
   {
     id: "pronite_jklu",
-    title: "PRO-NITE - JKLU",
-    subtitle: "Full-day access, including PRO-NITE - Days 1 & 2",
+    title: "PRO-NITE & Concert – JKLU",
+    subtitle: "Full-day access, including PRO-NITE – Days 1, 2 & 3",
     category: "General Entry",
     minTeam: 1,
     maxTeam: 1,
@@ -538,8 +537,6 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     extraMemberFee: 0,
     isTeam: false,
     type: "generic",
-    earlyBirdPricingLabel: "₹299 per pass",
-    earlyBirdPrice: 299,
     pricingLabel: "₹299 per pass",
     prizes: { remarks: "JKLU student pass" },
   }
@@ -574,7 +571,7 @@ export interface VisitorPassConfig {
 export function calculateVisitorPassFee(count: number, daysCount: number): number {
   const people = Math.max(1, count || 1);
   const days = Math.max(1, daysCount || 1);
-  return people * days * 99;
+  return people * days * 69;
 }
 
 /**

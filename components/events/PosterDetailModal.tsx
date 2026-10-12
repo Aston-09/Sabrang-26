@@ -138,7 +138,9 @@ export default function PosterDetailModal({
                       RUNNER-UP (2ND)
                     </div>
                     <div className="font-sans font-black text-base sm:text-lg text-white mt-1">
-                      ₹{Number(item.runnerUpCash).toLocaleString("en-IN")}
+                      {typeof item.runnerUpCash === "number"
+                        ? `₹${item.runnerUpCash.toLocaleString("en-IN")}`
+                        : item.runnerUpCash}
                     </div>
                   </div>
                 )}
