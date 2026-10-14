@@ -1373,6 +1373,11 @@ export default function CheckoutForm() {
                                   <h5 className="font-black text-base uppercase tracking-wider text-white mb-1.5">
                                     {event.title}
                                   </h5>
+                                  {event.subtitle && (
+                                    <p className="text-xs text-white/60 mb-2 font-sans">
+                                      {event.subtitle}
+                                    </p>
+                                  )}
                                   <div className="flex flex-wrap items-center gap-3">
                                     {event.id === "visitor" ? (
                                       <span className="font-sans text-sm font-bold text-cyan-400">
@@ -1702,6 +1707,11 @@ export default function CheckoutForm() {
                         {eventId === "visitor" && (
                           <div className="text-[11px] text-cyan-400 font-sans mt-0.5">
                             {visitorCount} attendee{visitorCount > 1 ? "s" : ""} • {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} ({visitorDays.map(d => FESTIVAL_DAYS.find(f => f.id === d)?.label).join(", ")})
+                          </div>
+                        )}
+                        {(eventId === "pronite_jklu" || eventId === "pronite_outsider") && (
+                          <div className="text-[11px] text-amber-400 font-sans mt-0.5 font-medium">
+                            Full-day access for all 3 days (Days 1, 2 & 3)
                           </div>
                         )}
                         {ev.isTeam && ev.extraMemberFee > 0 && totalMembers > ev.baseIncludedMembers && (
