@@ -7,13 +7,13 @@ export interface SabrangEvent {
   id: string;
   title: string;
   subtitle: string;
-  category: 
-    | "Flagship Events - Team"
-    | "Flagship Events - Solo / Duo"
-    | "Non-Flagship - Esports"
-    | "Non-Flagship - Other Events"
-    | "Activities - Gifts & Hampers"
-    | "General Entry";
+  category:
+  | "Flagship Events - Team"
+  | "Flagship Events - Solo / Duo"
+  | "Non-Flagship - Esports"
+  | "Non-Flagship - Other Events"
+  | "Activities - Gifts & Hampers"
+  | "General Entry";
   minTeam: number;
   maxTeam: number;
   baseIncludedMembers: number;
@@ -346,16 +346,17 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     category: "Non-Flagship - Other Events",
     minTeam: 2,
     maxTeam: 4,
-    baseIncludedMembers: 1,
-    basePrice: 299,
-    extraMemberFee: 299,
+    baseIncludedMembers: 4,
+    basePrice: 399,
+    extraMemberFee: 0,
     isTeam: true,
     type: "generic",
-    pricingLabel: "₹299 per head",
+    pricingLabel: "₹399 per team",
     prizes: {
       winnerCash: 6000,
       runnerUpCash: 4000,
       totalCash: 10000,
+      remarks: "Fee is per team",
     },
   },
   {
@@ -365,16 +366,17 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     category: "Non-Flagship - Other Events",
     minTeam: 3,
     maxTeam: 5,
-    baseIncludedMembers: 1,
-    basePrice: 299,
-    extraMemberFee: 299,
+    baseIncludedMembers: 5,
+    basePrice: 399,
+    extraMemberFee: 0,
     isTeam: true,
     type: "generic",
-    pricingLabel: "₹299 per head",
+    pricingLabel: "₹399 per team",
     prizes: {
       winnerCash: 6000,
       runnerUpCash: 4000,
       totalCash: 10000,
+      remarks: "Fee is per team",
     },
   },
   {
@@ -385,15 +387,16 @@ const RAW_EVENTS: Omit<SabrangEvent, 'price'>[] = [
     minTeam: 3,
     maxTeam: 3,
     baseIncludedMembers: 1,
-    basePrice: 299,
-    extraMemberFee: 299,
+    basePrice: 199,
+    extraMemberFee: 199,
     isTeam: true,
     type: "generic",
-    pricingLabel: "₹299 per head",
+    pricingLabel: "₹199 per head",
     prizes: {
       winnerCash: 4000,
       runnerUpCash: 3000,
       totalCash: 7000,
+      remarks: "Fee is per head",
     },
   },
   {
@@ -576,6 +579,12 @@ export function calculateVisitorPassFee(count: number, daysCount: number): numbe
   return people * days * 69;
 }
 
+export function calculateVisitorBandFee(daysCount: number, visitorCount: number = 1): number {
+  const days = Math.max(1, daysCount || 1);
+  const people = Math.max(1, visitorCount || 1);
+  return FLAGSHIP_BAND_FEE_PER_PERSON * days * people;
+}
+
 /**
  * Calculates the exact price for a given event given the number of team members (leader + extra members)
  * and optional visitorConfig for visitor passes.
@@ -659,9 +668,64 @@ export function calculateEventItemPriceWithCap(
   return calculateEventItemPrice(event, totalMembers, visitorConfig, isEarlyBird);
 }
 
+export const FLAGSHIP_BAND_FEE_PER_PERSON = 7;
+export const FLAGSHIP_BANK_FEE_PER_PERSON = FLAGSHIP_BAND_FEE_PER_PERSON;
+export const FLAGSHIP_TEAM_BANK_FEE_PER_PERSON = FLAGSHIP_BAND_FEE_PER_PERSON;
+export const FLAGSHIP_TEAM_BANK_CHARGE_PER_PERSON = FLAGSHIP_BAND_FEE_PER_PERSON;
+export const FLAGSHIP_TEAM_BAND_CHARGE_PER_PERSON = FLAGSHIP_BAND_FEE_PER_PERSON;
+
+/**
+ * Checks if Band Fee (₹7/person) applies to an event:
+ * Flagship Team, Flagship Solo, and Pro-Nite & Concert passes (Outsiders & JKLU).
+ */
+export function isBandFeeApplicable(event?: SabrangEvent | null): boolean {
+  if (!event) return false;
+  return (
+    event.category === "Flagship Events - Team" ||
+    event.category === "Flagship Events - Solo / Duo" ||
+    event.id === "pronite_outsider" ||
+    event.id === "pronite_jklu"
+  );
+}
+
+/**
+ * Checks if an event belongs to Flagship category or Pro-Nite passes that require band fee
+ */
+export function isFlagshipEvent(event?: SabrangEvent | null): boolean {
+  return isBandFeeApplicable(event);
+}
+
+/**
+ * Checks if an event belongs to Flagship Team category (Panache, SYNC, Band Jam)
+ */
+export function isFlagshipTeamEvent(event?: SabrangEvent | null): boolean {
+  if (!event) return false;
+  return event.category === "Flagship Events - Team";
+}
+
+/**
+ * Checks if an event belongs to Flagship Solo category (Step Up, Personna, Echoes of Noor, Verse Vaad)
+ */
+export function isFlagshipSoloEvent(event?: SabrangEvent | null): boolean {
+  if (!event) return false;
+  return event.category === "Flagship Events - Solo / Duo";
+}
+
+/**
+ * Calculates the Band Fee (₹7 per person) for Flagship and Pro-Nite events.
+ */
+export function calculateFlagshipBandFee(event: SabrangEvent, totalMembers: number = 1): number {
+  if (!isBandFeeApplicable(event)) return 0;
+  const count = event.isTeam ? Math.max(1, totalMembers) : 1;
+  return count * FLAGSHIP_BAND_FEE_PER_PERSON;
+}
+export const calculateFlagshipBankFee = calculateFlagshipBandFee;
+export const calculateFlagshipBankCharge = calculateFlagshipBandFee;
+export const calculateFlagshipBandCharge = calculateFlagshipBandFee;
+
 /**
  * Calculates the total registration fee across all selected events taking into account
- * team member additions per group and visitor pass configuration.
+ * team member additions per group, visitor pass configuration, and Band fees.
  */
 export function calculateTotalRegistrationFee(
   selectedEventIds: string[],
@@ -681,6 +745,9 @@ export function calculateTotalRegistrationFee(
 
     if (eventId === "visitor") {
       total += calculateEventItemPrice(event, 1, visitorConfig, isEarlyBird);
+      const daysCount = visitorConfig?.days?.length ?? 1;
+      const count = visitorConfig?.count ?? 1;
+      total += calculateVisitorBandFee(daysCount, count);
       continue;
     }
 
@@ -688,6 +755,17 @@ export function calculateTotalRegistrationFee(
     const totalMembers = 1 + (Array.isArray(groupMembers) ? groupMembers.length : 0);
 
     total += calculateEventItemPrice(event, totalMembers, visitorConfig, isEarlyBird);
+
+    // Apply Band Fee (₹7 * no. of persons):
+    // For Flagship Team: when team members are entered (totalMembers > 1)
+    // For Flagship Solo & Pro-Nite passes: 1 person (₹7)
+    if (isFlagshipTeamEvent(event)) {
+      if (totalMembers > 1) {
+        total += calculateFlagshipBandFee(event, totalMembers);
+      }
+    } else if (isFlagshipSoloEvent(event) || event.id === "pronite_outsider" || event.id === "pronite_jklu") {
+      total += calculateFlagshipBandFee(event, 1);
+    }
   }
 
   return total;

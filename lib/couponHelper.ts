@@ -6,6 +6,9 @@ import {
   getEventPerHeadFee, 
   calculateEventItemPrice, 
   calculateEventItemPriceWithCap, 
+  isFlagshipEvent,
+  calculateFlagshipBankFee,
+  calculateVisitorBandFee,
   VisitorPassConfig 
 } from './eventPricing';
 
@@ -232,16 +235,26 @@ export function calculateCouponDiscount(
         const totalMembers = !event.isTeam ? 1 : 1 + (Array.isArray(groupMembers) ? groupMembers.length : 0);
 
         const itemOriginal = calculateEventItemPrice(event, totalMembers, context.visitorConfig, context.isEarlyBird);
-        totalOriginal += itemOriginal;
+        const membersCount = event.isTeam ? totalMembers : 1;
+        const isVisitor = event.id === "visitor";
+        const visitorDaysCount = context.visitorConfig?.days?.length ?? 1;
+        const visitorCount = context.visitorConfig?.count ?? 1;
+        const bankFee = (isFlagshipEvent(event) && context.teamMembers !== undefined && (!event.isTeam || totalMembers > 1))
+          ? calculateFlagshipBankFee(event, membersCount)
+          : isVisitor
+          ? calculateVisitorBandFee(visitorDaysCount, visitorCount)
+          : 0;
+
+        totalOriginal += (itemOriginal + bankFee);
 
         const isApplicable = isCouponApplicableToEvent(coupon, event.id) || isCouponApplicableToEvent(coupon, event.title);
 
         if (isApplicable && isPerHeadFeeEvent(event)) {
           hasPerHeadEvent = true;
           const itemCapped = calculateEventItemPriceWithCap(event, totalMembers, context.visitorConfig, context.isEarlyBird, perHeadCap);
-          totalCapped += itemCapped;
+          totalCapped += (itemCapped + bankFee);
         } else {
-          totalCapped += itemOriginal;
+          totalCapped += (itemOriginal + bankFee);
         }
       }
 

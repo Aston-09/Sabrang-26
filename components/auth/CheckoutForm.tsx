@@ -11,6 +11,8 @@ import {
   calculateEventItemPrice,
   calculateTotalRegistrationFee,
   getGroupTeamRequirements,
+  isFlagshipEvent,
+  calculateFlagshipBankFee,
   SabrangEvent,
   VAAD_VIVAAD_REPRESENTATIVES,
   FESTIVAL_DAYS,
@@ -429,10 +431,16 @@ export default function CheckoutForm() {
   };
 
   const calculateTotal = () => {
-    const rawTotal = calculateTotalRegistrationFee(selectedEvents, teamMembers, {
-      count: visitorCount,
-      days: visitorDays,
-    }, isEarlyBirdActive);
+    const isStep1 = currentStep === "select";
+    const rawTotal = calculateTotalRegistrationFee(
+      selectedEvents,
+      isStep1 ? undefined : teamMembers,
+      {
+        count: visitorCount,
+        days: visitorDays,
+      },
+      isEarlyBirdActive
+    );
     
     if (promoApplied && couponData?.valid) {
       return Math.max(0, couponData.finalPrice);
@@ -1699,33 +1707,49 @@ export default function CheckoutForm() {
                     days: visitorDays,
                   }, isEarlyBirdActive);
 
+                  const isFlagship = isFlagshipEvent(ev);
+                  const membersCount = ev.isTeam ? totalMembers : 1;
+                  const showBankFee = isFlagship && (!ev.isTeam || totalMembers > 1);
+                  const bankFee = showBankFee ? calculateFlagshipBankFee(ev, membersCount) : 0;
+
                   return (
-                    <div key={eventId} className="flex justify-between items-start text-white/90 py-1.5 border-b border-white/5 last:border-0">
-                      <div>
-                        <div className="font-semibold text-sm">{ev.title}</div>
-                        <div className="text-[11px] text-white/40 font-sans">{ev.category}</div>
-                        {eventId === "visitor" && (
-                          <div className="text-[11px] text-cyan-400 font-sans mt-0.5">
-                            {visitorCount} attendee{visitorCount > 1 ? "s" : ""} • {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} ({visitorDays.map(d => FESTIVAL_DAYS.find(f => f.id === d)?.label).join(", ")})
-                          </div>
-                        )}
-                        {(eventId === "pronite_jklu" || eventId === "pronite_outsider") && (
-                          <div className="text-[11px] text-amber-400 font-sans mt-0.5 font-medium">
-                            Full-day access for all 3 days (Days 1, 2 & 3)
-                          </div>
-                        )}
-                        {ev.isTeam && ev.extraMemberFee > 0 && totalMembers > ev.baseIncludedMembers && (
-                          <div className="text-[11px] text-violet-400 font-sans mt-0.5">
-                            {totalMembers} members ({ev.baseIncludedMembers} base + {totalMembers - ev.baseIncludedMembers} extra @ ₹{isEarlyBirdActive && ev.earlyBirdExtraMemberFee !== undefined ? ev.earlyBirdExtraMemberFee : ev.extraMemberFee})
-                          </div>
-                        )}
-                        {ev.isTeam && ev.extraMemberFee === 0 && (
-                          <div className="text-[11px] text-white/50 font-sans mt-0.5">
-                            Team of {totalMembers} members (flat team fee)
-                          </div>
-                        )}
+                    <div key={eventId} className="py-2 border-b border-white/5 last:border-0 space-y-2">
+                      <div className="flex justify-between items-start text-white/90">
+                        <div>
+                          <div className="font-semibold text-sm">{ev.title}</div>
+                          <div className="text-[11px] text-white/40 font-sans">{ev.category}</div>
+                          {eventId === "visitor" && (
+                            <div className="text-[11px] text-cyan-400 font-sans mt-0.5">
+                              {visitorCount} attendee{visitorCount > 1 ? "s" : ""} • {visitorDays.length} day{visitorDays.length > 1 ? "s" : ""} ({visitorDays.map(d => FESTIVAL_DAYS.find(f => f.id === d)?.label).join(", ")})
+                            </div>
+                          )}
+                          {(eventId === "pronite_jklu" || eventId === "pronite_outsider") && (
+                            <div className="text-[11px] text-amber-400 font-sans mt-0.5 font-medium">
+                              Full-day access for all 3 days (Days 1, 2 & 3)
+                            </div>
+                          )}
+                          {ev.isTeam && ev.extraMemberFee > 0 && totalMembers > ev.baseIncludedMembers && (
+                            <div className="text-[11px] text-violet-400 font-sans mt-0.5">
+                              {totalMembers} members ({ev.baseIncludedMembers} base + {totalMembers - ev.baseIncludedMembers} extra @ ₹{isEarlyBirdActive && ev.earlyBirdExtraMemberFee !== undefined ? ev.earlyBirdExtraMemberFee : ev.extraMemberFee})
+                            </div>
+                          )}
+                          {ev.isTeam && ev.extraMemberFee === 0 && (
+                            <div className="text-[11px] text-white/50 font-sans mt-0.5">
+                              Team of {totalMembers} members (flat team fee)
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-sans text-sm font-bold text-violet-300">₹ {itemPrice}</span>
                       </div>
-                      <span className="font-sans text-sm font-bold text-violet-300">₹ {itemPrice}</span>
+
+                      {showBankFee && (
+                        <div className="flex justify-between items-center text-xs font-sans pl-2.5 py-1.5 border-l-2 border-amber-400/50 bg-amber-400/10 rounded-r">
+                          <span className="text-amber-300 font-medium">
+                            Band Fee: 7 * {membersCount} (no of person) =
+                          </span>
+                          <span className="font-bold font-sans text-amber-300">₹ {bankFee}</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1917,19 +1941,37 @@ export default function CheckoutForm() {
                   days: visitorDays,
                 }, isEarlyBirdActive);
 
+                const isFlagship = isFlagshipEvent(ev);
+                const membersCount = ev.isTeam ? totalMembers : 1;
+                const showBankFee = isFlagship && currentStep !== "select" && (!ev.isTeam || totalMembers > 1);
+                const bankFee = showBankFee ? calculateFlagshipBankFee(ev, membersCount) : 0;
+
                 return (
-                  <div key={id} className="flex justify-between items-start text-xs py-2 border-b border-white/5 last:border-0">
-                    <div>
-                      <div className="font-bold text-white uppercase tracking-wide">{ev.title}</div>
-                      <div className="text-[10px] text-white/40 font-sans">
-                        {id === "visitor"
-                          ? `${visitorCount} Attendee${visitorCount > 1 ? "s" : ""} • ${visitorDays.length} Day${visitorDays.length > 1 ? "s" : ""}`
-                          : ev.category}
+                  <div key={id} className="py-2 border-b border-white/5 last:border-0 space-y-1.5">
+                    <div className="flex justify-between items-start text-xs">
+                      <div>
+                        <div className="font-bold text-white uppercase tracking-wide">{ev.title}</div>
+                        <div className="text-[10px] text-white/40 font-sans">
+                          {id === "visitor"
+                            ? `${visitorCount} Attendee${visitorCount > 1 ? "s" : ""} • ${visitorDays.length} Day${visitorDays.length > 1 ? "s" : ""}`
+                            : ev.category}
+                        </div>
                       </div>
+                      <span className="font-sans text-cyan-400 font-bold text-xs shrink-0">
+                        {ev.isTeam ? `Team ₹${price}` : `₹${price}`}
+                      </span>
                     </div>
-                    <span className="font-sans text-cyan-400 font-bold text-xs shrink-0">
-                      {ev.isTeam ? `Team ₹${price}` : `₹${price}`}
-                    </span>
+
+                    {showBankFee && (
+                      <div className="flex justify-between items-center text-[11px] font-sans pl-2 border-l-2 border-amber-400/50 py-0.5 bg-amber-400/10 rounded-r">
+                        <span className="text-amber-300 font-medium">
+                          Band Fee: 7 * {membersCount} (no of person) =
+                        </span>
+                        <span className="font-bold font-sans text-amber-300 shrink-0">
+                          ₹{bankFee}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })
